@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="深入的探索构建 AI Agent 的技术架构,使对如何构建智能体有个整体的了解。">
+<title>构建 AI Agent 的技术架构</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/'>
+
+<link rel="stylesheet" href="/scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="构建 AI Agent 的技术架构">
+<meta property='og:description' content="深入的探索构建 AI Agent 的技术架构,使对如何构建智能体有个整体的了解。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2026-01-09T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-01-09T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="构建 AI Agent 的技术架构">
+<meta name="twitter:description" content="深入的探索构建 AI Agent 的技术架构,使对如何构建智能体有个整体的了解。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="/img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="/">
+                    <img src="/img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#第3章-构建-ai-agent-的技术架构">第3章 构建 AI Agent 的技术架构</a>
+      <ol>
+        <li><a href="#31-技术架构一">3.1 技术架构一</a></li>
+        <li><a href="#32-技术架构二">3.2 技术架构二</a></li>
+        <li><a href="#33-构建ai-agent的整体技术架构">3.3 构建AI Agent的整体技术架构</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/">
+            <img src="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089.jpg" width="1372" height="639" loading="lazy"
+                alt="Featured image of post 构建 AI Agent 的技术架构" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="/categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/">构建 AI Agent 的技术架构</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            深入的探索构建 AI Agent 的技术架构,使对如何构建智能体有个整体的了解。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-01-09T00:00:00Z'>2026年1月9日星期五</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 14 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#第3章-构建-ai-agent-的技术架构">第3章 构建 AI Agent 的技术架构</a>
+      <ol>
+        <li><a href="#31-技术架构一">3.1 技术架构一</a></li>
+        <li><a href="#32-技术架构二">3.2 技术架构二</a></li>
+        <li><a href="#33-构建ai-agent的整体技术架构">3.3 构建AI Agent的整体技术架构</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="第3章-构建-ai-agent-的技术架构">第3章 构建 AI Agent 的技术架构
+</h2><p>​		我们了解了AI Agent的概念框架后，我们就想构建智能体，但如何构建智能体呢？有没有一些设计模式或最佳实践可遵循，这些设计模式或最佳实践就形成技术架构。这节我们就深入的探索构建 AI Agent 的技术架构。</p>
+<p>​		近年来，由于大语言模型（LLMs）展现出来的智能潜力，引发了基于大语言模型的智能体的研究热潮，产生了许多基于大语言模型的智能体项目，如AutoGPT、BabyAGI等。有些机构和专家学者对基于大语言模型的智能体项目进行了系统的总结，并提出了统一的技术框架。其中比较全面、热门的有两篇：</p>
+<ul>
+<li>一篇是2023年8月中国人民大学发表的论文<a class="link" href="https://arxiv.org/pdf/2308.11432.pdf"  target="_blank" rel="noopener"
+    >“<em>A Survey</em> on <em>Large</em> <em>Language</em> <em>Model</em> <em>based</em> <em>Autonomous</em> <em>Agents</em>“</a>（基于大语言模型的智能体研究综述）。</li>
+<li>另一篇是2023年6月OpenAI 的应用研究主管 Lilian Weng 撰写了一篇博客<a class="link" href="https://lilianweng.github.io/posts/2023-06-23-agent/"  target="_blank" rel="noopener"
+    >“LLM Powered Autonomous Agents”</a>。</li>
+</ul>
+<p>​		本章首先分别介绍这两篇文章中所提出的技术框架，然后梳理出构建智能体的整体技术框架，最后详细的解析构成框架的每个组件，使我们对如何构建智能体有个整体且细致的了解。</p>
+<h3 id="31-技术架构一">3.1 技术架构一
+</h3><p>​		23年8月份中国人民大学发表的论文<a class="link" href="https://arxiv.org/pdf/2308.11432.pdf"  target="_blank" rel="noopener"
+    >“A Survey on Large Language Model based Autonomous  Agents“</a>（基于大语言模型的智能体研究综述），提出了一个构建基于大语言模型的统一框架，这个框架的整体结构如下图所示：</p>
+<p><img src="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740.png"
+	width="1183"
+	height="549"
+	srcset="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740_hu_3d092eef0a39e60e.png 480w, /p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740_hu_6318162bb6c81266.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250415120526740"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="215"
+		data-flex-basis="517px"
+	
+></p>
+<p>​										<em>图 2 基于大语言模型（LLM）的自主智能体架构设计的统一框架。</em></p>
+<p>该框架有四个模块组成：配置文件模块、记忆模块、规划模块和行动模块。</p>
+<ul>
+<li>
+<p><strong>配置文件模块</strong>：旨在明确智能体的角色特征。智能体在执行任务时通常会预设一个特定的角色，如程序员、教师和领域专家，这些角色特征通常写入提示中，用以影响大语言模型的行为。例如：在处理编程相关问题（如代码漏洞修复等）任务时，将智能体的角色预设为 “你是一个专业的资深程序员” 时，大语言模型会以程序员的思维方式和专业术语来进行回答。</p>
+<p>​		智能体的配置信息包括基本信息(年龄、性别和职业等)、个性的心理信息，以及描述Agent之间社交关系的信息等。配置哪些信息取决于具体的应用场景，例如，如果应用旨在研究人类认知过程，那么心理信息就变得至关重要。</p>
+</li>
+<li>
+<p><strong>记忆模块</strong>：记忆模块存储从环境中感知到的信息，并利用记录的记忆来辅助未来的行动。记忆模块可以帮助智能体积累经验、自我进化，使其行为更加一致、合理和有效。人类记忆通常从感知输入的感觉记忆开始，到短暂存储信息的短期记忆，再到长期巩固信息的长期记忆。智能体的记忆机制仿照人类记忆，可以分为短期记忆（短暂保持信息）和长期记忆（在较长时间内巩固信息）：</p>
+<ul>
+<li>短期记忆：这种结构仅模拟人类的短期记忆，通常通过上下文学习实现，记忆信息直接写入提示中。例如，在聊天智能体应用中，维护一个内部对话历史记录。在每一轮对话中，这些历史记录追加到当前输入提示中，充当智能体的短期记忆，发送给大语言模型。短期记忆受 Transformer 架构上下文窗口输入信息的限制。</li>
+<li>长期记忆：长期记忆则是在较长时间内巩固的信息，这类信息一般被编码为嵌入向量并存储在向量数据库中，智能体可根据需要，随时从向量数据库中快速查询和检索相关的信息。</li>
+</ul>
+</li>
+<li>
+<p><strong>规划模块</strong>：面对复杂任务时，人类倾向于将其分解为更简单的子任务并分别解决它们。规划模块的目标是赋予Agent这种能力，使Agent的行为更加合理、强大和可靠，并具有可解释性。</p>
+<p>​    列如：思维链（Chain of Thought，CoT）就是一种常见的规划策略，它将解决复杂问题的推理步骤示例输入到提示中，来启发大语言模型逐步规划和行动。在这种方法中，计划是基于提示中的示例启发而创建的。零样本思维链（Zero-shot-CoT）通过用 “一步一步思考” 这样的触发语句提示大语言模型，使其能够生成任务推理过程。与 CoT 不同，这种方法在提示中不包含推理步骤作为示例。其它的策略如自洽思维链（Self-consistent CoT，CoT-SC）、思维树（Tree of Thoughts，ToT）等等，后续会详细的介绍。</p>
+</li>
+<li>
+<p><strong>行动模块</strong>：负责将智能体的决策转化为具体结果。该模块位于最下游位置，直接与环境交互，受配置文件模块、记忆模块和规划模块的影响。</p>
+<p>从四个角度来看：</p>
+<ul>
+<li><strong>行动目标</strong>：涉及Agent行动的预期结果是什么。</li>
+<li><strong>行动产生</strong>：描述了行动是如何从Agent的决策过程中产生出来的？两种常用的行动生成策略：（1）通过记忆回忆生成行动。在这种策略中，行动是根据当前任务从智能体记忆中提取信息生成的。（2）通过遵循计划生成行动**。**在这种策略中，智能体按照预生成的计划采取行动。</li>
+<li><strong>行动空间</strong>：指的是智能体能够执行的所有可能行动的集合。一般来说，可以将行动分为两类：（1）外部工具，如调用外部 API、数据库、外部模型等等；（2）大语言模型的内部知识。</li>
+<li><strong>行动影响</strong>：指的是智能体行动所产生的后果。主要有三个方面：1、改变环境，智能体通过行动改变环境状态，如移动位置、收集物品、建造建筑等；2、改变内部状态，包括更新记忆、制定新计划、获取新知识等；3、触发新行动，在任务完成过程中，一个行动往往会引发后续行动。</li>
+</ul>
+</li>
+</ul>
+<p>​		在该架构中，配置文件模块用于确定智能体的角色，记忆模块和规划模块将智能体置于动态环境中，使其能够回忆过去的行为并规划未来的行动，行动模块负责将智能体的决策转化为具体输出。在这些模块中，配置文件模块影响记忆模块和规划模块，而这三个模块共同影响行动模块。</p>
+<h3 id="32-技术架构二">3.2 技术架构二
+</h3><p>​		另一个由大语言模型驱动的自主Agent系统架构，是2023年6月由OpenAI公司的安全系统主管Lilian Weng在其撰写了一篇博客<a class="link" href="https://lilianweng.github.io/posts/2023-06-23-agent/"  target="_blank" rel="noopener"
+    >“LLM Powered Autonomous Agents”</a>中提出的，该架构包含规划（Planning）、记忆（Memory）、工具（Tools）、执行（Action）四大模块。如下图所示：</p>
+<p><img src="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview.png"
+	width="1999"
+	height="793"
+	srcset="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview_hu_ca2baf042fe593f7.png 480w, /p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview_hu_1caf2afc19d36185.png 1024w"
+	loading="lazy"
+	
+		alt="img"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="252"
+		data-flex-basis="604px"
+	
+></p>
+<p>​													图. 由大语言模型驱动的自主智能体系统概览。</p>
+<p>在由大语言模型驱动的自主智能体系统中，大语言模型（LLM）充当智能体的大脑，并由几个关键组件组成：</p>
+<ul>
+<li><strong>规划（Planning）</strong>：Agent 具备思考、规划、决策能力，能有效地执行复杂任务。涉及子目标的分解（Subgoal decomposition）、思维链（Chain of thoughts）、自我批评（Self-critics），以及对过去行动的反思（Reflection）。该组件作为Agent的大脑，由大语言模型（LLM）来担任，具体包括以下两个方面：
+<ul>
+<li><strong>子目标与分解</strong>：智能体将大型任务分解为更小、更易于管理的子目标，从而能够高效处理复杂任务。赋予大模型分析、推理、规划、决策能力。</li>
+<li><strong>反思与优化</strong>：智能体可以对过去的行为进行自我批评和自我反思，从错误中吸取教训，并针对未来的步骤进行优化，从而提高最终结果的质量。这赋予大模型自主学习迭代改进的能力。</li>
+</ul>
+</li>
+<li><strong>记忆（Memory）</strong>：记忆可以定义为用于获取、存储、保留和稍后检索信息的过程，包含短期记忆和长期记忆两种：
+<ul>
+<li><strong>短期记忆</strong>：将所有的上下文学习（比如Prompt Engineering、In-Context Learning）都是利用模型的短期记忆来进行学习。</li>
+<li><strong>长期记忆</strong>：这使智能体能够在较长时间内保留和检索（无限的）信息的能力，通常是通过利用外部向量存储和快速检索来实现。</li>
+</ul>
+</li>
+<li><strong>工具（Tool）</strong>：工具扩展了Agent的行动能力，使其能与外部环境进行交互。由于大模型一旦完成预训练，其内部能力和知识边界基本固定下来，而且难以拓展，智能体可以利用工具（如：调用外部API、数据库查询）来获取模型权重中确少的额外信息，提升输出结果质量。其它工具如日历、计算器、代码执行能力、搜索、访问专有信息源等。</li>
+<li><strong>行动（Action）</strong>：执行由规划模块决策的具体行动，包括输出文本内容、调用工具来完成任务等。</li>
+</ul>
+<p>​	 在这个架构中，<code>Lilian Weng</code>提出了 <code>Agent=LLM + 规划 + 记忆 + 行动(工具使用)</code>的基础架构。其中 LLM 扮演了 Agent 的 “大脑”，强调LLM作为系统的核心控制器，提供推理、规划、决策的能力；记忆组件提供记忆能力，使其能够存储和检索外部的相关信息，来优化决策；行动组件执行决策产生的行动，也可利用工具与外部环境进行交互； 而 Agent位于中心位置，它通过协同各种组件来处理复杂的流程，最终自主完成目标任务。</p>
+<h3 id="33-构建ai-agent的整体技术架构">3.3 构建AI Agent的整体技术架构
+</h3><p>​		通过之前对AI Agent概念框架的了解，再来看构建Al Agent的技术架构，对其所需要的核心组件就会有更清晰的认知。我们梳理了当前许多研究人员及机构对构建智能体技术架构的研究成果，结合实践经验，提炼出构建AI Agent的整体技术架构，包括八个模块：Profile（配置）、Percept（感知）、Planning &amp; Reasoning（规划&amp;推理）、Action（行动）、Memory（记忆）、Learning（学习）、Context Management（上下文管理） 和 Orchestration（编排）。如下图所示：</p>
+<p><img src="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601.jpg"
+	width="1118"
+	height="604"
+	srcset="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601_hu_66a0213266ae5b16.jpg 480w, /p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601_hu_c1f6f1f98c79611a.jpg 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="185"
+		data-flex-basis="444px"
+	
+></p>
+<p>构建AI Agent的整体技术架构具体模块说明如下：</p>
+<ul>
+<li>
+<p><strong>Percept（感知）</strong>：负责接收外部环境的输入信息，包括 Text（文本 ）、Image（图像 ）、Sound（音频）、Video（视频）等多种模态数据，是智能体获取外界信息的窗口，为后续处理提供原始素材。</p>
+</li>
+<li>
+<p><strong>Profile（配置）</strong>：定义智能体角色、职责及能力边界，聚焦个性化与适配特定场景。智能体通常扮演特定角色来执行任务，不同角色决定智能体具备的能力及可执行操作范围。如： coder（程序员）角色具备代码编写、调试等能力；teacher（教师）角色擅长知识讲解、教学规划 。该模块并不是必须的，根据具体的应用场景而配置。</p>
+</li>
+<li>
+<p><strong>Planning &amp; Reasoning（规划与推理）</strong>：智能体的 “思考决策中枢”，主要有大语言模型来承担，负责推理、规划并决策下一步行动。有多种推理、规划和反思的模式，主要包含两类模式：</p>
+<ul>
+<li><strong>任务分解</strong>：将复杂任务拆分为更小、更易于管理的子目标，从而能够高效处理复杂任务。这方面的模式如 CoT（思维链，Chain of Thought ）能让智能体将复杂问题分解为一系列中间步骤进行推理；ToT（树状思维，Tree of Thought ）可用于探索不同解题路径，寻找最佳的解决路径方案；GoT（图状思维，Graph of Thought）基于节点关联实现更灵活的任务拆解。</li>
+<li><strong>反思优化</strong>：对过去的行为进行自我批评和自我反思，来优化未来的决策步骤。典型模式包括：ReAct 融合推理和行动；Reflection（反思 ）能让智能体基于过往经验优化未来的策略；Self-Consistency（自一致性校验）生成多个不同路径的推理结果，通过结果比对筛选出高可靠性结论。这些推理、规划、反思的设计模式也叫做认知策略，后面章节我们会详细解析主流的认知策略模式及其技术实现。</li>
+</ul>
+</li>
+<li>
+<p><strong>Action（行动）</strong>：负责执行由规划与推理模块输出的具体行动，行动类型分为两类：输出内容（如生成文本、图像等多模态内容）；工具调用（通过调用外部工具实现复杂功能，如查询数据库、调用 API、控制硬件设备等）。其中，工具扩展了Agent的行动能力，充当 agent 的抽象能力和现实世界之间的桥梁。</p>
+<p>主流工具调用模式包括：</p>
+<ul>
+<li>指令解析调用：基于自然语言指令匹配适配工具，适配简单场景。</li>
+<li>函数调用（Function Calling）：通过标准化函数定义实现工具的精准调用，支持复杂参数配置。</li>
+<li>MCP 协议（Model Context Protocol）：统一大模型与外部数据源和工具之间的通信协议，提升多工具协同效率。</li>
+</ul>
+</li>
+<li>
+<p><strong>Memory（记忆）</strong>：负责信息的存储、更新与高效检索，为智能体的决策提供历史经验与领域知识支撑。分为短期记忆和长期记忆：</p>
+<ul>
+<li>短期记忆：存储实时交互的临时信息（如对话上下文、当前任务状态、中间推理结果），核心实现方式是利用大语言模型的上下文窗口，保障任务执行的连贯性。</li>
+<li>长期记忆：存储需长期复用的信息（如历史任务经验、领域知识库、用户偏好），核心实现架构为&quot;外部向量数据库 + RAG（Retrieval-Augmented Generation，检索增强生成）&quot;，支持从海量数据中快速检索相关信息辅助决策。</li>
+</ul>
+</li>
+<li>
+<p><strong>Learning（学习）</strong>：支撑智能体的持续迭代与自我优化，核心是构建 “交互 - 评估 - 反思 - 学习” 的闭环学习机制：首先智能体通过与环境 / 用户的交互获取反馈；其次通过评价模块对反馈数据进行量化评估（如准确率、效率、满意度指标等）；再通过反思环节深挖问题根源；最后从反思结论中学习提取关键经验与洞见，并更新至长期记忆并优化决策策略，形成 “交互 - 评估 - 反思- 洞见 - 优化” 的全链路闭环，实现持续的自我改进迭代。</p>
+</li>
+<li>
+<p><strong>Context Management（上下文管理）</strong>：负责上下文信息的全生命周期管理，包括构建、检索、更新、修剪与压缩上下文信息，核心目标是 “填充恰好适配下一步任务的上下文信息”—— 既保障信息与当前任务的强相关性，也避免信息冗余导致的推理效率下降。</p>
+</li>
+<li>
+<p><strong>Orchestration（编排）</strong>：是智能体的 “指挥中枢”，负责协调各模块的交互逻辑与执行流程，确保组件有序配合，实现自主、高效的任务完成。例如：规划好何时以及调用哪个组件、处理数据格式转换、循环控制、异常处理（（如工具调用失败重试、推理超时中断）、必要时人类参与（复杂决策时请求人类介入）、终止条件判断（达成目标或触发最大迭代次数时停止）。主流工作模式分为两类：</p>
+<ul>
+<li>Agentic 模式（自主代理模式）：支持根据任务进展自主动态调整模块调用，适配复杂多变场景。</li>
+<li>Workflow 模式（工作流模式）：基于固定流程模板调度模块，适配标准化、重复性任务。</li>
+</ul>
+</li>
+</ul>
+<p><strong>具体而言，AI Agent的运行流程图如下：</strong></p>
+<p><img src="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089.jpg"
+	width="1372"
+	height="639"
+	srcset="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089_hu_36979d3ea9157dcd.jpg 480w, /p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089_hu_35159f496548bd67.jpg 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="214"
+		data-flex-basis="515px"
+	
+></p>
+<p>流程说明如下：</p>
+<ol>
+<li><strong>信息感知接入</strong>：通过Percept（感知）模块接收外部环境或用户的输入信息，包括 Text（文本 ）、Image（图像 ）、Sound（声音 ）、Video（视频）等多种模态数据，经过基础预处理后传递至记忆模块。</li>
+<li><strong>记忆动态更新</strong>：记忆模块将实时输入信息存入短期记忆，利用模型上下文窗口维护对话连贯性；同时根据任务需求，将历史交互记录存入长期记忆，为后续通过 RAG 技术从长期记忆（如向量数据库）中检索相关历史经验或领域知识，为决策提供精准知识支撑。</li>
+<li><strong>上下文构建</strong>：上下文管理模块联合记忆模块，整合系统指令、短期记忆（对话上下文、当前任务状态）、长期记忆检索结果（历史交互记录、用户偏好）、Profile 角色配置、通过RAG技术从知识库中检索的关联信息（如公司季度数据、历史报告模板、行业规范）、可用工具（Available Tools）等多源信息。对这些信息进行融合优化与冗余修剪，生成&quot;精准上下文信息&quot;，传递至规划与推理模块。</li>
+<li><strong>决策策略生成</strong>：规划与推理模块基于精准上下文进行思考、规划、推理过程，如采用 CoT、ToT 、ReAct等认知策略进行推理分析，将复杂任务拆解为子目标序列；生成行动策略清单，并决策出下一步的行动。推理过程中可实时与上下文管理模块交互，若发现信息缺失，动态补充缺失信息（如请求记忆模块检索最新行业数据）。</li>
+<li><strong>行动执行与反馈</strong>：行动模块执行由规划与推理模块输出的具体行动，行动可以是输出文本、图片等多模态内容，也可以是调用工具与外部环境交互（如：通过Function Calling模式调用指定工具（如调用公司数据库API提取销售数据）、通过MCP协议同步调用工具返回结果）。行动结果会对环境产生新的影响并更新内部状态，同时决策和行动的操作轨迹及其结果也保存为记忆信息。</li>
+<li><strong>学习迭代优化</strong>：学习模块接收行动反馈数据，启动“交互 - 评估 - 反思 - 学习”闭环：通过评价指标量化任务完成质量，反思深挖问题根源，提炼结构化经验及洞见，并更新至长期记忆。使智能体能够根据过去的经验优化未来的决策，实现自主改进。</li>
+<li><strong>循环与终止</strong>：编排模块评估任务完成情况，若未达成目标则启动下一轮“感知-&gt;记忆-&gt;上下文-&gt;决策-&gt;行动-&gt;学习”循环；若达成目标或触发终止条件（如最大迭代次数），则停止运行并输出最终结果。</li>
+</ol>
+<p>整个流程中，Orchestration（编排）模块始终承担“中枢调度”角色，协调各个组件间的交互流程，并评估其进展情况，进行异常错误恢复（如设置检查点或在遇到障碍时暂停，并请求人类反馈等）、循环控制直达到目标或触发停止条件（如最大迭代次数）时终止，使整个系统高效运行，确保智能体自主完成目标任务。</p>
+<p>接下来，我们针对各模块的技术实现细节展开深入解析。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/">
+        
+        <div class="article-image">
+            <img src="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330.png" width="1313" height="538" loading="lazy"
+                alt="Featured image of post AI Agent 核心概念">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #9d5c5480 0%, #fefcfcC0 100%);">
+            <h2 class="article-title">AI Agent 核心概念</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/">
+        
+        <div class="article-image">
+            <img src="/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/b78c6838a16f5c957a661e5093a39366.jpeg" width="1821" height="1157" loading="lazy"
+                alt="Featured image of post 什么是智能体(AI Agent)">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #5c8efa80 0%, #d5e9fbC0 100%);">
+            <h2 class="article-title">什么是智能体(AI Agent)</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="/ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="介绍智能体的起源、概念、技术趋势、定义、及与大语言模型(LLM)的区别">
+<title>什么是智能体(AI Agent)</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/'>
+
+<link rel="stylesheet" href="/scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="什么是智能体(AI Agent)">
+<meta property='og:description' content="介绍智能体的起源、概念、技术趋势、定义、及与大语言模型(LLM)的区别">
+<meta property='og:url' content='https://tinyseeking.github.io/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2025-12-25T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-12-25T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="什么是智能体(AI Agent)">
+<meta name="twitter:description" content="介绍智能体的起源、概念、技术趋势、定义、及与大语言模型(LLM)的区别"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="/img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="/">
+                    <img src="/img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#第1章-什么是智能体ai-agent">第1章 什么是智能体（AI Agent）</a>
+      <ol>
+        <li><a href="#11-ai-agent-的起源">1.1 AI Agent 的起源</a></li>
+        <li><a href="#12-ai-agent-的技术趋势">1.2 AI Agent 的技术趋势</a></li>
+        <li><a href="#13-ai-agent-的发展">1.3 AI Agent 的发展</a></li>
+        <li><a href="#14-ai-agent-的定义">1.4 AI Agent 的定义</a></li>
+        <li><a href="#15-ai-agent-与大语言模型llm的区别">1.5 AI Agent 与大语言模型(LLM)的区别</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/">
+            <img src="/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/b78c6838a16f5c957a661e5093a39366.jpeg" width="1821" height="1157" loading="lazy"
+                alt="Featured image of post 什么是智能体(AI Agent)" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="/categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/">什么是智能体(AI Agent)</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            介绍智能体的起源、概念、技术趋势、定义、及与大语言模型(LLM)的区别
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2025-12-25T00:00:00Z'>2025年12月25日星期四</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 21 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#第1章-什么是智能体ai-agent">第1章 什么是智能体（AI Agent）</a>
+      <ol>
+        <li><a href="#11-ai-agent-的起源">1.1 AI Agent 的起源</a></li>
+        <li><a href="#12-ai-agent-的技术趋势">1.2 AI Agent 的技术趋势</a></li>
+        <li><a href="#13-ai-agent-的发展">1.3 AI Agent 的发展</a></li>
+        <li><a href="#14-ai-agent-的定义">1.4 AI Agent 的定义</a></li>
+        <li><a href="#15-ai-agent-与大语言模型llm的区别">1.5 AI Agent 与大语言模型(LLM)的区别</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="第1章-什么是智能体ai-agent">第1章 什么是智能体（AI Agent）
+</h2><h3 id="11-ai-agent-的起源">1.1 AI Agent 的起源
+</h3><p>​	  Agent（智能体）是一个历史悠久的概念，在许多领域都有探索。其概念最早在哲学领域探讨，可以追溯到公元前350年左右的亚里士多德（Aristotle）和休谟等思想家，他们在哲学作品中描述一些拥有欲望、信念、意图和具有行动能力的实体，可以称之为智能体。从哲学意义上讲，“智能体”是指具有行动能力的实体。需要注意的是，这些智能体不仅包括个体人类，还包括物理和虚拟世界中的其他实体。重要的是，智能体的概念涉及个体自主性，赋予它们行使意志、做出选择和采取行动的能力，而不是被动地对外界刺激做出反应。</p>
+<p>​	  早在 1950 年代，阿兰·图灵发表了一篇划时代的论文《计算机器与智能》，文中预言了创造出具有真正智能机器的可能性。将“智能”的概念扩展到了人工实体。由于注意到“智能”这一概念难以确切定义，他提出了著名的图灵测试：&ldquo;如果一台机器能够与人类展开对话（通过电传设备）而不能被辨别出其机器身份，那么称这台机器具有智能&rdquo;。这一简化使得图灵能够令人信服地说明“思考的机器”是可能的。阿兰·图灵虽未直接定义Agent，但为衡量机器智能奠定基础，间接推动Agent概念发展‌。</p>
+<p>图灵测试(The Turing Test)起源于计算机科学和密码学的先驱艾伦·麦席森·图灵发表于1950年的一篇论文《计算机器与智能》。该测试的流程是:一名测试者写下自己的问题，随后将问题以纯文本的形式（如计算机屏幕和键盘）发送给另一个房间中的一个人与一台机器。测试者根据他们的回答来判断哪一个是真人，哪一个是机器。所有参与测试的人或机器都会被分开。如果机器能回答由人类测试者提出的一系列问题，且其超过30%的回答让测试者误认为是人类所答，则该机器通过测试。这个测试旨在探究机器能否模拟出与人类相似或无法区分的智能。
+尽管图灵测试在学术界引起了广泛的讨论和争议，但它仍然被视为是评估人工智能智能程度的经典方法。
+2023年7月25日，Nature刊登新闻指出ChatGPT已经能突破图灵测试，并建议寻求新的人工智能评估方法。
+2024年6月，来自加利福尼亚大学圣迭戈分校认知科学家本杰明·伯根（Benjamin Bergen）和卡梅隆·琼斯（Cameron Jones）的最新研究结果表明，越来越多的人难以在图灵测试中区分GPT-4和人类。在上述科学家所做的一项实验中，500名人类与四种AI语言模型进行了5分钟的对话，其中GPT-4在54%的时间里被误认为是人类，这个比例超过了此前版本GPT-3.5的相应比例（50%）。这一结果表明，GPT-4已通过图灵测试。</p>
+<p>​		在1956年达特矛斯会议上确定了AI的名称和任务，并接受“人工智能”一词作为本领域的名称。同时出现了最初的成就和最早的一批研究者，因此这一事件被广泛承认为AI诞生的标志。</p>
+<p>​		之后便开启了第一波人工智能的黄金发展时期（1956 - 1974）。这一阶段开发出的程序堪称神奇：计算机可以解决代数应用题，证明几何定理，学习和使用英语。 DARPA（国防高等研究计划署）等政府机构向这一新兴领域投入了大笔资金。</p>
+<p>​		然而令人惊讶的是，接着经历了两次AI的低谷时期（1974 - 1980）和（1987—1993）。直到20 世纪 80 年代中后期，主流人工智能领域的研究人员对围绕智能体的问题关注甚少。但从那以后,人们对这个主题的兴趣开始急剧增加，主流计算机科学领域的研究人员，以及从事数据通信、并发系统研究、机器人学和用户界面设计的人员，都广泛地讨论智能体。</p>
+<p>​		1986年，人工智能先驱‌马文·明斯基（Marvin Minsky）在《心智社会》（<em>Society of Mind</em>）中首次将Agent定义为“具有自适应与自治能力的实体”，并将其作为人工智能研究的核心概念‌。这一理论奠定了Agent在AI领域的地位，强调其自主感知、决策与执行能力‌。</p>
+<p>​		1995 年，英国学者Wooldridge 和 Jennings 人著作和研究成果对推动智能体概念在人工智能领域的发展起到重要作用，在其论文中&laquo;智能体：理论与实践&raquo;中这样定义人工智能：”它是计算机科学的一个子领域，旨在设计和构建表现出智能行为的基于计算机的Agent（智能体）。” 这一观点强调了&quot;智能体&quot;在人工智能的核心地位。当智能体的概念被引入到人工智能领域时，其含义发生了一些变化。在哲学领域，智能体可以是人类、动物，甚至是具有自主性的概念或实体。然而，在人工智能领域，智能体是一个计算实体。由于意识和欲望等概念对于计算实体来说似乎具有形而上学的性质，并且鉴于我们只能观察机器的行为，许多人工智能研究人员（包括艾伦・图灵）建议暂时搁置智能体是否 “真正” 思考或是否 “字面意义上” 拥有 “思想” 的问题。相反，研究人员采用其它属性来帮助描述智能体，如自主性、反应性、主动性和社交能力等属性。也有研究人员认为，智能是 “旁观者眼中的”，它不是一种天生的、孤立的属性。从本质上讲，AI Agent（人工智能体）不等同于哲学意义上的智能体，而是哲学智能体概念在人工智能背景下的具体化。</p>
+<p>​		其中，Wooldridge 和 Jennings 提出的Agent的定义被广为接受，将 AI Agent 定义为一种计算机系统：该系统处于特定环境之中，能够在这个环境中自主行动，以实现其设计目标。他们还提出，AI Agent 应具备四大关键属性：</p>
+<ul>
+<li><strong>自主性</strong>：智能体在没有人类或其他主体直接干预的情况下运行，并且对自己的行动和内部状态有一定的控制权；</li>
+<li><strong>反应性</strong>：智能体能够感知其周围的环境（环境可能是物理世界、虚拟环境、互联网，或者可能是这些的组合），并及时对环境中发生的变化做出反应；</li>
+<li><strong>社交能力</strong>：智能体通过特定的通信语言与其他智能体（也可能是人类）进行展开交互；</li>
+<li><strong>主动性</strong>：智能体不仅仅是对环境做出反应，能够通过主动采取行动来展现目标导向的行为。</li>
+</ul>
+<p>​	 这一定义为后续 AI Agent 的研究与发展奠定了重要基础，使得相关领域的探索有了清晰的概念框架和方向指引。之后，我们通常将人工智能体视为能够使用传感器感知周围环境、做出决策，然后使用执行器采取相应行动的人造实体。</p>
+<h3 id="12-ai-agent-的技术趋势">1.2 AI Agent 的技术趋势
+</h3><p>人工智能体的发展经历了几个阶段，在这里我们从技术趋势的角度简要回顾其发展。</p>
+<ul>
+<li>
+<p><strong>符号智能体(1950年代-1980年代)</strong>：在人工智能研究的早期阶段，这一阶段的 AI Agent 主要基于符号主义理论，其特点是依赖符号逻辑。这种方法<strong>使用逻辑规则和符号表示来封装知识并促进推理过程</strong>。它们主要关注两个问题：转换问题和表示**/**推理问题。这些智能体旨在模仿人类的思维模式，具有明确且可解释的推理框架，并且由于其符号性质，它们表现出高度的表达能力。这种方法的经典例子是基于知识的专家系统，主要由知识库、推理引擎和解释器组成。然而，<strong>符号智能体决策逻辑通常太过死板，依赖人为定义规则和符号，在处理不确定性和大规模现实世界问题时面临局限性</strong>。此外，由于符号推理算法的复杂性，很难找到一种高效的算法，能够在有限的时间内产生有意义的结果。</p>
+<p>技术特点‌：</p>
+<ul>
+<li>基于符号逻辑和规则推理（如专家系统）。</li>
+<li>核心组件：知识库、推理引擎、解释器。</li>
+<li>优点：逻辑透明、推理可解释。</li>
+<li>局限：僵化的规则难以处理不确定性，复杂推理效率低。</li>
+</ul>
+<p>‌里程碑‌：</p>
+<ul>
+<li>1956年达特茅斯会议标志符号AI诞生。</li>
+<li>1970年代专家系统（如MYCIN）兴起，1980年代商业应用达到高峰。</li>
+</ul>
+</li>
+<li>
+<p><strong>反应式智能体（20世纪80年代-90 年代）</strong>：与符号智能体不同，反应式智能体不使用复杂的符号推理。相反，它们主要<strong>关注智能体与环境之间的交互，强调快速和实时响应</strong>。这些智能体主要基于感知-行动循环，有效地感知环境并做出反应。这种智能体的设计优先考虑直接的输入-输出映射，而不是复杂的推理和符号操作。相对于符号Agent，反应型Agent所使用的策略更为简单，举个例子，符号Agent类似于编译器，决策引擎中有大量逻辑推演规则，而反应型Agent则就是一堆if else，通过读取环境数据快速进行判断。然而，反应式智能体也有局限性。<strong>它们通常需要较少的计算资源，能够实现更快的响应，但可能缺乏复杂的高级决策和规划能力</strong>。</p>
+<p>技术特点：</p>
+<ul>
+<li>依赖感知-行动循环，强调实时响应（如机器人避障）。</li>
+<li>设计模式：基于条件规则（if-else）或行为分层（Brooks的包容架构）。</li>
+<li>优点：低计算开销、快速响应。</li>
+<li>局限：缺乏长期规划能力。</li>
+</ul>
+<p>里程碑‌：</p>
+<ul>
+<li>1986年Rodney Brooks提出“包容架构”，推动反应式机器人发展。</li>
+<li>1990年代应用于工业自动化和简单环境交互任务。</li>
+</ul>
+</li>
+<li>
+<p><strong>基于强化学习的智能体（1990年代至2010年代）</strong>：该领域的主要关注点是<strong>如何让智能体通过与环境的交互进行学习，使其能够在特定任务中获得最大的累积奖励</strong> 。最初，强化学习（RL）智能体主要基于策略搜索和价值函数优化等基础技术，例如 Q-learning 和序列决策算法（SARSA）为代表。随着深度学习的兴起，深度神经网络与强化学习的结合，即深度强化学习（DRL）。这使得智能体能够从高维输入中学习复杂的策略，从而取得了许多重大成果，比如著名的阿尔法围棋（AlphaGo）和 DQN。这种方法的**优势在于它能够让智能体在未知环境中自主学习，无需人类的明确干预。**这使得它在从游戏到机器人控制等一系列领域中都有广泛的应用。尽管如此，<strong>强化学习仍面临着一些挑战，包括训练时间长、样本效率低以及稳定性问题</strong>，尤其是在复杂的现实世界环境中应用时。</p>
+<p>技术特点‌：</p>
+<ul>
+<li>通过环境交互最大化累积奖励。</li>
+<li>传统方法：Q-learning（1992）、SARSA（1994）。</li>
+<li>DRL突破：深度神经网络+强化学习（RL），处理高维输入（如视觉）。</li>
+<li>优点：自主学习复杂策略。</li>
+<li>局限：样本效率低、训练不稳定。</li>
+</ul>
+<p>‌里程碑‌：</p>
+<ul>
+<li>2013年DQN（Deep Q-Network）在Atari游戏中超越人类。</li>
+<li>2016年AlphaGo击败李世石，标志DRL进入主流。</li>
+</ul>
+</li>
+<li>
+<p><strong>具备迁移学习和元学习能力的智能体（2010年代末至2020年代初）</strong>：传统上，<strong>训练一个强化学习智能体需要大量的样本数据和较长的训练时间，并且缺乏泛化能力</strong> 。因此，研究人员引入了迁移学习来加快智能体对新任务的学习速度，减轻了新任务的训练负担，并有助于知识在不同任务之间的共享和迁移，从而提高了学习效率、性能和泛化能力。此外，<strong>元学习也被引入到人工智能智能体中。元学习侧重于学习如何学习，使智能体能够从少量样本中快速推断出针对新任务的最优策略</strong> 。当这样的智能体面对新任务时，它可以通过利用已获得的通用知识和策略来快速调整其学习方法，从而减少对大量样本的依赖。然而，<strong>当源任务和目标任务之间存在显著差异时，迁移学习的效果可能达不到预期，并且可能会出现负迁移</strong> 。此外，元学习所需的大量预训练和大量样本数据使得难以建立通用的学习策略。</p>
+<p>技术特点：</p>
+<ul>
+<li>‌迁移学习‌：跨任务知识复用（如预训练模型微调）。</li>
+<li>‌元学习‌：学习如何学习（如MAML，2017）。</li>
+<li>优点：少样本学习、快速适应新任务。</li>
+<li>局限：任务差异导致负迁移，元学习预训练成本高。</li>
+</ul>
+<p>里程碑‌：</p>
+<ul>
+<li>2015年后迁移学习成为深度学习标准范式（如ImageNet预训练）。</li>
+<li>2017年MAML提出，推动元学习在机器人控制等领域的应用。</li>
+</ul>
+</li>
+<li>
+<p><strong>基于大语言模型的智能体（2020年代初至今）</strong>：随着大语言模型展现出令人瞩目的涌现能力（如文本理解和生成、推理能力、泛化能力等），研究人员已开始利用这些大语言模型来构建AI Agent。具体来说，<strong>他们将大语言模型作为智能体的大脑或控制器，并通过多模态感知和工具使用等策略来拓展其感知和行动空间</strong>。这些基于大语言模型的智能体能够通过思维链（CoT）和问题分解等技术，展现出可与符号智能体相媲美的推理和规划能力。它们还能通过从反馈中学习并执行新动作，获得与环境交互的能力，这与反应式智能体类似。同样，大语言模型在大规模语料库上进行预训练，并表现出少样本和零样本泛化能力，能够在无需更新参数的情况下在不同任务之间实现无缝迁移。基于大语言模型的智能体已被应用于各种现实场景中，比如软件开发 和科学研究。由于它们具备自然语言理解和生成能力，这些智能体能够彼此无缝交互，从而引发多个智能体之间的协作与竞争。此外，研究表明，允许多个智能体共存可能会导致社会现象的出现 。</p>
+<p>技术特点‌：</p>
+<ul>
+<li>以LLM为核心控制器（如GPT-4、PaLM等）。</li>
+<li>能力扩展：多模态感知、工具调用（如ChatGPT插件）、多智能体协作。</li>
+<li>优点：零样本推理、自然语言交互、社会行为模拟。</li>
+<li>局限：幻觉问题、实时行动能力受限。</li>
+</ul>
+<p>里程碑：</p>
+<ul>
+<li>2020年GPT-3发布，展示少样本泛化能力。</li>
+<li>2023年AutoGPT、BabyAGI、MetaGPT等智能体项目实现LLM驱动的自主任务分解与执行。</li>
+<li>多智能体社会模拟研究（如斯坦福《生成式代理》实验，2023）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="13-ai-agent-的发展">1.3 AI Agent 的发展
+</h3><p>​	1993 年至今，人工智能领域不断发展，出现了许多令人瞩目的 Agent 项目，这些项目在不同时间节点涌现，推动着 AI Agent 技术持续进步：</p>
+<ul>
+<li>1997年：深蓝（由IBM开发）在一场广为人知的比赛中击败了世界国际象棋冠军加里·卡斯帕罗夫，成为第一个击败人类国际象棋冠军的程序。由 IBM 开发，在当年一场备受瞩目的比赛中击败世界国际象棋冠军加里・卡斯帕罗夫，成为首个战胜人类国际象棋冠军的程序，展示了 AI Agent 在棋类游戏领域的强大实力，引起广泛关注</li>
+<li>1997年：Windows发布了语音识别软件（由Dragon Systems开发）。</li>
+<li>2000年：Cynthia Breazeal 教授开发的第一款可模拟人类面部情感的机器人，拥有眼睛、眉毛、耳朵和嘴巴等面部特征，被称为Kismet。为 AI Agent 在情感交互方面的研究提供了实践案例。</li>
+<li>2003年：美国宇航局将两辆火星车（勇气号和机遇号）降落在火星上，它们在没有人类干预的情况下在火星表面航行。</li>
+<li>2006年：Twitter，Facebook和Netflix等公司开始利用AI作为其广告和用户体验（UX）算法的一部分。</li>
+<li>2010年：Microsoft 推出的Xbox 360 Kinect，这是第一款能跟踪身体运动并转化为游戏指令的游戏硬件。体现了 AI Agent 在游戏交互领域的创新应用，改变了游戏的操作体验。</li>
+<li>2011年：IBM 创建的名为Watson的自然语言处理（NLP）计算机被编程来回答问题，在电视智力竞赛节目《Jeopardy》中战胜两位前冠军，展现了 AI Agent 在知识问答和自然语言处理方面的卓越能力</li>
+<li>2011年：苹果发布了首款流行虚拟助手Siri，开启了 Agent 的商业化进程，让 AI Agent 走进大众生活，可实现查询天气、设置闹钟等功能，改变了人们与智能设备的交互方式。</li>
+<li>2012年：在ImageNet计算机视觉挑战赛中，AlexNet卷积神经网络的深度学习模型取得了第一名，这一成就标志着深度学习在图像分类领域的重大突破。</li>
+<li>2016年：AlphaGO（谷歌专门从事围棋游戏的AI Agent）将击败欧洲冠军（范慧）和世界冠军（李世石），并很快被自己的兄弟（AlphaGo Zero）打败。</li>
+<li>2017年，Google的研究者在其论文《Attention is All You Need》中提出Transformer，主要用于处理序列数据。</li>
+<li>2018年，谷歌发布基于Transformer模型的BERT，拉开了大语言模型序幕。</li>
+<li>2019年，谷歌AlphaStar在视频游戏《星际争霸2》上达到了Grandmaster，表现优于除0.2%以外的所有人类玩家。</li>
+<li>2019年，OpenAI发布GPT-2的自然语言处理模型，并分别在2020年和2022年发布了GPT-3、DALL·E 2及GPT-3.5大语言模型，随后于2022年11月推出的一个人工智能聊天机器人程序ChatGPT，ChatGPT的火爆为AI Agent在大语言模型时代的发展与应用提供了新的契机。</li>
+<li>2023 年3月，OpenAI 推出的语言模型GPT-4，在语言理解、逻辑推理和创造力方面取得质的飞跃，为后续诸多基于大语言模型的 Agent 项目提供了核心智能支持，推动了 AI Agent 的发展。</li>
+<li>如 Microsoft 365 Copilot、 Microsoft Security Copilot、GitHub Copilot、 Adobe Firefly 等，让 AI 成为了办公、代码、设计等场景的“智能副驾驶”。</li>
+<li>2023年3月，微软正式宣布推出Microsoft 365 Copilot让AI成为了办公、数据可视化等场景的“智能副驾驶”。</li>
+<li>2023 年3月底：开源项目 AutoGPT（由 Toran Bruce Richards 在 GitHub 上发布），这是一个实验性的开源应用程序，基于 GPT-4 和GPT-3.5 语言模型，具备自主思考和任务规划能力，实现用户设定的目标。用户只需为AutoGPT提供一个目标，它能自动将目标分解为多个子任务，自主调用各种工具和资源，如搜索引擎、读写文件、浏览网页、代码编辑器等，不断迭代完成复杂任务（诸如撰写商业计划书、开发软件等）。作为完全自主运行的最早示例之一，开启了AI Agent 自主执行复杂任务的新模式。</li>
+<li>2023 年 4 月， 斯坦福大学的研究者们发表了名为《 Generative Agents: Interactive Simulacra of Human Behavior》 的论文，展示了一个由生成式代理（ Generative Agents）组成的虚拟西部小镇，开启了生成智能体之路。 在小镇上，生活着 25 个模拟人类行为的生成式 AI Agent。它们会在公园里散步，在咖啡馆喝咖啡，和同事分享当天的新闻。 甚至举办情人节排队，自动传播派对邀请的消息，结识新朋友，互相约对方一起去参加派对。 这种 Agent 具有类似人的特质、独立决策和长期记忆等功能。在这种合作模式下， Agent 不仅仅是为人类服务的工具，它们也能够在数字世界中与其它 Agent 建立社交关系，涌现了社会现象。</li>
+<li>之后，基于大语言模型（LLM）的 AI Agent呈雨后春笋般涌现，出现了如GPT - Engineer、BabyAGI、autoGen、MetaGPT 等诸多项目。这些项目的爆发，不仅推动 LLM 的发展与应用跃入全新阶段，还促使 LLM 在创业实践与实际落地层面朝着 AI Agent方向大步迈进 。</li>
+<li>2025年3月，由中国初创公司Monica.im开发的首款通用型AI Agent产品<code>Manus</code>,引发了广泛关注和热议，该款产品能独立思考、规划并执行复杂任务，它不仅提供建议或答案，还能直接交付完整的任务成果。Manus采用了Multiple Agent（多智能体）架构，能够在虚拟环境中调用各类工具，执行编写及运行代码、浏览网页、操作应用等任务。在 GAIA 基准测试中取得 SOTA 成绩，性能超越 OpenAI 同层次大模型。</li>
+</ul>
+<p>​		至此AI Agent就进入了大众的视野，正式迈入快速普及和落地的阶段，无论是日常工作、学习、生活，还是娱乐休闲等方面，AI Agent 都展现出了巨大的潜力和价值，正在快速融入并改变着人们的生活方式和社会的运行模式 。</p>
+<h3 id="14-ai-agent-的定义">1.4 AI Agent 的定义
+</h3><p>​		AI Agent 目前没有完全统一、明确的定义，但不同时期的研究人员或机构从不同的角度给出了智能体的定义，较为常见和有代表性的如下：</p>
+<ul>
+<li>1995年，著名智能体研究学者Wooldridge 和 Jennings 在其论文中&laquo;智能体：理论与实践&raquo; 中提出“弱定义”和“强定义”二种定义：
+<ul>
+<li>弱定义智能体是指一种基于硬件（但更常见的是基于软件）的计算机系统，该系统具备以下特性：自主性（在没有人类或其他主体直接干预的情况下运行）、反应性（能够感知其周围的环境，并及时对环境中发生的变化做出反应）、社交能力（通过通信语言与其它智能体进行交互）、和主动性（主动采取行动来展现目标导向的行为）。</li>
+<li>强定义智能体是指不仅具有弱定义中的基本特性，在概念化或实现时还会使用一些通常更多应用于人类的概念。如知识、信念、意图和义务等心理概念来描述智能体。有时还会涉及到具有移动性、善意性、真实性、理性等其它特性。</li>
+</ul>
+</li>
+<li>1997年，Franklin 和 Graesser则把智能体描述为：“智能体是一个位于环境中并作为环境一部分的系统，它能够感知环境，并随着时间的推移，为实现自身目标而对环境采取行动，进而影响其所感知到的事物。”</li>
+<li>2003年，由Stuart J. Russell和Peter Norvig合著的经典教材《人工智能:一种现代方法》中对Agent的定义是：Agent是指任何可以被视为通过传感器感知环境，并通过执行器作用于该环境的实体。这个定义强调了Agent与环境交互的能力，包括感知环境、采取行动以及通过执行器影响环境。</li>
+<li>2024 年，  Google 团队发布的一份 <a class="link" href="https://www.kaggle.com/whitepaper-agents"  target="_blank" rel="noopener"
+    >《Agents 白皮书》</a>中描述：智能体可以被定义为一个试图通过观察世界并利用其工具来达成目标的应用程序。与传统的生成式AI模型不同，智能体具有自主性，能够在没有人类干预的情况下独立行动。它们不仅能够根据明确的指令执行任务，还能在没有明确指令的情况下，通过推理来决定下一步行动。</li>
+<li>2024年12月，anthropic公司发布的<a class="link" href="https://www.anthropic.com/engineering/building-effective-agents"  target="_blank" rel="noopener"
+    >“Building effective agents”</a>论文中将两种类型都归纳为智能体系统：1.将智能体定义为完全自主的系统，这些系统能够在较长时间内独立运行，使用各种工具来完成复杂任务；2.将智能体用来描述遵循预定义工作流的实施方案。但在架构上，区分了工作流(workflows)与智能体(agents)之间的重要区别：
+<ul>
+<li>
+<p>工作流(workflows)：是通过预定义代码路径来协调LLM和工具的系统。</p>
+</li>
+<li>
+<p>智能体(agents)：是LLM根据自身需求指导自身处理过程和工具使用的系统，保持对任务完成方式的控制。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>​		以上对AI Agent的定义都有几个共同点：能够感知环境；自主性（能够在没有人类干预的情况下独立行动）；规划决策能力（通过推理来决定下一步行动）；行动能力（利用其工具来达成目标）；社交能力（通过通信语言与其它智能体进行交互）。</p>
+<p>​		总体上来说，可以对AI Agent定义为：‌**AI Agent（人工智能代理）是一种能够感知环境、自主进行决策并利用工具采取行动，以达成目标的智能实体。**它具备自主性、反应性、推理决策、主动性和学习能力等关键特性。拥有明确的目标或任务，能够在没有人类直接干预的情况下运作，对周围环境和接收到的信息作出及时响应，通过经验不断学习以改进自身的性能和策略‌，自主的完成目标任务。</p>
+<p>​		通常，当AI工具具备以下特征时，则可被视为AI Agent：</p>
+<ul>
+<li>**自主性（Autonomy）：**能够独立执行任务，而无需人工干预。</li>
+<li>**感知（Perception）：**通过各种传感器（如摄像头或麦克风）感知和解释它们所处的环境。</li>
+<li><strong>反应（Reactivity）</strong>：指对环境中的即时变化和刺激快速做出反应的能力。这意味着智能体能够感知周围环境的变化并立即采取适当行动。</li>
+<li><strong>推理和决策（Reasoning and decision-making）</strong>：可以分析数据、推理、规划并做出决策，决定下一步行动方案，以完成目标。</li>
+<li><strong>主动性（Pro-activeness）</strong>：围绕特定目标主动采取行动，能够在与环境的交互过程中不断学习、调整行动策略，以更好地实现目标。</li>
+<li><strong>学习力（Learning）</strong>：随着时间的推移和数据的积累，AI Agent 能够不断学习，持续优化自己的行为和决策能力。</li>
+<li><strong>社交能力（Social ability）</strong>：指智能体通过某种通信语言与其它智能体或人类进行交互的能力，例如理解和响应自然语言、识别语音以及通过文本交换消息。</li>
+</ul>
+<h3 id="15-ai-agent-与大语言模型llm的区别">1.5 AI Agent 与大语言模型(LLM)的区别
+</h3><p>​		与人类作对比，大语言模型(LLM)如人类的大脑可以进行思考分析、推理决策，但没有感官（视觉、听觉、味觉等）、四肢（手和脚）及工具，无法观察环境并与世界互动。AI Agent相当于给大语言模型按上了感官和四肢，可以感知周围环境、并使用工具与环境交互、影响环境。扩展了大语言模型的感知空间和行动空间，并且还可有记忆能力，能对过去的行为进行反思、累积经验，不断迭代学习以优化未来的规划和决策。</p>
+<p>​		举个例子，假设你想要规划一次旅行，分别向 AI Agent 和大语言模型寻求帮助：</p>
+<ul>
+<li><strong>大语言模型</strong>：你问它 “我想去北京旅行，有什么建议？” 它会给你列出北京的一些著名景点，如故宫、天安门、长城等，还可能会告诉你一些当地的特色美食，以及推荐一些酒店。但如果你接着问它 “怎么从酒店到景点？”“景点门票怎么买？” 它就会分别针对这些问题逐一回答，不会主动将这些信息整合起来，也不会帮你进一步规划具体的行程安排，更不会帮你直接预订酒店和门票。因为普通 AI 通常只是被动地根据你的问题提供相应的信息，不会自主采取行动或进行深度的任务规划。</li>
+<li><strong>AI Agent</strong>：你告诉它 “我想去北京旅行，帮我规划一下行程”。它不仅会像普通 AI 一样提供景点、美食、酒店等信息，还会主动根据你的时间、预算等因素，规划出详细的每日行程安排，比如第一天上午去故宫，下午去天安门，晚上去吃北京烤鸭，并且帮你查询好从酒店到各个景点的交通路线。它还会调用航班搜索 API 帮你查询往返机票，调用酒店预订系统帮你预订合适的酒店，调用景点票务系统帮你购买门票等。此外，AI Agent 还会记住你可能提到的一些偏好，比如你喜欢安静的酒店，下次你再咨询旅行相关问题时，它会优先考虑安静的酒店进行推荐。这是因为 AI Agent 具有自主性、能使用工具、有记忆能力，可根据目标主动思考并执行一系列复杂的任务，为你提供更全面、个性化的服务。</li>
+</ul>
+<p>为了更清晰地理解<code>AI Agent</code>与<code>大语言模型</code>的区别，从以下几个方面进行对比：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th></th>
+          <th>大语言模型（LLM）</th>
+          <th>AI Agent</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>知识范围</td>
+          <td>仅限于训练数据中包含的内容。</td>
+          <td>不仅包含训练数据中的内容，可通过工具接入外部系统获取扩展知识。</td>
+      </tr>
+      <tr>
+          <td>记忆能力</td>
+          <td>仅保留当前会话输入的上下文文本（即短期记忆），受限于模型内部的上下文机制。</td>
+          <td>不仅包括短期记忆，还包括长期记忆（即长时间保留的信息，一般是指外部知识库，通常用向量数据库来存储和检索）。</td>
+      </tr>
+      <tr>
+          <td>会话管理</td>
+          <td>仅能进行单次查询响应，除非特别设计，否则无法维护会话历史和上下文连续性。</td>
+          <td>能够维护完整会话历史，支持用户连贯的多轮对话。</td>
+      </tr>
+      <tr>
+          <td>工具使用</td>
+          <td>不具备内置工具调用能力。</td>
+          <td>直接支持工具集成，可以运用工具与外部环境交互（如调用API、搜索引擎、数据库查询工具等）</td>
+      </tr>
+      <tr>
+          <td>规划能力</td>
+          <td>无内置逻辑处理层，需要用户通过简单问询或利用CoT、ReAct等推理框架构建提示词来引导。</td>
+          <td>具备完整的认知架构，能够集成CoT、ReAct等框架，自主分解任务并动态调整策略‌。</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>注：在智能体语境中，一轮对话指的是系统接收一个查询并生成一个响应的完整交互过程。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/">
+        
+        <div class="article-image">
+            <img src="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089.jpg" width="1372" height="639" loading="lazy"
+                alt="Featured image of post 构建 AI Agent 的技术架构">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #46464680 0%, #f9fafaC0 100%);">
+            <h2 class="article-title">构建 AI Agent 的技术架构</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/">
+        
+        <div class="article-image">
+            <img src="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330.png" width="1313" height="538" loading="lazy"
+                alt="Featured image of post AI Agent 核心概念">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #9d5c5480 0%, #fefcfcC0 100%);">
+            <h2 class="article-title">AI Agent 核心概念</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="/ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

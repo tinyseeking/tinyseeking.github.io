@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on Tiny 的技术博客</title>
+    <link>https://tinyseeking.github.io/categories/</link>
+    <description>Recent content in Categories on Tiny 的技术博客</description>
+    <generator>Hugo</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Fri, 09 Jan 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://tinyseeking.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>AI Agent 原理、设计与实践</title>
+      <link>https://tinyseeking.github.io/categories/ai-agent/</link>
+      <pubDate>Fri, 09 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/categories/ai-agent/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>企业级RAG原理与实战</title>
+      <link>https://tinyseeking.github.io/categories/rag/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/categories/rag/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

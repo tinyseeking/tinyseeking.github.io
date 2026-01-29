@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="AI Agent的核心概念，并基于核心概念梳理出智能体的核心流程。提出了一个比较全面的通用概念框架。">
+<title>AI Agent 核心概念</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/'>
+
+<link rel="stylesheet" href="/scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="AI Agent 核心概念">
+<meta property='og:description' content="AI Agent的核心概念，并基于核心概念梳理出智能体的核心流程。提出了一个比较全面的通用概念框架。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2026-01-05T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-01-05T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="AI Agent 核心概念">
+<meta name="twitter:description" content="AI Agent的核心概念，并基于核心概念梳理出智能体的核心流程。提出了一个比较全面的通用概念框架。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="/img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="/">
+                    <img src="/img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#第2章-ai-agent-核心概念">第2章 AI Agent 核心概念</a>
+      <ol>
+        <li><a href="#21-核心概念">2.1 核心概念</a>
+          <ol>
+            <li><a href="#211-大脑模块">2.1.1 大脑模块</a></li>
+            <li><a href="#212-感知模块">2.1.2 感知模块</a></li>
+            <li><a href="#213-行动模块">2.1.3 行动模块</a></li>
+          </ol>
+        </li>
+        <li><a href="#22-核心流程">2.2 核心流程</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/">
+            <img src="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330.png" width="1313" height="538" loading="lazy"
+                alt="Featured image of post AI Agent 核心概念" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="/categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/">AI Agent 核心概念</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            AI Agent的核心概念，并基于核心概念梳理出智能体的核心流程。提出了一个比较全面的通用概念框架。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-01-05T00:00:00Z'>2026年1月5日星期一</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 11 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#第2章-ai-agent-核心概念">第2章 AI Agent 核心概念</a>
+      <ol>
+        <li><a href="#21-核心概念">2.1 核心概念</a>
+          <ol>
+            <li><a href="#211-大脑模块">2.1.1 大脑模块</a></li>
+            <li><a href="#212-感知模块">2.1.2 感知模块</a></li>
+            <li><a href="#213-行动模块">2.1.3 行动模块</a></li>
+          </ol>
+        </li>
+        <li><a href="#22-核心流程">2.2 核心流程</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="第2章-ai-agent-核心概念">第2章 AI Agent 核心概念
+</h2><p>​		在了解了AI Agent的起源、发展历程及其定义后，我们再来看看AI Agent的核心概念，并基于核心概念梳理出智能体的核心流程。</p>
+<h3 id="21-核心概念">2.1 核心概念
+</h3><p>​		由米哈游联合复旦 NLP 组于2023年9月发布的论文《The Rise and Potential of Large Language Model Based Agents: A Survey》中，对智能体的现有研究成果进行了系统概括，提出了一个比较全面的通用概念框架，见如下图所示 ：</p>
+<p><img src="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027.png"
+	width="700"
+	height="373"
+	srcset="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027_hu_b1734a68de24a717.png 480w, /p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027_hu_a07e959e1393e556.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250218150706027"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="187"
+		data-flex-basis="450px"
+	
+></p>
+<p>​						图1 基于大语言模型的智能体的概念框架，包含三个组成部分：大脑、感知和行动。</p>
+<p>基于大语言模型的智能体的概念框架，由三个关键部分组成：大脑、感知和行动：</p>
+<ul>
+<li>**大脑模块：**大脑模块作为控制中心，是智能体的核心，主要由LLM（大语言模型）构成。大脑模块不仅存储知识和记忆，还承担着信息处理和决策功能。通过分析、推理、规划过程生成下一步的行动方案，同时还具有泛化能力、能够很好地应对未见过的任务，展现出智能体的智能。</li>
+<li>**感知模块：**使智能体可以感知外部环境的变化。需要将智能体的感知空间从纯文本领域扩展到包括文本、听觉和视觉模态等多模态领域，这种扩展使智能体能够更有效地理解和利用来自周围环境的信息。如通过文字输入、传感器、摄像头、麦克风等，建立起对外部世界或环境的感知。</li>
+<li>**行动模块：**旨在扩展智能体行动空间。具体来说，赋予智能体使用工具技能及具身行动能力，能与外部环境或世界进行交互，使其能适应环境变化、提供反馈，甚至影响和塑造环境。</li>
+</ul>
+<p>​		该框架可以根据不同的应用场景进行定制。一般来说，智能体按以下工作流程运行：首先，感知模块对应于人类的感官系统，如眼睛和耳朵，感知外部环境的变化，然后将多模态信息转换为智能体可理解的表示形式。随后，大脑模块作为控制中心，进行思考、决策等信息处理活动，存储经验知识和记忆，从记忆中提取有效信息以优化决策。最后，行动模块对应于人类的四肢，在工具的辅助下执行操作，并对周围环境产生影响。通过重复上述过程，智能体可以不断获得反馈并与环境进行交互。</p>
+<p>​		上图中的例子来说明其工作流程：当一个人询问是否会下雨时，感知模块会将该指令转换为大语言模型能够理解的表征形式。然后，大脑模块开始根据当前的天气状况以及互联网上的天气预报（利用工具获取天气预报信息）进行推理。最后，行动模块做出回应，并将雨伞递给这个人。通过重复上述过程，智能体能够持续获得反馈并与环境进行交互。</p>
+<h4 id="211-大脑模块">2.1.1 大脑模块
+</h4><p>​		大脑模块的运行机制：在接收到感知模块处理的信息后，大脑模块首先转向存储，检索知识，并从记忆中回忆。这些结果有助于智能体制定计划、进行推理并做出明智的决策。此外，大脑模块可能会以摘要、向量或其它数据结构的形式，保存智能体过去的观察、想法和行动。同时，它还可以更新常识和领域知识等，以供将来使用。基于大语言模型的智能体还可以凭借其固有的泛化和迁移能力，适应不熟悉的场景。</p>
+<p>​		智能体的大脑模块主要以大语言模型来构建，核心包括以下几个部分：</p>
+<ul>
+<li>
+<p>**自然语言交互：**为了确保有效沟通，进行自然语言交互的能力至关重要，语言包含着丰富的信息。除了直观表达的内容之外，话语背后可能还隐藏着说话者的信念、愿望和意图。由于大语言模型（LLMs）所固有的强大自然语言理解和生成能力，智能体不仅能够熟练地用多种语言进行基本的交互式对话 ，还能展现出深入的理解能力，让人类能够轻松地与智能体进行理解和交互。</p>
+</li>
+<li>
+<p>**知识：**在大规模数据集上训练的语言模型能够将广泛的知识编码到其参数中，可对各种类型的查询做出正确的响应。这些知识可以帮助基于大语言模型的智能体做出明智的决策。但存在些问题：</p>
+<ul>
+<li>模型在训练过程中获取的知识可能会过时，甚至从一开始就是错误的。一个简单的解决方法是重新训练。但这需要先进的数据、大量的时间和计算资源。更糟糕的是，这可能会导致灾难性遗忘 。</li>
+<li>大语言模型可能会生成与源信息或事实信息相冲突的内容 ，这种现象通常被称为 “幻觉”。这是大语言模型无法广泛应用于事实性要求严格的任务的关键原因之一。</li>
+</ul>
+</li>
+<li>
+<p><strong>记忆：</strong>“记忆” 存储着智能体过去的观察、想法和行动序列。当面对复杂问题时，记忆机制有助于智能体有效地回顾和应用先前的策略。并使智能体能够借鉴过去的经验来适应不熟悉的环境。</p>
+</li>
+<li>
+<p><strong>推理与规划：</strong></p>
+<ul>
+<li>
+<p>推理是人类智力活动的基础，是解决问题、决策以及批判性分析的基石。演绎、归纳和溯因推理是人们普遍认可的主要推理形式。对于智能体而言，推理能力如同人类一样，是解决复杂任务的关键。一些研究实验已被证明，通过引导大语言模型在输出答案前先生成推理依据，能够激发出其推理能力，如具有代表性的思维链（Chain-of-Thought，CoT），通过对LLM提示词中要求「think step by step」，LLM会把问题分解成多个步骤，一步一步思考，使得输出的结果更加准确。还有一些策略，如自一致性（self-consistency）、自优化（self-polish）、自精炼（self-refine）和选择推理（selection-inference）等，也被提出用于提升大语言模型的性能，后续章节会进行详细解析。</p>
+</li>
+<li>
+<p>规划是人类应对复杂挑战时的关键策略。对人类而言，规划有助于组织思路、设定目标，并制定达成这些目标的步骤。同样，规划能力对于智能体也至关重要，推理能力是规划模块的核心。通过推理，智能体将复杂任务分解为更易处理的子任务，并为子任务制定合适的行动序列计划。同时，随着任务的推进，智能体能够通过内省来调整计划，确保其与现实情况更好地契合，实现自适应且成功的达成目标。</p>
+<p>规划包含两个阶段：</p>
+<ol>
+<li><strong>计划制定</strong>：在计划制定过程中，智能体通常会将总体任务分解为多个子任务。</li>
+<li><strong>计划反思</strong>：制定好计划后，对其优点进行反思和评估至关重要。智能体利用内部反馈机制，从模型中获取见解，以优化其策略和规划方法。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>迁移和泛化能力：</strong>	智能不应局限于特定领域或任务，而应涵盖广泛的认知技能和能力，适应不同的领域和任务。该能力包括以下三个方面：</p>
+<ul>
+<li>未见任务泛化：研究表明，经过大规模语料库训练的语言模型无需进行特定任务的微调，就能展现出零样本泛化能力。具体而言，大语言模型能够根据自身理解，遵循指令完成在训练阶段未遇到的新任务。</li>
+<li>上下文学习：众多研究表明，大语言模型能够通过上下文学习（ICL）执行各种复杂任务。上下文学习是指模型从上下文中的少量示例中学习的能力。少样本上下文学习通过将原始输入与几个完整示例作为提示来丰富上下文，从而提高语言模型的预测性能。</li>
+<li>持续学习：大语言模型的规划能力在促进智能体持续学习方面的潜力。持续学习涉及技能的持续获取和更新，其核心挑战之一是灾难性遗忘，即模型在学习新任务时，往往会遗忘先前任务的知识。利用大语言模型的规划能力来结合现有技能，可以有效应对灾难性遗忘问题。</li>
+</ul>
+</li>
+</ul>
+<h4 id="212-感知模块">2.1.2 感知模块
+</h4><p>​		人类和动物依靠眼睛、耳朵等感觉器官从周围环境收集信息。这些感知输入被转换为神经信号并发送到大脑进行处理，使得能够感知世界并与之互动。同样，对于基于智能体而言，通过感知模块将这些信息传递给大脑模块进行处理。接收各种来源和模态的信息至关重要，使智能体更好地理解环境、做出明智决策。</p>
+<p>​		智能体的多模态感知能力，主要包括：</p>
+<ul>
+<li>
+<p>**文本输入：**基于LLM的智能体已经具备强大的语言生成和理解能力，具备通过自然语言与人类及其它智能体进行交流的基本能力。在文本输入中，除了明确表达的内容外，背后还隐藏着信念、欲望和意图。理解隐含意义对于智能体把握人类用户的潜在和内在意图至关重要，从而提高其与用户的沟通效率和质量。</p>
+</li>
+<li>
+<p>**图像输入：**LLMs 本身并不具备视觉的感知能力，只能理解离散的文本内容；而图像输入通常包含有关世界的大量信息，包括物体的属性、空间关系、场景布局等智能体周围的信息。</p>
+<p>针对LLMs无法理解图像中的信息，常见的解决方法有：</p>
+<ol>
+<li>
+<p>图像字幕：为图像输入生成相应的文本描述，即图像字幕，从而被LLM理解。这种方式并且无需为字幕生成进行额外的训练，从而可以节省大量的计算资源，但字幕生成是一种低带宽方法，在转换过程中可能会丢失大量潜在信息。</p>
+</li>
+<li>
+<p>图像编码器和大语言模型结合：研究尝试将图像编码器和大语言模型直接结合，使用 Transformer 对视觉信息进行编码，通过对齐视觉编码器和大语言模型，将图像编码转换为大语言模型能够理解的嵌入。以端到端的方式训练整个模型。这使智能体实现卓越的视觉感知能力，但需要大量的计算资源成本。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>**视频输入：**视频输入由一系列连续的图像帧组成。因此，智能体用于感知图像的方法可能也适用于视频领域，与图像信息相比，视频信息增加了时间维度。因此，智能体需要对视频中不同帧之间时间关系进行理解。</p>
+</li>
+<li>
+<p>**听觉输入：**当智能体具备听觉能力时，它可以提高对交互内容、周围环境的感知。有两种方法实现听觉能力：</p>
+<ul>
+<li>
+<p>利用智能体的工具使用能力，智能体可以使用LLMs作为控制中心，调用现有的工具集或模型库来感知音频信息。例如，AudioGPT充分调用了FastSpeech（文本到语音）、GenerSpeech（风格转换）、Whisper（语音识别）等模型的功能。</p>
+</li>
+<li>
+<p>将感知方法从视觉领域迁移到音频领域，对于一段时间内的一段音频数据，可以将其抽象为有限长度的音频频谱图。采用类似于 ViT 的 Transformer 架构来处理音频频谱图图像。通过将音频频谱图划分为补丁，实现对音频信息的有效编码。将音频编码与其它模态的数据编码对齐，来训练整个模型。使得模型实现感知能力。</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>**其他输入：**引入现实世界的更多的输入，配备更丰富的感知模块。例如：触觉和嗅觉；感知周围环境的温度、湿度和亮度；眼球追踪、身体动作捕捉，3D 地图、甚至是脑机交互中的脑波信号。此外，还可以引入对更广阔的整体环境的感知：采用激光雷达、GPS、惯性测量单元等成熟的感知模块。</li>
+</ul>
+<h4 id="213-行动模块">2.1.3 行动模块
+</h4><p>​		人类感知环境后，大脑会对感知到的信息进行整合、分析和推理，然后做出决策。随后，人类利用神经系统控制身体，从而对环境做出适应性或创造性的反应，例如进行对话、躲避障碍或生火。在智能体的构建中，行动模块接收大脑模块发送的行动序列，并执行行动与环境进行交互。</p>
+<p>智能体的行动能力包括以下几个方面：</p>
+<ul>
+<li>**文本输出：**基于LLM的智能体固有的语言生成能力。它可以生成流畅性、相关性、多样性等方面表现出色的文本。</li>
+<li>**工具使用：**工具扩展智能体的行动空间。智能体利用工具与外部环境交互，例如通过搜索工具查询网页信息，来获取即时资讯、调用SQL执行器来查询数据库获取专业知识、 利用Python 解释器来执行复杂数学计算任务等等。</li>
+<li>**具身行动：**在追求通用人工智能（AGI）的过程中，具身智能体被视为一个关键范式，它致力于将模型智能与物理世界相结合。智能体的行为不再局限于纯文本输出或调用特定工具来执行特定领域任务。相反，它们应该能够主动感知、理解并与物理环境进行交互，基于语言模型丰富的内部知识做出决策并产生特定行为来改变环境。我们将这些统称为具身行动，它使智能体能够以与物理世界进行交互和理解。</li>
+</ul>
+<h3 id="22-核心流程">2.2 核心流程
+</h3><p>​	在对AI Agent的核心概念有了整体了解后，我们可以梳理出AI Agent大致的工作流程。如下图所示：</p>
+<p><img src="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330.png"
+	width="1313"
+	height="538"
+	srcset="/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330_hu_73e8e4bd72f6f536.png 480w, /p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330_hu_76ab0164e0e77b5b.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250411160708330"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="244"
+		data-flex-basis="585px"
+	
+></p>
+<p>​	AI Agent的工作流程是：AI Agent通过感知模块观察环境收集环境信息（如文本、图片、视觉、3D 地图等多模块信息）；将这些信息传递给大脑模块进行处理，大脑模块基于内部的世界知识、环境的状态及记忆进行思考、规划并决策，生成下一步的行动计划；最后执行具体行动，如调用工具与环境进行交互，行动结果会对环境产生新的影响。这个过程会迭代进行，直到完成目标。</p>
+<p>AI Agent 的工作流程核心包括以下三个模块：</p>
+<ul>
+<li>**感知（Perception）：**指 AI Agent 观察周围环境，并从环境中收集信息，提取有用的数据。Agent 所收集的信息包括文本、听觉、视觉等多模态领域。为了使智能体更好地理解环境，能够接收多模态的信息是至关重要的。</li>
+<li>**大脑（Planning/decision）：**大脑模块核心是进行规划和决策，它根据感知模块收集的环境状态信息，结合内部的世界知识和记忆进行规划并做出决策，为达成目标任务生成下一步的行动计划。<code>规划和决策</code>通常由LLM（大语言模型）来承担，除此之外，还包括：
+<ul>
+<li>World Knowledge：具备丰富的世界知识，由大语言模型在训练中得到并固化在模型参数中。</li>
+<li>State：当前环境的状态信息。</li>
+<li>Memory：记忆保持了历史的思考决策过程及过去的行动计划。</li>
+<li>Reflection：反思是根据当前的环境状态信息和历史行动结果进行总结，生成更高级别抽象的见解，作为经验信息，并存储在记忆中，以优化未来的决策，该功能使得AI Agent具有自我迭代学习能力，如：在错误中总结教训并在后续步骤中完善。</li>
+</ul>
+</li>
+<li>**行动（Action）：**指 AI Agent 执行策略做出的具体行动，比如输出文本，使用搜索工具查询网页信息、调用API访问外部服务等等。行动会产生多样的结果，并影响环境状态。行动结果和环境状态的变化进一步被感知模块观察到，作为下一轮的输入。这个过程不断迭代，直到完成目标。</li>
+</ul>
+<p>如果用一个公式来表达 AI Agent，可以表示为：</p>
+<p><strong>AI Agent = Perception（Observation）+ Brain（LLM+State+Memory+Reflection）+ Action（Tool）</strong></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/">
+        
+        <div class="article-image">
+            <img src="/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089.jpg" width="1372" height="639" loading="lazy"
+                alt="Featured image of post 构建 AI Agent 的技术架构">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #46464680 0%, #f9fafaC0 100%);">
+            <h2 class="article-title">构建 AI Agent 的技术架构</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/">
+        
+        <div class="article-image">
+            <img src="/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/b78c6838a16f5c957a661e5093a39366.jpeg" width="1821" height="1157" loading="lazy"
+                alt="Featured image of post 什么是智能体(AI Agent)">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #5c8efa80 0%, #d5e9fbC0 100%);">
+            <h2 class="article-title">什么是智能体(AI Agent)</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="/ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>AI Agent 原理、设计与实践 on Tiny 的技术博客</title>
+    <link>https://tinyseeking.github.io/categories/ai-agent/</link>
+    <description>Recent content in AI Agent 原理、设计与实践 on Tiny 的技术博客</description>
+    <generator>Hugo</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Fri, 09 Jan 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://tinyseeking.github.io/categories/ai-agent/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>构建 AI Agent 的技术架构</title>
+      <link>https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/</link>
+      <pubDate>Fri, 09 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/</guid>
+      <description>&lt;h2 id=&#34;第3章-构建-ai-agent-的技术架构&#34;&gt;第3章 构建 AI Agent 的技术架构&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​&#x9;&#x9;我们了解了AI Agent的概念框架后，我们就想构建智能体，但如何构建智能体呢？有没有一些设计模式或最佳实践可遵循，这些设计模式或最佳实践就形成技术架构。这节我们就深入的探索构建 AI Agent 的技术架构。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>AI Agent 核心概念</title>
+      <link>https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/</link>
+      <pubDate>Mon, 05 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/</guid>
+      <description>&lt;h2 id=&#34;第2章-ai-agent-核心概念&#34;&gt;第2章 AI Agent 核心概念&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​&#x9;&#x9;在了解了AI Agent的起源、发展历程及其定义后，我们再来看看AI Agent的核心概念，并基于核心概念梳理出智能体的核心流程。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>什么是智能体(AI Agent)</title>
+      <link>https://tinyseeking.github.io/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/</link>
+      <pubDate>Thu, 25 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E4%BB%80%E4%B9%88%E6%98%AF%E6%99%BA%E8%83%BD%E4%BD%93ai-agent/</guid>
+      <description>&lt;h2 id=&#34;第1章-什么是智能体ai-agent&#34;&gt;第1章 什么是智能体（AI Agent）&#xD;&#xA;&lt;/h2&gt;&lt;h3 id=&#34;11-ai-agent-的起源&#34;&gt;1.1 AI Agent 的起源&#xD;&#xA;&lt;/h3&gt;&lt;p&gt;​&#x9;  Agent（智能体）是一个历史悠久的概念，在许多领域都有探索。其概念最早在哲学领域探讨，可以追溯到公元前350年左右的亚里士多德（Aristotle）和休谟等思想家，他们在哲学作品中描述一些拥有欲望、信念、意图和具有行动能力的实体，可以称之为智能体。从哲学意义上讲，“智能体”是指具有行动能力的实体。需要注意的是，这些智能体不仅包括个体人类，还包括物理和虚拟世界中的其他实体。重要的是，智能体的概念涉及个体自主性，赋予它们行使意志、做出选择和采取行动的能力，而不是被动地对外界刺激做出反应。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
