@@ -32,10 +32,10 @@
 &lt;p&gt;告别碎片化学习，聚焦&lt;strong&gt;系统化知识体系搭建 + 商用级实战落地&lt;/strong&gt;，扎实掌握 AI Agent 核心开发能力！&lt;/p&gt;
 &lt;p&gt;本专栏是专为开发者精心打造的「系统性 + 实战型」进阶学习体系，助力开发者「从 0 到 1 快速掌握 AI Agent 全栈开发能力，独立落地商用级智能体应用」，构建职场与商业核心竞争力。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;核心目标&lt;/strong&gt;：培养能独立完成 AI Agent 应用系统设计、开发、部署、迭代优化全流程的AI 应用（高级）工程师。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://tinyseeking.github.io/%E5%85%B3%E4%BA%8E/Snipaste_2026-01-28_23-36-57.png&#34;
+&lt;p&gt;&lt;img src=&#34;./%E5%85%B3%E4%BA%8E/Snipaste_2026-01-28_23-36-57.png&#34;
 	width=&#34;1239&#34;
 	height=&#34;525&#34;
-	srcset=&#34;https://tinyseeking.github.io/%E5%85%B3%E4%BA%8E/Snipaste_2026-01-28_23-36-57_hu_ccb42a0359d8b468.png 480w, https://tinyseeking.github.io/%E5%85%B3%E4%BA%8E/Snipaste_2026-01-28_23-36-57_hu_da3b01fdf7193805.png 1024w&#34;
+	srcset=&#34;./%E5%85%B3%E4%BA%8E/Snipaste_2026-01-28_23-36-57_hu_ccb42a0359d8b468.png 480w, ./%E5%85%B3%E4%BA%8E/Snipaste_2026-01-28_23-36-57_hu_da3b01fdf7193805.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 	
@@ -65,10 +65,10 @@
 &lt;h3 id=&#34;31-技术架构一&#34;&gt;3.1 技术架构一
 &lt;/h3&gt;&lt;p&gt;​		23年8月份中国人民大学发表的论文&lt;a class=&#34;link&#34; href=&#34;https://arxiv.org/pdf/2308.11432.pdf&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;“A Survey on Large Language Model based Autonomous  Agents“&lt;/a&gt;（基于大语言模型的智能体研究综述），提出了一个构建基于大语言模型的统一框架，这个框架的整体结构如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740.png&#34;
+&lt;p&gt;&lt;img src=&#34;./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740.png&#34;
 	width=&#34;1183&#34;
 	height=&#34;549&#34;
-	srcset=&#34;https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740_hu_3d092eef0a39e60e.png 480w, https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740_hu_6318162bb6c81266.png 1024w&#34;
+	srcset=&#34;./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740_hu_3d092eef0a39e60e.png 480w, ./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20250415120526740_hu_6318162bb6c81266.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image-20250415120526740&#34;
@@ -112,10 +112,10 @@
 &lt;h3 id=&#34;32-技术架构二&#34;&gt;3.2 技术架构二
 &lt;/h3&gt;&lt;p&gt;​		另一个由大语言模型驱动的自主Agent系统架构，是2023年6月由OpenAI公司的安全系统主管Lilian Weng在其撰写了一篇博客&lt;a class=&#34;link&#34; href=&#34;https://lilianweng.github.io/posts/2023-06-23-agent/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;“LLM Powered Autonomous Agents”&lt;/a&gt;中提出的，该架构包含规划（Planning）、记忆（Memory）、工具（Tools）、执行（Action）四大模块。如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview.png&#34;
+&lt;p&gt;&lt;img src=&#34;./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview.png&#34;
 	width=&#34;1999&#34;
 	height=&#34;793&#34;
-	srcset=&#34;https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview_hu_ca2baf042fe593f7.png 480w, https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview_hu_1caf2afc19d36185.png 1024w&#34;
+	srcset=&#34;./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview_hu_ca2baf042fe593f7.png 480w, ./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/agent-overview_hu_1caf2afc19d36185.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;img&#34;
@@ -147,10 +147,10 @@
 &lt;p&gt;​	 在这个架构中，&lt;code&gt;Lilian Weng&lt;/code&gt;提出了 &lt;code&gt;Agent=LLM + 规划 + 记忆 + 行动(工具使用)&lt;/code&gt;的基础架构。其中 LLM 扮演了 Agent 的 “大脑”，强调LLM作为系统的核心控制器，提供推理、规划、决策的能力；记忆组件提供记忆能力，使其能够存储和检索外部的相关信息，来优化决策；行动组件执行决策产生的行动，也可利用工具与外部环境进行交互； 而 Agent位于中心位置，它通过协同各种组件来处理复杂的流程，最终自主完成目标任务。&lt;/p&gt;
 &lt;h3 id=&#34;33-构建ai-agent的整体技术架构&#34;&gt;3.3 构建AI Agent的整体技术架构
 &lt;/h3&gt;&lt;p&gt;​		通过之前对AI Agent概念框架的了解，再来看构建Al Agent的技术架构，对其所需要的核心组件就会有更清晰的认知。我们梳理了当前许多研究人员及机构对构建智能体技术架构的研究成果，结合实践经验，提炼出构建AI Agent的整体技术架构，包括八个模块：Profile（配置）、Percept（感知）、Planning &amp;amp; Reasoning（规划&amp;amp;推理）、Action（行动）、Memory（记忆）、Learning（学习）、Context Management（上下文管理） 和 Orchestration（编排）。如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601.jpg&#34;
+&lt;p&gt;&lt;img src=&#34;./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601.jpg&#34;
 	width=&#34;1118&#34;
 	height=&#34;604&#34;
-	srcset=&#34;https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601_hu_66a0213266ae5b16.jpg 480w, https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601_hu_c1f6f1f98c79611a.jpg 1024w&#34;
+	srcset=&#34;./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601_hu_66a0213266ae5b16.jpg 480w, ./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112338601_hu_c1f6f1f98c79611a.jpg 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 	
@@ -205,10 +205,10 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;具体而言，AI Agent的运行流程图如下：&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089.jpg&#34;
+&lt;p&gt;&lt;img src=&#34;./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089.jpg&#34;
 	width=&#34;1372&#34;
 	height=&#34;639&#34;
-	srcset=&#34;https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089_hu_36979d3ea9157dcd.jpg 480w, https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089_hu_35159f496548bd67.jpg 1024w&#34;
+	srcset=&#34;./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089_hu_36979d3ea9157dcd.jpg 480w, ./p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089_hu_35159f496548bd67.jpg 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 	
@@ -241,10 +241,10 @@
 &lt;/h2&gt;&lt;p&gt;​		在了解了AI Agent的起源、发展历程及其定义后，我们再来看看AI Agent的核心概念，并基于核心概念梳理出智能体的核心流程。&lt;/p&gt;
 &lt;h3 id=&#34;21-核心概念&#34;&gt;2.1 核心概念
 &lt;/h3&gt;&lt;p&gt;​		由米哈游联合复旦 NLP 组于2023年9月发布的论文《The Rise and Potential of Large Language Model Based Agents: A Survey》中，对智能体的现有研究成果进行了系统概括，提出了一个比较全面的通用概念框架，见如下图所示 ：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027.png&#34;
+&lt;p&gt;&lt;img src=&#34;./p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027.png&#34;
 	width=&#34;700&#34;
 	height=&#34;373&#34;
-	srcset=&#34;https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027_hu_b1734a68de24a717.png 480w, https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027_hu_a07e959e1393e556.png 1024w&#34;
+	srcset=&#34;./p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027_hu_b1734a68de24a717.png 480w, ./p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250218150706027_hu_a07e959e1393e556.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image-20250218150706027&#34;
@@ -353,10 +353,10 @@
 &lt;/ul&gt;
 &lt;h3 id=&#34;22-核心流程&#34;&gt;2.2 核心流程
 &lt;/h3&gt;&lt;p&gt;​	在对AI Agent的核心概念有了整体了解后，我们可以梳理出AI Agent大致的工作流程。如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330.png&#34;
+&lt;p&gt;&lt;img src=&#34;./p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330.png&#34;
 	width=&#34;1313&#34;
 	height=&#34;538&#34;
-	srcset=&#34;https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330_hu_73e8e4bd72f6f536.png 480w, https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330_hu_76ab0164e0e77b5b.png 1024w&#34;
+	srcset=&#34;./p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330_hu_73e8e4bd72f6f536.png 480w, ./p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330_hu_76ab0164e0e77b5b.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;image-20250411160708330&#34;
