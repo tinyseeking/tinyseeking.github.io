@@ -6,8 +6,36 @@
     <description>Recent content in AI Agent 原理、设计与实践 on Tiny 的技术博客</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Fri, 09 Jan 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 25 Jan 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://tinyseeking.github.io/categories/ai-agent/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>开源智能体框架——Plan-and-execute 原理、架构与代码实现</title>
+      <link>https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Sun, 25 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/</guid>
+      <description>&lt;h1 id=&#34;plan-and-execute-原理架构与代码实现&#34;&gt;Plan-and-execute 原理、架构与代码实现&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;1-介绍&#34;&gt;1. 介绍&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​&#x9;&#x9;为挖掘大型语言模型的推理能力，以解决多步复杂推理任务。研究人员（Wei 等人，2022）提出了少样本思维链（CoT）提示法，通过少量人工构建的分步推理示例，能让大型语言模型明确生成推理步骤，提高解决推理任务的准确率。同时，为了省去提示中人工构建示例的操作，一些研究人员（ Kojima 等人，2022）提出零样本思维链（Zero-shot-CoT）：通过将目标问题陈述后附加 “让我们一步步思考” 作为输入提示给大型语言模型，出人意料地让大语言模型取得了与少样本思维链提示法相近的性能。但尽管零样本思维链取得了成功，但它仍存在以下三个缺陷：&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>开源智能体框架——Self-Ask 原理、架构与代码实现</title>
+      <link>https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Mon, 19 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/</guid>
+      <description>&lt;h1 id=&#34;self-ask-原理架构与代码实现&#34;&gt;Self-Ask 原理、架构与代码实现&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;1-介绍&#34;&gt;1 介绍&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​&#x9;&#x9;在自然语言处理领域，大语言模型（LLMs）已展现出强大能力。但当面对复杂的推理问题，特别是在处理需要将多个子问题的答案进行组合以得出最终解答的任务时，模型存在显著缺陷。即模型能正确回答了各个子问题，却无法整合这些信息以生成正确的答案。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>开源智能体框架——ReAct 原理、架构与代码实现</title>
+      <link>https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6react-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Thu, 15 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6react-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/</guid>
+      <description>&lt;h1 id=&#34;react-原理架构与代码实现&#34;&gt;ReAct 原理、架构与代码实现&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;1-介绍&#34;&gt;1 介绍&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​&#x9;&#x9;传统大语言模型（LLM）在处理复杂任务时，还面临着诸多局限性：比如只能进行静态推理（训练完成后内部知识固定），无法根据新情况动态调整；它们常常编造不存在的事实（称为&lt;strong&gt;幻觉&lt;/strong&gt;），如描述一款从未发布的手机型号；在需要多步骤推理的任务中，容易在中间环节出错；更重要的是缺乏与外部环境的交互能力，它们像被关在信息孤岛上，无法与计算器、数据库等外部工具交互，在需要实时信息或工具辅助的复杂任务中表现不佳。而 ReAct 模式的出现，正是为了解决这些问题。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>手把手搭建第一个RAG实战：实现本地文档智能问答</title>
+      <link>https://tinyseeking.github.io/p/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%90%AD%E5%BB%BA%E7%AC%AC%E4%B8%80%E4%B8%AArag%E5%AE%9E%E6%88%98%E5%AE%9E%E7%8E%B0%E6%9C%AC%E5%9C%B0%E6%96%87%E6%A1%A3%E6%99%BA%E8%83%BD%E9%97%AE%E7%AD%94/</link>
+      <pubDate>Sun, 11 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%90%AD%E5%BB%BA%E7%AC%AC%E4%B8%80%E4%B8%AArag%E5%AE%9E%E6%88%98%E5%AE%9E%E7%8E%B0%E6%9C%AC%E5%9C%B0%E6%96%87%E6%A1%A3%E6%99%BA%E8%83%BD%E9%97%AE%E7%AD%94/</guid>
+      <description>&lt;h1 id=&#34;4-手把手搭建第一个-rag-实战实现本地文档智能问答&#34;&gt;4 手把手搭建第一个 RAG 实战：实现本地文档智能问答&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;41-项目概述&#34;&gt;4.1 项目概述&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​&#x9;&#x9;本文将带领你从零开始搭建基于 RAG（检索增强生成）的知识问答系统，实现文档上传、内容解析与并基于检索文档内容进行智能问答。系统支持 PDF、DOCX、TXT、MD 等多格式文档，通过向量数据库存储文档向量，结合大语言模型（LLM）生成准确回答，并具有流式输出功能提升用户体验，有效解决 LLM 的静态知识局限与 “幻觉” 问题。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>构建 AI Agent 的技术架构</title>
       <link>https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/</link>

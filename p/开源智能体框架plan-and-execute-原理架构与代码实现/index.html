@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Plan-and-Solve方法本质上是先计划再执行，即先把用户的问题分解成一个个的子任务，然后再执行这些子任务，最后合并输出得到结果。在论文中的实验作法是：简单地将零样本思维链中的 “让我们一步步思考” 替换为 “让我们首先理解问题并制定解决计划，然后按照计划一步步解决问题”。">
+<title>开源智能体框架——Plan-and-execute 原理、架构与代码实现</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="开源智能体框架——Plan-and-execute 原理、架构与代码实现">
+<meta property='og:description' content="Plan-and-Solve方法本质上是先计划再执行，即先把用户的问题分解成一个个的子任务，然后再执行这些子任务，最后合并输出得到结果。在论文中的实验作法是：简单地将零样本思维链中的 “让我们一步步思考” 替换为 “让我们首先理解问题并制定解决计划，然后按照计划一步步解决问题”。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2026-01-25T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-01-25T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="开源智能体框架——Plan-and-execute 原理、架构与代码实现">
+<meta name="twitter:description" content="Plan-and-Solve方法本质上是先计划再执行，即先把用户的问题分解成一个个的子任务，然后再执行这些子任务，最后合并输出得到结果。在论文中的实验作法是：简单地将零样本思维链中的 “让我们一步步思考” 替换为 “让我们首先理解问题并制定解决计划，然后按照计划一步步解决问题”。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#1-介绍">1. 介绍</a></li>
+    <li><a href="#2-论文实验">2 论文实验</a></li>
+    <li><a href="#2-核心思想">2. 核心思想</a>
+      <ol>
+        <li><a href="#21-原论文的plan-and-solve规划-求解提示策略">2.1 原论文的<code>Plan-and-Solve(规划-求解)</code>提示策略</a></li>
+        <li><a href="#22-改进的计划与求解-plan-and-solve框架">2.2 改进的计划与求解 （Plan-and-Solve)框架</a></li>
+      </ol>
+    </li>
+    <li><a href="#3-工作流程">3. 工作流程</a></li>
+    <li><a href="#4-与其它模式的对比">4. 与其它模式的对比</a></li>
+    <li><a href="#6-代码实现">6. 代码实现</a>
+      <ol>
+        <li><a href="#61-架构设计">6.1 架构设计</a></li>
+        <li><a href="#62-编写代码">6.2 编写代码</a>
+          <ol>
+            <li><a href="#621-前置准备">6.2.1 前置准备</a></li>
+            <li><a href="#622-引入依赖包">6.2.2 引入依赖包</a></li>
+            <li><a href="#623-配置与常量config-类">6.2.3 配置与常量（Config 类）</a></li>
+            <li><a href="#624-定义状态">6.2.4 定义状态</a></li>
+            <li><a href="#625-llm-与工具初始化核心能力封装">6.2.5 LLM 与工具初始化（核心能力封装）</a></li>
+            <li><a href="#626-定义规划器节点">6.2.6 定义规划器节点</a></li>
+            <li><a href="#627-定义执行器节点">6.2.7 定义执行器节点</a></li>
+            <li><a href="#628-定义重新规划节点">6.2.8 定义重新规划节点</a></li>
+            <li><a href="#629-定义路由节点">6.2.9 定义路由节点</a></li>
+            <li><a href="#6210-定义图langgraph-核心">6.2.10 定义图（LangGraph 核心）</a></li>
+            <li><a href="#6211-主程序运行入口">6.2.11 主程序（运行入口）</a></li>
+            <li><a href="#6212-完整代码">6.2.12 完整代码</a></li>
+          </ol>
+        </li>
+        <li><a href="#63-运行测试">6.3 运行测试</a></li>
+        <li><a href="#64-结论">6.4 结论</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250826174630927.png" width="1110" height="689" loading="lazy"
+                alt="Featured image of post 开源智能体框架——Plan-and-execute 原理、架构与代码实现" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">开源智能体框架——Plan-and-execute 原理、架构与代码实现</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            Plan-and-Solve方法本质上是先计划再执行，即先把用户的问题分解成一个个的子任务，然后再执行这些子任务，最后合并输出得到结果。在论文中的实验作法是：简单地将零样本思维链中的 “让我们一步步思考” 替换为 “让我们首先理解问题并制定解决计划，然后按照计划一步步解决问题”。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-01-25T00:00:00Z'>2026年1月25日星期日</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 35 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#1-介绍">1. 介绍</a></li>
+    <li><a href="#2-论文实验">2 论文实验</a></li>
+    <li><a href="#2-核心思想">2. 核心思想</a>
+      <ol>
+        <li><a href="#21-原论文的plan-and-solve规划-求解提示策略">2.1 原论文的<code>Plan-and-Solve(规划-求解)</code>提示策略</a></li>
+        <li><a href="#22-改进的计划与求解-plan-and-solve框架">2.2 改进的计划与求解 （Plan-and-Solve)框架</a></li>
+      </ol>
+    </li>
+    <li><a href="#3-工作流程">3. 工作流程</a></li>
+    <li><a href="#4-与其它模式的对比">4. 与其它模式的对比</a></li>
+    <li><a href="#6-代码实现">6. 代码实现</a>
+      <ol>
+        <li><a href="#61-架构设计">6.1 架构设计</a></li>
+        <li><a href="#62-编写代码">6.2 编写代码</a>
+          <ol>
+            <li><a href="#621-前置准备">6.2.1 前置准备</a></li>
+            <li><a href="#622-引入依赖包">6.2.2 引入依赖包</a></li>
+            <li><a href="#623-配置与常量config-类">6.2.3 配置与常量（Config 类）</a></li>
+            <li><a href="#624-定义状态">6.2.4 定义状态</a></li>
+            <li><a href="#625-llm-与工具初始化核心能力封装">6.2.5 LLM 与工具初始化（核心能力封装）</a></li>
+            <li><a href="#626-定义规划器节点">6.2.6 定义规划器节点</a></li>
+            <li><a href="#627-定义执行器节点">6.2.7 定义执行器节点</a></li>
+            <li><a href="#628-定义重新规划节点">6.2.8 定义重新规划节点</a></li>
+            <li><a href="#629-定义路由节点">6.2.9 定义路由节点</a></li>
+            <li><a href="#6210-定义图langgraph-核心">6.2.10 定义图（LangGraph 核心）</a></li>
+            <li><a href="#6211-主程序运行入口">6.2.11 主程序（运行入口）</a></li>
+            <li><a href="#6212-完整代码">6.2.12 完整代码</a></li>
+          </ol>
+        </li>
+        <li><a href="#63-运行测试">6.3 运行测试</a></li>
+        <li><a href="#64-结论">6.4 结论</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="plan-and-execute-原理架构与代码实现">Plan-and-execute 原理、架构与代码实现
+</h1><h2 id="1-介绍">1. 介绍
+</h2><p>​		为挖掘大型语言模型的推理能力，以解决多步复杂推理任务。研究人员（Wei 等人，2022）提出了少样本思维链（CoT）提示法，通过少量人工构建的分步推理示例，能让大型语言模型明确生成推理步骤，提高解决推理任务的准确率。同时，为了省去提示中人工构建示例的操作，一些研究人员（ Kojima 等人，2022）提出零样本思维链（Zero-shot-CoT）：通过将目标问题陈述后附加 “让我们一步步思考” 作为输入提示给大型语言模型，出人意料地让大语言模型取得了与少样本思维链提示法相近的性能。但尽管零样本思维链取得了成功，但它仍存在以下三个缺陷：</p>
+<ul>
+<li><strong>计算错误</strong>：中间计算过程出错，导致最终答案偏差。</li>
+<li><strong>步骤缺失错误</strong>：复杂任务中遗漏关键推理环节，逻辑链断裂。</li>
+<li><strong>语义误解错误</strong>：出现对问题的语义理解错误和推理步骤不连贯等其它错误。</li>
+</ul>
+<p>​		为解决零样本思维链的上述缺陷，尤其是 “步骤缺失” 与 “推理不连贯” 问题，由 Lei Wang 等人于 2023 年提出<strong>Plan-and-Solve（简称 PS，计划-求解）框架</strong>，其论文《Plan-and-Solve Prompting: Improving Zero-Shot Chain-of-Thought Reasoning by Large Language Models》（论文地址：<a class="link" href="https://arxiv.org/pdf/2305.04091"  target="_blank" rel="noopener"
+    >https://arxiv.org/pd</a><a class="link" href="https://arxiv.org/pdf/2305.04091"  target="_blank" rel="noopener"
+    >f/230</a><a class="link" href="https://arxiv.org/pdf/2305.04091"  target="_blank" rel="noopener"
+    >5.04</a><a class="link" href="https://arxiv.org/pdf/2305.04091"  target="_blank" rel="noopener"
+    >091</a>）于 2023 年 5 月发表。<code>Plan-and-Solve</code>架构作为一种改进零样本思维链（ Chain-of-Thought ，CoT）推理的方法。其核心思想是通过引导模型先制定解决问题的计划，再按照计划逐步执行，这一模式显著提高了大模型在复杂任务上的成功率和效率。</p>
+<h2 id="2-论文实验">2 论文实验
+</h2><p>​		<code>Plan-and-Solve</code>方法本质上是先计划再执行，即先把用户的问题分解成一个个的子任务，然后再执行这些子任务，最后合并输出得到结果。在论文中的实验作法是：简单地将零样本思维链中的 “让我们一步步思考” 替换为 “让我们首先理解问题并制定解决计划，然后按照计划一步步解决问题”。如下图所示：</p>
+<p><img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250819170050630.png"
+	width="969"
+	height="436"
+	srcset="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250819170050630_hu_a458711937be1b5.png 480w, ../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250819170050630_hu_2537bba66aa44f38.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250819170050630"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="222"
+		data-flex-basis="533px"
+	
+></p>
+<p>​			   图：GPT-3 在（a）零样本思维链提示、（b）<code>Plan-and-Solve</code>提示、（c）答案提取提示的示例。</p>
+<p>​	   上图中，分别演示了三种提示：（a）零样本思维链提示、（b）<code>Plan-and-Solve</code>提示、（c）答案提取提示的示例。零样本思维链（Zero-shot-CoT）通过 “让我们一步步思考” 促使大语言模型生成多步骤推理，但在问题复杂时仍可能产生错误的推理步骤，最终结果错误。与零样本思维链不同，<code>Plan-and-Solve</code>提示首先要求大语言模型通过生成分步计划并执行该计划来设计解题方案，得出最终正确的结果。答案提取提示在<code>Plan-and-Solve</code>提示的基础上，进一步提炼最终答案的格式：<code>因此，答案（阿拉伯数字形式）是60%</code>。</p>
+<p>​		以下是图片文字的中文翻译：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">（a）零样本思维链提示
+</span></span><span class="line"><span class="cl">问题（Q）：在一个有 20 名学生的舞蹈班中，20% 的学生报名参加当代舞，剩下学生中的 25% 报名参加爵士舞，其余的报名参加嘻哈舞。整个班级中报名参加嘻哈舞的学生占比是多少？
+</span></span><span class="line"><span class="cl">回答（A）：逐步思考。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">首先，班级中 20% 的学生报名参加当代舞，这意味着剩下 80% 的学生。
+</span></span><span class="line"><span class="cl">接下来，剩下 80% 学生中的 25% 报名参加爵士舞，所以这意味着原始班级中 25% 的学生报名参加爵士舞。这样就剩下原始班级的 55%。
+</span></span><span class="line"><span class="cl">最后，班级剩下的（55%）学生报名参加嘻哈舞。所以，整个班级中 55% 的学生报名参加嘻哈舞。（错误答案 ）
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">（b）Plan-and-Solve提示
+</span></span><span class="line"><span class="cl">问题（Q）：在一个有 20 名学生的舞蹈班中，20% 的学生报名参加当代舞，剩下学生中的 25% 报名参加爵士舞，其余的报名参加嘻哈舞。整个班级中报名参加嘻哈舞的学生占比是多少？
+</span></span><span class="line"><span class="cl">回答（A）：首先，理解问题并制定解决问题的计划。
+</span></span><span class="line"><span class="cl">然后，逐步执行计划并解决问题。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">计划（Plan）：
+</span></span><span class="line"><span class="cl">步骤 1：计算报名参加当代舞和爵士舞的学生总数。
+</span></span><span class="line"><span class="cl">步骤 2：计算报名参加嘻哈舞的学生总数。
+</span></span><span class="line"><span class="cl">步骤 3：计算报名参加嘻哈舞的学生占比。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">解答（Solution）：
+</span></span><span class="line"><span class="cl">步骤 1：20 名学生的 20% 是 4 名学生，剩下 16 名学生的 25% 是 4 名学生。所以，报名参加当代舞和爵士舞的学生总数是 8 名。
+</span></span><span class="line"><span class="cl">步骤 2：剩下的 12 名学生报名参加嘻哈舞。
+</span></span><span class="line"><span class="cl">步骤 3：报名参加嘻哈舞的学生占比是 12/20 = 60%。（正确答案 ）
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">（c）Plan-and-Solve答案提取提示
+</span></span><span class="line"><span class="cl">问题（Q）：在一个有 20 名学生的舞蹈班中，20% 的学生报名参加当代舞，剩下学生中的 25% 报名参加爵士舞，其余的报名参加嘻哈舞。整个班级中报名参加嘻哈舞的学生占比是多少？
+</span></span><span class="line"><span class="cl">回答（A）：首先，理解问题并制定解决问题的计划。
+</span></span><span class="line"><span class="cl">然后，逐步执行计划并解决问题。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">计划（Plan）：
+</span></span><span class="line"><span class="cl">步骤 1：计算报名参加当代舞和爵士舞的学生总数。
+</span></span><span class="line"><span class="cl">步骤 2：计算报名参加嘻哈舞的学生总数。
+</span></span><span class="line"><span class="cl">步骤 3：计算报名参加嘻哈舞的学生占比。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">解答（Solution）：
+</span></span><span class="line"><span class="cl">步骤 1：20 名学生的 20% 是 4 名学生，剩下 16 名学生的 25% 是 4 名学生。所以，报名参加当代舞和爵士舞的学生总数是 8 名。
+</span></span><span class="line"><span class="cl">步骤 2：剩下的 12 名学生报名参加嘻哈舞。
+</span></span><span class="line"><span class="cl">步骤 3：报名参加嘻哈舞的学生占比是 12/20 = 60%。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">因此，答案（阿拉伯数字形式）是 60% 。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>​		为解决零样本思维链的计算错误并提升生成的推理步骤质量，我们为 PS 提示法添加了更详细的指令。具体作法是：提示词中增加了 “提取相关变量及其对应数值” 和 “计算中间结果（注意计算和常识）” 的指令。这种提示变体被称为 PS + 提示策略（如下图（b）所示）。</p>
+<p>​		<img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250825122350063.png"
+	width="1299"
+	height="716"
+	srcset="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250825122350063_hu_86020d6bab0af705.png 480w, ../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250825122350063_hu_6a8febf8d21b9807.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250825122350063"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="181"
+		data-flex-basis="435px"
+	
+></p>
+<p>​       图:（a）<code>Plan-and-Solve</code>提示（PS 提示）和（b）带有更详细指令的<code>Plan-and-Solve</code>提示（PS + 提示）</p>
+<p>​		上图展示了（a）<code>Plan-and-Solve</code>提示（PS 提示）和（b）带有更详细指令的<code>Plan-and-Solve</code>提示（PS + 提示）的示例， PS + 策略仅在提示中增加了 “提取相关变量及其对应数值” 和 “计算中间结果（注意计算和常识）” 的指令，尽管简单，却显著提升了生成的推理过程的质量，并获得正确答案。</p>
+<p>​		论文在三个推理问题类别的十个基准数据集上评估所提出的<code>Plan-and-Solve</code>提示法，包含： 在六个数学推理数据集（包括 AQuA（代数应用题数据集）、GSM8K（小学数学应用题数据集）、MultiArith（需要多步推理和运算的数学应用题数据集）、AddSub（加减法算术应用题数据集）、SingleEq（单方程小学代数应用题的数据集） 和 SVAMP（ 4 年级及以下学生的单未知数算术应用题基准））；两个常识推理数据集（CommonsenseQA（多项选择题基准数据集）和 StrategyQA（需要多步推理但未给出推理步骤的基准数据集））以及两个符号推理数据集（Last Letter（单词的最后一个字母拼接起来的问题数据集） 和 Coin Flip（关于硬币经过翻转或未翻转后是否仍正面朝上的问题数据集））。</p>
+<p>​		总体而言，实验评估结果表明：</p>
+<ol>
+<li>零样本 PS 提示法能生成比零样本思维链提示法质量更高的推理过程，因为 PS 提示提供了更详细的指令，引导大型语言模型进行正确推理。</li>
+<li>零样本 PS + 提示法在所有推理问题和数据集上均大幅优于零样本思维链。此外，尽管 PS + 提示法不需要人工示例，但在算术推理上的性能与少样本思维链提示法相近，在部分数据集上优于少样本人工思维链提示法。</li>
+</ol>
+<h2 id="2-核心思想">2. 核心思想
+</h2><h3 id="21-原论文的plan-and-solve规划-求解提示策略">2.1 原论文的<code>Plan-and-Solve(规划-求解)</code>提示策略
+</h3><p>​		 原论文中提出的<code>Plan-and-Solve(规划-求解)</code>提示策略（简：PS 和 PS + 提示法），是一种新的零样本思维链提示方法，核心是让大语言模型在最终答案前，引导大型语言模型制定解决问题的计划并生成中间推理过程（将整个任务分解为更小的子任务），然后按照计划逐步执行求解，以提高复杂推理任务的准确性和稳定性。其思路通俗来讲，就是让大模型在解决问题时模拟人的过程 “先想后做”，如我们在解决一道复杂的数学题时，不会一下子就写出答案，而是会先在脑海里规划出解题的步骤，比如先分析题目条件、确定使用的公式、分步骤计算等，然后再按照这个规划一步步去计算，最终得到答案。</p>
+<p>​		原论文中提出的<code>Plan-and-Solve(规划-求解)</code>提示策略的实现比较简单，主要是通过构建提示词指令模板，该模板需满足以下两个标准：</p>
+<ol>
+<li>模板应能促使大型语言模型生成确定计划（子任务）并完成这些子任务。</li>
+<li>模板应引导大型语言模型更关注计算和中间结果，尽可能确保其正确性。</li>
+</ol>
+<p>​		为满足第一个标准，借鉴零样本思维链。在零样本思维链中，输入指令包括触发指令 “让我们一步步思考”。而零样本 PS 提示法包含 “制定计划” 和 “执行计划” 的指令，因此，提示为 “ <strong>让我们首先理解问题并制定解决计划，然后按照计划一步步解决问题。</strong>”</p>
+<p>​		为满足第二个标准，在基于计划的触发语句中扩展更详细的指令。具体来说，添加 “注意计算” 到触发句中，要求大型语言模型尽可能准确地进行计算。为减少因缺失必要推理步骤导致的错误，加入 “提取相关变量及其对应数值”，明确指示大型语言模型不要忽略输入问题中的相关信息。此外，在提示中添加 “计算中间结果”，以增强大型语言模型生成相关重要推理步骤的能力。如提示：<strong>&ldquo;先理解问题，提取相关变量与对应数值，制定计划；再执行计划，计算中间结果（关注计算和常识），逐步解题并给出答案。&rdquo;</strong></p>
+<p>​		总体来说，这种<code>Plan-and-Solve(规划-求解)</code>提示策略，尽管简单，却显著提升了生成的推理过程的质量。</p>
+<h3 id="22-改进的计划与求解-plan-and-solve框架">2.2 改进的计划与求解 （Plan-and-Solve)框架
+</h3><p>​		 随着构建基于大语言模型（LLM）的代理（Agent）在复杂任务中的应用不断深化，涌现了许多适配复杂场景的优质设计模式，其中比较典型的是<strong>ReAct</strong>设计模式，它通过 “思考（Reasoning）→行动（Action）→观察（Observation）” 的循环机制实现动态决策： 先对任务需求进行分析（Reason）并决策出下一步行动，然后执行行动(Action)（如工具调用或信息获取等），再基于行动结果调整策略（Observation），最终逐步逼近目标。</p>
+<p>​		虽然<code>ReAct</code> 对一些任务有效，然而，ReAct 模式存在显著局限 —— 其决策逻辑高度依赖 “局部判断”，每一步仅聚焦单个行动选择，缺乏对任务全局的统筹规划与前瞻性布局。这使得它在复杂任务中易出现两类问题：一是 “路径冗余”，例如处理 “年度经营分析报告生成” 任务时，可能反复调用同一数据工具补充信息；二是 “目标偏移”，比如客服代理在处理用户复合诉求时，因过度关注某一细节问题，偏离了整体需求的解决方向。其在复杂场景下暴露出两个核心缺点：</p>
+<ul>
+<li><strong>LLM 调用效率低</strong>：每次执行工具调用前，都需触发一次 LLM 调用以确定行动，导致任务流程中 LLM 调用频次过高，不仅增加时间成本，还提升了资源消耗；</li>
+<li><strong>全局规划缺失</strong>：LLM 仅针对当前子问题进行规划，未对整个任务的完整流程进行系统性推理，易形成次优执行轨迹，难以保障任务最终效果。</li>
+</ul>
+<p>​       通过<strong>明确的规划步骤</strong>可以克服这两个缺点，借鉴了论文《Plan-and-Solve Prompting: Improving Zero-Shot Chain-of-Thought Reasoning by Large Language Models》中的思想，在 ReAct 的基础上添加 “全局规划” 能力，形成新的<code>plan-and-execute</code>框架，并涌现了类似的框架项目如<a class="link" href="https://github.com/yoheinakajima/babyagi"  target="_blank" rel="noopener"
+    ><code>Baby-AGI</code></a>，其核心逻辑可概括为 “先全局规划、后分步执行、再动态调整” 的闭环逻辑：借助 LLM 对任务进行整体规划，生成完整分步计划；再按照计划有序执行，并根据执行反馈（如工具调用结果）对计划进行动态优化，形成 “规划 - 执行 - 反馈 - 调整” 的完整链路。既保留了 ReAct 的灵活性，又弥补了其全局统筹能力的不足。</p>
+<p>​		<code>Plan-and-Execute</code> 的架构由<strong>规划器（Planner）、执行器（Executor）、重规划器（Replanner）</strong> 三部分组成：</p>
+<ul>
+<li><strong>规划器（Planner）</strong>：接收用户需求后，调用 LLM 进行深度拆解与全局规划，生成完整分步计划。</li>
+<li><strong>执行器（Executor）</strong>：接收规划器输出的分步计划，按序执行每个子任务。在实现层面，执行器可为具备工具调用能力的独立 Agent— 根据子任务需求自主选择 API 接口、数据检索工具或自动化组件，完成具体操作并返回执行结果（如调用海关数据库获取目标市场关税数据）。</li>
+<li><strong>重规划器（Replanner）</strong>：负责根据执行器的实际执行情况和信息反馈来调整计划。</li>
+</ul>
+<p>​		<code>Plan-and-Execute</code>框架是在<code>Plan-and-Solve Prompting</code>框架上的扩展。通过以上这三个部分，形成 “规划→执行→反馈→调整” 的完整循环链路，既保证了任务处理的全局统筹性，又赋予系统应对复杂场景的动态适应能力。</p>
+<h2 id="3-工作流程">3. 工作流程
+</h2><p>Plan-and-Execute（规划 - 执行）框架的工作流程图如下：</p>
+<p><img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250826174630927.png"
+	width="1110"
+	height="689"
+	srcset="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250826174630927_hu_aa46268ee6b15b60.png 480w, ../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250826174630927_hu_43f87f4c3e1f5ca7.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250826174630927"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="161"
+		data-flex-basis="386px"
+	
+></p>
+<ol>
+<li><strong>输入任务</strong>：接收来自用户用户或系统提交待处理的任务。</li>
+<li><strong>Planner（规划器）</strong>：接收任务后，调用模型（LLM）对任务进行深入分析，生成清晰的分步执行计划（即 <code>Task list</code> ）。存储生成的计划列表，作为后续执行的 “行动指南”，让复杂任务变 “可落地步骤”。</li>
+<li><strong>Executor（执行器）</strong>：按任务列表逐个子任务执行，每次取出任务列表中的第一个任务进行处理，并将返回执行的结果传给<code>Replanner</code>。</li>
+<li><strong>Replanner（重规划器）</strong>：接收执行结果后，结合任务目标进行评估执行偏差，判断是否已经完成任务，还是需要调整计划。若以完成任务，则生成最终响应；若未完成，则生成调整计划列表。</li>
+<li><strong>更新计划清单</strong>：更新<code>Replanner</code>生成的调整计划列表。进入2-3循环。</li>
+<li><strong>输出结果</strong>：任务完成后，输出最终成果（如完整报告、问题解决方案 ），结束流程。</li>
+</ol>
+<h2 id="4-与其它模式的对比">4. 与其它模式的对比
+</h2><p><code>Plan-and-Execute</code> 架构与类似框架ReAct、ReWOO的核心对比如下：</p>
+<ul>
+<li><strong>ReAct</strong>：通过 “思考→行动→观察” 的循环来实现动态决策。智能体先对任务需求进行思考分析，做出下一步行动决策并执行，再观察行动的结果进行下一轮的思考分析，逐步逼近目标 。但本质是 “局部决策驱动”，每步仅聚焦单个行动选择，缺乏对任务全局的统筹规划，复杂场景下易出现路径冗余或目标偏移，且每次工具调用前均需触发 LLM 调用，Token 消耗与效率成本较高。</li>
+<li><strong>ReWOO</strong> ：ReWOO 是对 ReAct 框架的优化，主要是引入规划器，将核心组件拆分为三个独立模块：规划器、工作器和求解器。先使用规划器分解任务并制定相互依赖的计划（子任务）列表；再交给工作器依次执行；执行完成后由求解器整合结果。解决了 ReAct 中 &ldquo;每次执行工具调用前，都需触发一次 LLM 调用以确定行动，导致 LLM 调用频次过高&quot;的问题，从而显著降低 Token 消耗。但生成计划后，计划执行较为刚性，缺乏动态调整机制。若某子任务执行结果与预期偏差（如检索到的信息失效、工具调用失败），无法对原有计划进行调整，易导致 “一步错、步步错”的问题。</li>
+<li><strong>Plan-and-Execute 框架</strong>：采用 “规划 - 执行 - 反馈 - 调整” 的闭环逻辑。与 ReWOO的关键区别，是新增了 Replan（重规划）机制，弥补了 ReWOO “计划生成后缺乏动态调整机制” 的局限。流程上，规划器先借助 LLM 完成任务全局拆解，生成完整分步计划 ；执行器按计划调用工具执行任务；重规划器根据执行反馈判断是否调整计划，若需调整则重新规划，确保任务朝着目标推进。由于可根据实时反馈优化计划，更适配复杂多变的任务场景。</li>
+</ul>
+<h2 id="6-代码实现">6. 代码实现
+</h2><h3 id="61-架构设计">6.1 架构设计
+</h3><p><code>Plan-and-Solve</code> 的架构由以下几个核心组件构成：</p>
+<ol>
+<li><strong>规划器 (Planner)</strong>：负责将复杂任务拆解为可落地的多步骤执行计划，为后续行动明确路径。通常由具备强推理能力的大语言模型（LLM）承担。</li>
+<li><strong>执行器 (Executor)</strong>：负责执行规划器生成的具体计划任务。执行器可以是另一个大语言模型，也可以是一个专门设计的 Agent，如 ReAct 模式的Agent，通过 “思考 - 行动 - 观察” 的循环，自主思考、决策下一步的行动、调用工具（如调用API，查询数据库、代码执行器）来完成计划任务。</li>
+<li><strong>重新规划器（replanner）</strong>：接收执行器反馈的子任务结果，通过 LLM 评估 “实际结果是否符合计划预期”，若出现偏差（如数据缺失、工具调用失败、新信息出现），则触发重新规划，并更新计划列表。</li>
+<li><strong>状态管理(State)</strong>：扮演 “记忆中枢”，负责跟踪任务的当前状态，包括当前计划、已执行的步骤及其结果、当前的响应等。状态管理器确保 Agent 在执行过程中能够保持上下文感知能力。</li>
+</ol>
+<h3 id="62-编写代码">6.2 编写代码
+</h3><h4 id="621-前置准备">6.2.1 前置准备
+</h4><ol>
+<li>
+<p><strong>环境要求：</strong></p>
+<ul>
+<li>Python 3.11+</li>
+<li>安装依赖库：<code>pip install openai requests python-dotenv langchain_community langgraph langchain_openai langchain-tavily</code></li>
+</ul>
+</li>
+<li>
+<p><strong>基础配置：</strong></p>
+<ul>
+<li>
+<p>设置模型调用API Key</p>
+<p>创建<code>.env</code>文件，配置模型 API访问密钥，这里使用千问模型，需配置QWEN_API_KEY及QWEN_BASE_URL。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 千问模型接口访问key
+</span></span><span class="line"><span class="cl"># 如何获取API Key：https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key
+</span></span><span class="line"><span class="cl">QWEN_API_KEY=&#34;sk-*******&#34;
+</span></span><span class="line"><span class="cl"># 千问模型接口访问地址
+</span></span><span class="line"><span class="cl">QWEN_BASE_URL=&#34;https://dashscope.aliyuncs.com/compatible-mode/v1&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>搜索引擎 API 密钥（这里使用tavily）</p>
+<p><code>.env</code>文件中配置搜索引擎tavily API 密钥，Tavily国内需科学上网才能访问：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># tavily 搜索API KEY
+</span></span><span class="line"><span class="cl"># 访问 https://tavily.com 注册并获取API Key,用户每月有1000次免费调用额度.
+</span></span><span class="line"><span class="cl">TAVILY_API_KEY=&#34;tvly-ZuSNSW4CehsNizV****&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+</li>
+</ol>
+<h4 id="622-引入依赖包">6.2.2 引入依赖包
+</h4><p>引入相关依赖，读取<code>.env</code>文件中配置的参数转化为环境变量。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">import</span> <span class="n">os</span>
+</span></span><span class="line"><span class="cl"><span class="n">import</span> <span class="n">operator</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">typing</span> <span class="n">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 导入LangChain相关组件：输出解析器、图结构、类型定义等</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langchain_core</span><span class="o">.</span><span class="n">output_parsers</span> <span class="n">import</span> <span class="n">PydanticOutputParser</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span> <span class="n">import</span> <span class="n">CompiledGraph</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">state</span> <span class="n">import</span> <span class="n">CompiledStateGraph</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">typing_extensions</span> <span class="n">import</span> <span class="n">TypedDict</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 环境变量加载、语言模型接口、提示模板等</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">dotenv</span> <span class="n">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langchain_core</span><span class="o">.</span><span class="n">language_models</span> <span class="n">import</span> <span class="n">BaseChatModel</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langchain_core</span><span class="o">.</span><span class="n">prompts</span> <span class="n">import</span> <span class="n">ChatPromptTemplate</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langchain_openai</span> <span class="n">import</span> <span class="n">ChatOpenAI</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">constants</span> <span class="n">import</span> <span class="n">END</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">graph</span> <span class="n">import</span> <span class="n">StateGraph</span><span class="p">,</span> <span class="n">START</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">prebuilt</span> <span class="n">import</span> <span class="n">create_react_agent</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">pydantic</span> <span class="n">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 导入搜索工具</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">tools</span><span class="o">.</span><span class="n">web_search</span><span class="o">.</span><span class="n">langchain_tavily_search</span> <span class="n">import</span> <span class="n">TavilySearch</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="623-配置与常量config-类">6.2.3 配置与常量（Config 类）
+</h4><p>该类集中管理所有静态配置，便于维护。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="s2">&#34;qwen-plus-2025-04-28&#34;</span>  <span class="c1"># 推荐使用千问Plus模型（效果优于Turbo）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">QWEN_BASE_URL</span> <span class="o">=</span> <span class="s2">&#34;https://dashscope.aliyuncs.com/compatible-mode/v1&#34;</span>  <span class="c1"># 千问API兼容地址</span>
+</span></span><span class="line"><span class="cl">    <span class="n">DEFAULT_TEMPERATURE</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># 温度=0,工具调用/规划场景需确定性输出，故设为0;创意场景可设 0.7-1.0</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TAVILY_MAX_RESULTS</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># 搜索工具返回的最大结果数（减少冗余信息）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">RECURSION_LIMIT</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># 递归限制（防止工作流无限循环，如计划永远执行不完）</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="624-定义状态">6.2.4 定义状态
+</h4><p>LangGraph 工作流的核心是<strong>状态（State）在节点间的流转</strong>，而 state 则定义了节点间传递的数据结构，主要包含三部分：</p>
+<ol>
+<li>当前计划列表：用字符串列表记录待执行的步骤；</li>
+<li>已执行步骤记录：用元组列表存储（包含步骤内容 + 执行结果）；</li>
+<li>基础信息：包括最终响应和原始输入数据。</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">class PlanExecute(TypedDict):
+</span></span><span class="line"><span class="cl">    input: str  # 用户原始查询（如“2024澳网男单冠军家乡”）
+</span></span><span class="line"><span class="cl">    plan: List[str]  # 待执行的步骤列表（如[&#34;查冠军是谁&#34;, &#34;查冠军家乡&#34;]）
+</span></span><span class="line"><span class="cl">    # 已执行步骤记录：用Annotated+operator.add实现“累加”（而非覆盖）
+</span></span><span class="line"><span class="cl">    past_steps: Annotated[List[Tuple], operator.add]
+</span></span><span class="line"><span class="cl">    response: str  # 最终返回给用户的答案
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="625-llm-与工具初始化核心能力封装">6.2.5 LLM 与工具初始化（核心能力封装）
+</h4><p>该部分负责定义智能体的 “大脑”（LLM）和 “手脚”（工具），是智能体具备 “思考” 和 “行动” 能力的基础。</p>
+<p><strong>（1）initialize_llm：初始化语言模型</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">initialize_llm</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">DEFAULT_MODEL</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">DEFAULT_TEMPERATURE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseChatModel</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;QWEN_API_KEY&#34;</span><span class="p">)</span>  <span class="c1"># 从.env文件获取千问API密钥</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;缺少环境变量QWEN_API_KEY&#34;</span><span class="p">)</span>  <span class="c1"># 异常处理：防止密钥缺失</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;QWEN_BASE_URL&#34;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">Config</span><span class="o">.</span><span class="n">QWEN_BASE_URL</span>  <span class="c1"># 优先用环境变量的API地址</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 用ChatOpenAI调用千问（千问兼容OpenAI格式）</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">openai_api_base</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>环境变量管理：通过<code>os.getenv</code>从<code>.env</code>文件读取密钥，避免硬编码（安全最佳实践）。</li>
+<li>这里使用 LangChain 的<code>ChatOpenAI</code>类来访问千问模型，可以替换为兼容 OpenAI 接口格式的其它模型。替换为其它模型，需要修改这里的api_key（模型API访问密钥）、base_url（模型API地址）、model（模型名称）参数。</li>
+</ul>
+<p><strong>（2）initialize_tools：初始化工具</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">initialize_tools</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 初始化Tavily搜索工具（设置最大结果数）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">search</span> <span class="o">=</span> <span class="n">TavilySearch</span><span class="p">(</span><span class="n">max_results</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">TAVILY_MAX_RESULTS</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">[</span><span class="n">search</span><span class="p">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里默认只添加了网络搜索工具Tavily，可根据业务场景添加其它的工具。</p>
+<h4 id="626-定义规划器节点">6.2.6 定义规划器节点
+</h4><p>规划器节点根据用户输入，生成完成任务的计划步骤列表。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">class Plan(BaseModel):
+</span></span><span class="line"><span class="cl">    &#34;&#34;&#34;未来要遵循的计划步骤&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">    steps: List[str] = Field(description=&#34;要遵循的不同步骤，应按顺序排列&#34;)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    @staticmethod
+</span></span><span class="line"><span class="cl">    async def plan_step(state: PlanExecute):
+</span></span><span class="line"><span class="cl">        &#34;&#34;&#34;规划步骤节点：生成初始计划
+</span></span><span class="line"><span class="cl">        根据用户输入生成完成任务所需的步骤计划
+</span></span><span class="line"><span class="cl">        参数:
+</span></span><span class="line"><span class="cl">            state: 当前工作流状态，包含用户输入等信息
+</span></span><span class="line"><span class="cl">        返回:
+</span></span><span class="line"><span class="cl">            包含生成的计划步骤的字典
+</span></span><span class="line"><span class="cl">        &#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        # 创建解析器生成格式说明
+</span></span><span class="line"><span class="cl">        parser = PydanticOutputParser(pydantic_object=Plan)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        # 生成初始计划的提示模板，指导模型为目标生成完整的分步计划，确保计划能够直接导向正确答案。
+</span></span><span class="line"><span class="cl">        planner_prompt = ChatPromptTemplate.from_messages([
+</span></span><span class="line"><span class="cl">            (
+</span></span><span class="line"><span class="cl">                &#34;system&#34;,
+</span></span><span class="line"><span class="cl">                &#34;&#34;&#34;该计划应包含单个任务，若执行正确，将得出正确答案。不要添加任何多余步骤。\
+</span></span><span class="line"><span class="cl">                最后一步的结果应为最终答案。确保每个步骤都包含所需的所有信息——不要跳过步骤。\n
+</span></span><span class="line"><span class="cl">                必须严格按照以下格式要求返回数据，不要添加任何额外内容：\n
+</span></span><span class="line"><span class="cl">                {format_instructions}\n\n
+</span></span><span class="line"><span class="cl">                请确保输出完全符合上述格式，字段类型和约束要严格遵守。
+</span></span><span class="line"><span class="cl">                &#34;&#34;&#34;,  # 添加了JSON格式要求
+</span></span><span class="line"><span class="cl">            ),
+</span></span><span class="line"><span class="cl">            (&#34;placeholder&#34;, &#34;{messages}&#34;),
+</span></span><span class="line"><span class="cl">        ])
+</span></span><span class="line"><span class="cl">        # 创建规划器：提示模板 + LLM（带结构化输出）
+</span></span><span class="line"><span class="cl">        planner = planner_prompt | initialize_llm().with_structured_output(Plan)
+</span></span><span class="line"><span class="cl">        # 调用规划器生成计划
+</span></span><span class="line"><span class="cl">        result = await planner.ainvoke({
+</span></span><span class="line"><span class="cl">            &#34;messages&#34;: [(&#34;user&#34;, state[&#34;input&#34;])],
+</span></span><span class="line"><span class="cl">            &#34;format_instructions&#34;: parser.get_format_instructions()  # 解析器生成格式说明
+</span></span><span class="line"><span class="cl">        })
+</span></span><span class="line"><span class="cl">        # 返回包含计划步骤，将被合并到工作流状态中
+</span></span><span class="line"><span class="cl">        return {&#34;plan&#34;: result.steps}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>PydanticOutputParser.get_format_instructions()</code>：生成 LLM 可理解的格式说明，指导LLM输出相应的响应格式（如 “输出应为 JSON，包含 steps 字段，类型为列表”），确保 LLM 输出合规。</li>
+<li><code>with_structured_output(Plan)</code>：LangChain 的便捷方法，替代手动解析 LLM 输出（无需自己写 JSON 解析逻辑）。</li>
+</ul>
+<h4 id="627-定义执行器节点">6.2.7 定义执行器节点
+</h4><p>执行器节点从当前计划列表中，取出第一个任务进行执行，并记录执行结果。这里使用ReAct模式的智能体作为执行器。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="c1"># 创建执行器，用来执行计划。</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_create_agent_executor</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">CompiledGraph</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;创建执行器,使用React模式创建一个能够使用工具执行具体步骤的智能体。
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span> <span class="o">=</span> <span class="n">initialize_llm</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span> <span class="o">=</span> <span class="n">initialize_tools</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&#34;你是一个专业的助手。&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 创建并返回React模式的智能体</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">create_react_agent</span><span class="p">(</span><span class="n">llm</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">@</span><span class="n">staticmethod</span>
+</span></span><span class="line"><span class="cl"><span class="n">async</span> <span class="k">def</span> <span class="nf">execute_step</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">PlanExecute</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">	 <span class="s2">&#34;&#34;&#34;执行步骤节点：执行计划中的第一步
+</span></span></span><span class="line"><span class="cl"><span class="s2">        调用智能体执行器处理计划中的第一个步骤，并记录执行结果
+</span></span></span><span class="line"><span class="cl"><span class="s2">        参数:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            state: 当前工作流状态，包含计划步骤等信息
+</span></span></span><span class="line"><span class="cl"><span class="s2">        返回:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            包含已执行步骤记录的字典
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 1. 获取React智能体执行器</span>
+</span></span><span class="line"><span class="cl">    <span class="n">executor</span> <span class="o">=</span> <span class="n">_create_agent_executor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 2. 处理计划：格式化步骤列表，提取第一步任务</span>
+</span></span><span class="line"><span class="cl">    <span class="n">plan</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;plan&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">plan_str</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;{i + 1}. {step}&#34;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">enumerate</span><span class="p">(</span><span class="n">plan</span><span class="p">))</span>  
+</span></span><span class="line"><span class="cl">    <span class="n">task</span> <span class="o">=</span> <span class="n">plan</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># 执行计划的第一个步骤（避免多步骤并行，简化逻辑）</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 3. 格式化任务描述</span>
+</span></span><span class="line"><span class="cl">    <span class="n">task_formatted</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&#34;&#34;&#34;对于以下计划：
+</span></span></span><span class="line"><span class="cl"><span class="s2">                        {plan_str}
+</span></span></span><span class="line"><span class="cl"><span class="s2">                        你的任务是执行第1步：{task}。&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 4. 调用执行器执行任务（debug=True：输出调试信息，正式环境需关闭）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">agent_response</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="s2">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&#34;user&#34;</span><span class="p">,</span> <span class="n">task_formatted</span><span class="p">)]},</span>
+</span></span><span class="line"><span class="cl">        <span class="n">debug</span><span class="o">=</span><span class="n">True</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 5. 记录已执行步骤（(任务内容, 执行结果)），返回给LangGraph合并状态</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;past_steps&#34;</span><span class="p">:</span> <span class="p">[(</span><span class="n">task</span><span class="p">,</span> <span class="n">agent_response</span><span class="p">[</span><span class="s2">&#34;messages&#34;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">content</span><span class="p">)],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>agent_response[&quot;messages&quot;][-1].content</code>：React 智能体的输出存储在<code>messages</code>列表中，最后一条消息是最终执行结果。</li>
+<li>单步执行：每次只执行计划的第一步，后续通过 “重新规划” 决定下一步，避免步骤混乱。</li>
+</ul>
+<h4 id="628-定义重新规划节点">6.2.8 定义重新规划节点
+</h4><p>重新规划节点根据 “已执行步骤结果”，通过 LLM 评估下一步的操作：</p>
+<ul>
+<li><strong>直接返回答案</strong>：如果已经做完的步骤，已足够信息能得出用户要的结果，则直接生成响应答案给用户。</li>
+<li><strong>继续执行新计划</strong>：如果还未完成，则重新生成计划，并更新state中的计划列表。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">class Response(BaseModel):
+</span></span><span class="line"><span class="cl">    &#34;&#34;&#34;用户响应数据模型&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">    response: str
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">class Act(BaseModel):
+</span></span><span class="line"><span class="cl">    &#34;&#34;&#34;要执行的动作,用于在重新规划阶段决定下一步动作：是直接响应还是继续执行计划&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">    action: Union[Response, Plan] = Field(
+</span></span><span class="line"><span class="cl">        description=&#34;要执行的动作。若要响应用户，使用Response。若需要进一步使用工具，使用Plan。&#34;
+</span></span><span class="line"><span class="cl">    )
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">@staticmethod
+</span></span><span class="line"><span class="cl">async def replan_step(state: PlanExecute):
+</span></span><span class="line"><span class="cl">    # 1. 定义重新规划的提示模板
+</span></span><span class="line"><span class="cl">    replanner_prompt = ChatPromptTemplate.from_template(&#34;&#34;&#34;针对给定目标，制定一个简单的分步计划。
+</span></span><span class="line"><span class="cl">        该计划应包含单个任务，若执行正确，将得出正确答案。不要添加任何多余步骤。
+</span></span><span class="line"><span class="cl">        最后一步的结果应为最终答案。确保每个步骤都包含所需的所有信息——不要跳过步骤。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        你的目标是：
+</span></span><span class="line"><span class="cl">        {input}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        你最初的计划是：
+</span></span><span class="line"><span class="cl">        {plan}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        你目前已完成以下步骤：
+</span></span><span class="line"><span class="cl">        {past_steps}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        相应地更新你的计划。如果无需更多步骤且可以回复用户，则进行回复。否则，填写计划。仅在计划中添加仍需完成的步骤。不要将已完成的步骤作为计划的一部分返回。
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        必须严格按照以下格式要求返回数据，不要添加任何额外内容：\n
+</span></span><span class="line"><span class="cl">        {format_instructions}\n\n
+</span></span><span class="line"><span class="cl">        请确保输出完全符合上述格式，字段类型和约束要严格遵守。
+</span></span><span class="line"><span class="cl">        &#34;&#34;&#34;)  # 添加了JSON格式要求
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    # 2. 创建Act模型的解析器（判断动作类型：Response/Plan）
+</span></span><span class="line"><span class="cl">    parser = PydanticOutputParser(pydantic_object=Act)
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    # 3. 创建重新规划器：提示模板 + LLM（带结构化输出）
+</span></span><span class="line"><span class="cl">    replanner = replanner_prompt | initialize_llm().with_structured_output(Act)
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    # 4. 调用重新规划器生成新的动作指令
+</span></span><span class="line"><span class="cl">    output = await replanner.ainvoke({
+</span></span><span class="line"><span class="cl">        &#34;input&#34;: state[&#34;input&#34;],
+</span></span><span class="line"><span class="cl">        &#34;plan&#34;: state[&#34;plan&#34;],
+</span></span><span class="line"><span class="cl">        &#34;past_steps&#34;: state[&#34;past_steps&#34;],
+</span></span><span class="line"><span class="cl">        &#34;format_instructions&#34;: parser.get_format_instructions()
+</span></span><span class="line"><span class="cl">    })
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    # 5. 根据输出的动作类型返回不同的结果
+</span></span><span class="line"><span class="cl">    if isinstance(output.action, Response):
+</span></span><span class="line"><span class="cl">        return {&#34;response&#34;: output.action.response}  # 有答案了，返回最终响应
+</span></span><span class="line"><span class="cl">    else:
+</span></span><span class="line"><span class="cl">        return {&#34;plan&#34;: output.action.steps}  # 还需继续，返回新计划
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="629-定义路由节点">6.2.9 定义路由节点
+</h4><p>判断工作流是否结束，是 “继续执行” 还是 “终止”。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nd">@staticmethod</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">should_end</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">PlanExecute</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 若状态中有response（最终答案），则返回END（结束）；否则返回&#34;execute&#34;（继续执行）</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">END</span> <span class="k">if</span> <span class="s2">&#34;response&#34;</span> <span class="ow">in</span> <span class="n">state</span> <span class="ow">and</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;response&#34;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&#34;execute&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="6210-定义图langgraph-核心">6.2.10 定义图（LangGraph 核心）
+</h4><p>图定义工作流的 “节点连接关系”，即 “从哪里来，到哪里去”。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">def build_plan_and_execute_workflow() -&gt; CompiledStateGraph:
+</span></span><span class="line"><span class="cl">    # 1. 初始化状态图（指定状态类型为PlanExecute）
+</span></span><span class="line"><span class="cl">    workflow = StateGraph(PlanExecute)
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    # 2. 添加节点（将Nodes类的静态方法与节点名绑定）
+</span></span><span class="line"><span class="cl">    workflow.add_node(&#34;planner&#34;, Nodes.plan_step)    # 规划节点
+</span></span><span class="line"><span class="cl">    workflow.add_node(&#34;execute&#34;, Nodes.execute_step)  # 执行节点
+</span></span><span class="line"><span class="cl">    workflow.add_node(&#34;replan&#34;, Nodes.replan_step)    # 重新规划节点
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    # 3. 定义“无条件边”（固定流向）
+</span></span><span class="line"><span class="cl">    workflow.add_edge(START, &#34;planner&#34;)       # 起始点 → 规划节点（第一步先规划）
+</span></span><span class="line"><span class="cl">    workflow.add_edge(&#34;planner&#34;, &#34;execute&#34;)   # 规划后 → 执行节点（执行第一步）
+</span></span><span class="line"><span class="cl">    workflow.add_edge(&#34;execute&#34;, &#34;replan&#34;)    # 执行后 → 重新规划节点（判断下一步）
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    # 4. 定义“条件边”（根据重新规划结果决定流向）
+</span></span><span class="line"><span class="cl">    workflow.add_conditional_edges(
+</span></span><span class="line"><span class="cl">        &#34;replan&#34;,                # 源节点：从“重新规划”节点出发
+</span></span><span class="line"><span class="cl">        Nodes.should_end,        # 路由函数：判断流向
+</span></span><span class="line"><span class="cl">        [&#34;execute&#34;, END]         # 可能的目标节点：继续执行 或 结束
+</span></span><span class="line"><span class="cl">    )
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    # 5. 编译工作流（生成可执行的状态图）
+</span></span><span class="line"><span class="cl">    return workflow.compile()
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="6211-主程序运行入口">6.2.11 主程序（运行入口）
+</h4><p><code>main</code>函数是代码的执行入口，负责初始化环境、构建工作流。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 1. 加载环境变量（.env文件）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">load_environment</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 2. 构建工作流</span>
+</span></span><span class="line"><span class="cl">    <span class="n">app</span> <span class="o">=</span> <span class="n">build_plan_and_execute_workflow</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 3. （可选）保存工作流图片（需科学上网）</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># save_grath_image(app)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 4. 测试查询（用户输入）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;input&#34;</span><span class="p">:</span> <span class="s2">&#34;2024年澳大利亚网球公开赛男子单打冠军的家乡是哪里？&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 5. 设置递归限制（防止无限循环）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;recursion_limit&#34;</span><span class="p">:</span> <span class="n">Config</span><span class="o">.</span><span class="n">RECURSION_LIMIT</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 6. 流式运行工作流（实时输出每一步结果）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">astream</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&#34;__end__&#34;</span><span class="p">:</span>  <span class="c1"># 过滤掉“结束”标记，只输出有效结果</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 运行主程序（异步函数需用asyncio.run启动）</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">import</span> <span class="n">asyncio</span>
+</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="6212-完整代码">6.2.12 完整代码
+</h4><p>完整代码位于项目根目录下：<code>cognitive_pattern/plan_and_solve/plan_and_execute.py</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
+</span><span class="lnt">214
+</span><span class="lnt">215
+</span><span class="lnt">216
+</span><span class="lnt">217
+</span><span class="lnt">218
+</span><span class="lnt">219
+</span><span class="lnt">220
+</span><span class="lnt">221
+</span><span class="lnt">222
+</span><span class="lnt">223
+</span><span class="lnt">224
+</span><span class="lnt">225
+</span><span class="lnt">226
+</span><span class="lnt">227
+</span><span class="lnt">228
+</span><span class="lnt">229
+</span><span class="lnt">230
+</span><span class="lnt">231
+</span><span class="lnt">232
+</span><span class="lnt">233
+</span><span class="lnt">234
+</span><span class="lnt">235
+</span><span class="lnt">236
+</span><span class="lnt">237
+</span><span class="lnt">238
+</span><span class="lnt">239
+</span><span class="lnt">240
+</span><span class="lnt">241
+</span><span class="lnt">242
+</span><span class="lnt">243
+</span><span class="lnt">244
+</span><span class="lnt">245
+</span><span class="lnt">246
+</span><span class="lnt">247
+</span><span class="lnt">248
+</span><span class="lnt">249
+</span><span class="lnt">250
+</span><span class="lnt">251
+</span><span class="lnt">252
+</span><span class="lnt">253
+</span><span class="lnt">254
+</span><span class="lnt">255
+</span><span class="lnt">256
+</span><span class="lnt">257
+</span><span class="lnt">258
+</span><span class="lnt">259
+</span><span class="lnt">260
+</span><span class="lnt">261
+</span><span class="lnt">262
+</span><span class="lnt">263
+</span><span class="lnt">264
+</span><span class="lnt">265
+</span><span class="lnt">266
+</span><span class="lnt">267
+</span><span class="lnt">268
+</span><span class="lnt">269
+</span><span class="lnt">270
+</span><span class="lnt">271
+</span><span class="lnt">272
+</span><span class="lnt">273
+</span><span class="lnt">274
+</span><span class="lnt">275
+</span><span class="lnt">276
+</span><span class="lnt">277
+</span><span class="lnt">278
+</span><span class="lnt">279
+</span><span class="lnt">280
+</span><span class="lnt">281
+</span><span class="lnt">282
+</span><span class="lnt">283
+</span><span class="lnt">284
+</span><span class="lnt">285
+</span><span class="lnt">286
+</span><span class="lnt">287
+</span><span class="lnt">288
+</span><span class="lnt">289
+</span><span class="lnt">290
+</span><span class="lnt">291
+</span><span class="lnt">292
+</span><span class="lnt">293
+</span><span class="lnt">294
+</span><span class="lnt">295
+</span><span class="lnt">296
+</span><span class="lnt">297
+</span><span class="lnt">298
+</span><span class="lnt">299
+</span><span class="lnt">300
+</span><span class="lnt">301
+</span><span class="lnt">302
+</span><span class="lnt">303
+</span><span class="lnt">304
+</span><span class="lnt">305
+</span><span class="lnt">306
+</span><span class="lnt">307
+</span><span class="lnt">308
+</span><span class="lnt">309
+</span><span class="lnt">310
+</span><span class="lnt">311
+</span><span class="lnt">312
+</span><span class="lnt">313
+</span><span class="lnt">314
+</span><span class="lnt">315
+</span><span class="lnt">316
+</span><span class="lnt">317
+</span><span class="lnt">318
+</span><span class="lnt">319
+</span><span class="lnt">320
+</span><span class="lnt">321
+</span><span class="lnt">322
+</span><span class="lnt">323
+</span><span class="lnt">324
+</span><span class="lnt">325
+</span><span class="lnt">326
+</span><span class="lnt">327
+</span><span class="lnt">328
+</span><span class="lnt">329
+</span><span class="lnt">330
+</span><span class="lnt">331
+</span><span class="lnt">332
+</span><span class="lnt">333
+</span><span class="lnt">334
+</span><span class="lnt">335
+</span><span class="lnt">336
+</span><span class="lnt">337
+</span><span class="lnt">338
+</span><span class="lnt">339
+</span><span class="lnt">340
+</span><span class="lnt">341
+</span><span class="lnt">342
+</span><span class="lnt">343
+</span><span class="lnt">344
+</span><span class="lnt">345
+</span><span class="lnt">346
+</span><span class="lnt">347
+</span><span class="lnt">348
+</span><span class="lnt">349
+</span><span class="lnt">350
+</span><span class="lnt">351
+</span><span class="lnt">352
+</span><span class="lnt">353
+</span><span class="lnt">354
+</span><span class="lnt">355
+</span><span class="lnt">356
+</span><span class="lnt">357
+</span><span class="lnt">358
+</span><span class="lnt">359
+</span><span class="lnt">360
+</span><span class="lnt">361
+</span><span class="lnt">362
+</span><span class="lnt">363
+</span><span class="lnt">364
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">import</span> <span class="n">os</span>
+</span></span><span class="line"><span class="cl"><span class="n">import</span> <span class="n">operator</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">typing</span> <span class="n">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 导入LangChain相关组件：输出解析器、图结构、类型定义等</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langchain_core</span><span class="o">.</span><span class="n">output_parsers</span> <span class="n">import</span> <span class="n">PydanticOutputParser</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span> <span class="n">import</span> <span class="n">CompiledGraph</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">state</span> <span class="n">import</span> <span class="n">CompiledStateGraph</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">typing_extensions</span> <span class="n">import</span> <span class="n">TypedDict</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 环境变量加载、语言模型接口、提示模板等</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">dotenv</span> <span class="n">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langchain_core</span><span class="o">.</span><span class="n">language_models</span> <span class="n">import</span> <span class="n">BaseChatModel</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langchain_core</span><span class="o">.</span><span class="n">prompts</span> <span class="n">import</span> <span class="n">ChatPromptTemplate</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langchain_openai</span> <span class="n">import</span> <span class="n">ChatOpenAI</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">constants</span> <span class="n">import</span> <span class="n">END</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">graph</span> <span class="n">import</span> <span class="n">StateGraph</span><span class="p">,</span> <span class="n">START</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">langgraph</span><span class="o">.</span><span class="n">prebuilt</span> <span class="n">import</span> <span class="n">create_react_agent</span>
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">pydantic</span> <span class="n">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 导入搜索工具</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">from</span> <span class="n">tools</span><span class="o">.</span><span class="n">web_search</span><span class="o">.</span><span class="n">langchain_tavily_search</span> <span class="n">import</span> <span class="n">TavilySearch</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 配置与常量</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">Config</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;应用配置常量&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">DEFAULT_MODEL</span> <span class="o">=</span> <span class="s2">&#34;qwen-plus-2025-04-28&#34;</span>  <span class="c1"># 推荐&#34;qwen-plus&#34; 使用qwen-turbo系列效果差</span>
+</span></span><span class="line"><span class="cl">    <span class="n">DEFAULT_TEMPERATURE</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># 默认温度参数（0表示确定性输出）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TAVILY_MAX_RESULTS</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># 搜索工具返回的最大结果数</span>
+</span></span><span class="line"><span class="cl">    <span class="n">QWEN_BASE_URL</span> <span class="o">=</span> <span class="s2">&#34;https://dashscope.aliyuncs.com/compatible-mode/v1&#34;</span>  <span class="c1"># 千问API基础地址</span>
+</span></span><span class="line"><span class="cl">    <span class="n">RECURSION_LIMIT</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># 递归限制，防止无限循环</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 状态与数据模型</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">PlanExecute</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;智能体运行状态数据结构,用于在工作流的不同节点之间传递状态信息&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">input</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># 用户输入的原始查询</span>
+</span></span><span class="line"><span class="cl">    <span class="n">plan</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># 待执行的计划步骤列表</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 已执行步骤记录，使用Annotated和operator.add实现状态累加</span>
+</span></span><span class="line"><span class="cl">    <span class="n">past_steps</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">],</span> <span class="n">operator</span><span class="o">.</span><span class="n">add</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">response</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># 最终要返回给用户的响应</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">Plan</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;未来要遵循的计划步骤&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">steps</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&#34;要遵循的不同步骤，应按顺序排列&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">Response</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;用户响应数据模型&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">response</span><span class="p">:</span> <span class="nb">str</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">Act</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;要执行的动作,用于在重新规划阶段决定下一步动作：是直接响应还是继续执行计划&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Response</span><span class="p">,</span> <span class="n">Plan</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">description</span><span class="o">=</span><span class="s2">&#34;要执行的动作。若要响应用户，使用Response。若需要进一步使用工具，使用Plan。&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># LLM初始化</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">load_environment</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;加载环境变量,从.env文件中加载API密钥等敏感信息，避免硬编码&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">load_dotenv</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">initialize_llm</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">DEFAULT_MODEL</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">temperature</span><span class="p">:</span> <span class="ne">float</span> <span class="o">=</span> <span class="n">Config</span><span class="o">.</span><span class="n">DEFAULT_TEMPERATURE</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseChatModel</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;初始化语言模型(LLM)
+</span></span></span><span class="line"><span class="cl"><span class="s2">    根据配置参数创建并返回一个LLM实例，优先使用环境变量中的配置
+</span></span></span><span class="line"><span class="cl"><span class="s2">    参数:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        model: 模型名称
+</span></span></span><span class="line"><span class="cl"><span class="s2">        temperature: 控制输出随机性的参数，0表示最确定，1表示最随机
+</span></span></span><span class="line"><span class="cl"><span class="s2">    返回:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        初始化好的BaseChatModel实例
+</span></span></span><span class="line"><span class="cl"><span class="s2">    异常:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        ValueError: 当缺少必要的API密钥时抛出
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;QWEN_API_KEY&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">api_key</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">raise</span> <span class="n">ValueError</span><span class="p">(</span><span class="s2">&#34;缺少环境变量QWEN_API_KEY&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;QWEN_BASE_URL&#34;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">Config</span><span class="o">.</span><span class="n">QWEN_BASE_URL</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">openai_api_base</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">initialize_tools</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;初始化工具列表
+</span></span></span><span class="line"><span class="cl"><span class="s2">       创建并返回智能体可以使用的工具集合，目前包含Tavily搜索工具
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 初始化搜索工具，设置最大结果数</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 请求网络时，如果是同步则使用requests库发起网络请求，异步使用aiohttp发起网络请求。</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># --同步调用的 requests 库会自动检测系统代理（如环境变量 HTTP_PROXY/HTTPS_PROXY、系统网络设置），</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># --而异步 aiohttp 默认不会。需要自行设置系统代理，实现异步网络请求。</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 所以这里对langchain默认的TavilySearch做了修改添加自动获取系统代理并配置.</span>
+</span></span><span class="line"><span class="cl">    <span class="n">search</span> <span class="o">=</span> <span class="n">TavilySearch</span><span class="p">(</span><span class="n">max_results</span><span class="o">=</span><span class="n">Config</span><span class="o">.</span><span class="n">TAVILY_MAX_RESULTS</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">[</span><span class="n">search</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 创建执行器，用来执行计划。</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_create_agent_executor</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">CompiledGraph</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;创建执行器,使用React模式创建一个能够使用工具执行具体步骤的智能体执行器
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">llm</span> <span class="o">=</span> <span class="n">initialize_llm</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span> <span class="o">=</span> <span class="n">initialize_tools</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&#34;你是一个专业的助手。&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 创建并返回React模式的智能体</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">create_react_agent</span><span class="p">(</span><span class="n">llm</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="n">prompt</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 节点函数</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="n">Nodes</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;智能体图节点集合类
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">    封装工作流中所有节点的处理函数，使代码结构更清晰
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="err">@</span><span class="n">staticmethod</span>
+</span></span><span class="line"><span class="cl">    <span class="n">async</span> <span class="k">def</span> <span class="nf">plan_step</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">PlanExecute</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;规划步骤节点：生成初始计划
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        根据用户输入生成完成任务所需的步骤计划
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        参数:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            state: 当前工作流状态，包含用户输入等信息
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        返回:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            包含生成的计划步骤的字典
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 创建解析器生成格式说明</span>
+</span></span><span class="line"><span class="cl">        <span class="n">parser</span> <span class="o">=</span> <span class="n">PydanticOutputParser</span><span class="p">(</span><span class="n">pydantic_object</span><span class="o">=</span><span class="n">Plan</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 生成初始计划的提示模板，指导模型为目标生成完整的分步计划，确保计划能够直接导向正确答案。</span>
+</span></span><span class="line"><span class="cl">        <span class="n">planner_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span>
+</span></span><span class="line"><span class="cl">            <span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;system&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;&#34;&#34;该计划应包含单个任务，若执行正确，将得出正确答案。不要添加任何多余步骤。</span><span class="se">\
+</span></span></span><span class="line"><span class="cl"><span class="s2">                最后一步的结果应为最终答案。确保每个步骤都包含所需的所有信息——不要跳过步骤。</span><span class="se">\n</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">                必须严格按照以下格式要求返回数据，不要添加任何额外内容：</span><span class="se">\n</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">                {format_instructions}</span><span class="se">\n\n</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">                请确保输出完全符合上述格式，字段类型和约束要严格遵守。
+</span></span></span><span class="line"><span class="cl"><span class="s2">                &#34;&#34;&#34;</span><span class="p">,</span>  <span class="c1"># 添加了JSON格式要求</span>
+</span></span><span class="line"><span class="cl">            <span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="p">(</span><span class="s2">&#34;placeholder&#34;</span><span class="p">,</span> <span class="s2">&#34;{messages}&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="p">])</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 创建规划器：提示模板 + LLM（带结构化输出）</span>
+</span></span><span class="line"><span class="cl">        <span class="n">planner</span> <span class="o">=</span> <span class="n">planner_prompt</span> <span class="o">|</span> <span class="n">initialize_llm</span><span class="p">()</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">Plan</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 调用规划器生成计划</span>
+</span></span><span class="line"><span class="cl">        <span class="n">result</span> <span class="o">=</span> <span class="n">await</span> <span class="n">planner</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">({</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&#34;user&#34;</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;input&#34;</span><span class="p">])],</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;format_instructions&#34;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_format_instructions</span><span class="p">()</span>  <span class="c1"># 解析器生成格式说明</span>
+</span></span><span class="line"><span class="cl">        <span class="p">})</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 返回包含计划步骤，将被合并到工作流状态中</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">{</span><span class="s2">&#34;plan&#34;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">steps</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="err">@</span><span class="n">staticmethod</span>
+</span></span><span class="line"><span class="cl">    <span class="n">async</span> <span class="k">def</span> <span class="nf">execute_step</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">PlanExecute</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;执行步骤节点：执行计划中的第一步
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        调用智能体执行器处理计划中的第一个步骤，并记录执行结果
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        参数:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            state: 当前工作流状态，包含计划步骤等信息
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        返回:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            包含已执行步骤记录的字典
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 1.获取React智能体执行器</span>
+</span></span><span class="line"><span class="cl">        <span class="n">executor</span> <span class="o">=</span> <span class="n">_create_agent_executor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 2.处理计划：格式化步骤列表，提取第一步任务</span>
+</span></span><span class="line"><span class="cl">        <span class="n">plan</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;plan&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">plan_str</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">f</span><span class="s2">&#34;{i + 1}. {step}&#34;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">enumerate</span><span class="p">(</span><span class="n">plan</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="n">task</span> <span class="o">=</span> <span class="n">plan</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># 取出计划中的第一个步骤</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 3.格式化任务描述，明确告知执行器要完成的工作</span>
+</span></span><span class="line"><span class="cl">        <span class="n">task_formatted</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&#34;&#34;&#34;对于以下计划：
+</span></span></span><span class="line"><span class="cl"><span class="s2">                            {plan_str}
+</span></span></span><span class="line"><span class="cl"><span class="s2">                            你的任务是执行第1步：{task}。&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 4.调用执行器执行任务</span>
+</span></span><span class="line"><span class="cl">        <span class="n">agent_response</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span><span class="s2">&#34;messages&#34;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&#34;user&#34;</span><span class="p">,</span> <span class="n">task_formatted</span><span class="p">)]}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="n">True</span>  <span class="c1"># 开启调试，正式应用需关闭</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 5.记录已执行步骤（(任务内容, 执行结果)），返回给LangGraph合并状态</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;past_steps&#34;</span><span class="p">:</span> <span class="p">[(</span><span class="n">task</span><span class="p">,</span> <span class="n">agent_response</span><span class="p">[</span><span class="s2">&#34;messages&#34;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">content</span><span class="p">)],</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="err">@</span><span class="n">staticmethod</span>
+</span></span><span class="line"><span class="cl">    <span class="n">async</span> <span class="k">def</span> <span class="nf">replan_step</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">PlanExecute</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;重新规划步骤节点：根据执行结果更新计划
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        分析已执行步骤的结果，决定是继续执行新的步骤还是直接响应用户
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        参数:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            state: 当前工作流状态，包含原始计划和已执行步骤
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        返回:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            包含新计划或最终响应的字典
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 1. 定义重新规划的提示模板</span>
+</span></span><span class="line"><span class="cl">        <span class="n">replanner_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_template</span><span class="p">(</span><span class="s2">&#34;&#34;&#34;针对给定目标，制定一个简单的分步计划。
+</span></span></span><span class="line"><span class="cl"><span class="s2">        该计划应包含单个任务，若执行正确，将得出正确答案。不要添加任何多余步骤。
+</span></span></span><span class="line"><span class="cl"><span class="s2">        最后一步的结果应为最终答案。确保每个步骤都包含所需的所有信息——不要跳过步骤。
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        你的目标是：
+</span></span></span><span class="line"><span class="cl"><span class="s2">        {input}
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        你最初的计划是：
+</span></span></span><span class="line"><span class="cl"><span class="s2">        {plan}
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        你目前已完成以下步骤：
+</span></span></span><span class="line"><span class="cl"><span class="s2">        {past_steps}
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        相应地更新你的计划。如果无需更多步骤且可以回复用户，则进行回复。否则，填写计划。仅在计划中添加仍需完成的步骤。不要将已完成的步骤作为计划的一部分返回。
+</span></span></span><span class="line"><span class="cl"><span class="s2">        
+</span></span></span><span class="line"><span class="cl"><span class="s2">        必须严格按照以下格式要求返回数据，不要添加任何额外内容：</span><span class="se">\n</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        {format_instructions}</span><span class="se">\n\n</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        请确保输出完全符合上述格式，字段类型和约束要严格遵守。
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span><span class="p">)</span>  <span class="c1"># 添加了JSON格式要求</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 2. 创建解析器,用于生成响应格式说明</span>
+</span></span><span class="line"><span class="cl">        <span class="n">parser</span> <span class="o">=</span> <span class="n">PydanticOutputParser</span><span class="p">(</span><span class="n">pydantic_object</span><span class="o">=</span><span class="n">Act</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 3. 创建重新规划器：提示模板 + LLM（带结构化输出）</span>
+</span></span><span class="line"><span class="cl">        <span class="n">replanner</span> <span class="o">=</span> <span class="n">replanner_prompt</span> <span class="o">|</span> <span class="n">initialize_llm</span><span class="p">()</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">Act</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 4. 调用重新规划器生成新的动作指令</span>
+</span></span><span class="line"><span class="cl">        <span class="n">output</span> <span class="o">=</span> <span class="n">await</span> <span class="n">replanner</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">({</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;input&#34;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;input&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;plan&#34;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;plan&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;past_steps&#34;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;past_steps&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;format_instructions&#34;</span><span class="p">:</span> <span class="n">parser</span><span class="o">.</span><span class="n">get_format_instructions</span><span class="p">()</span>  <span class="c1"># 解析器生成格式说明</span>
+</span></span><span class="line"><span class="cl">        <span class="p">})</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 5. 根据输出的动作类型返回不同的结果</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">Response</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 如果是响应动作，返回最终回答</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="p">{</span><span class="s2">&#34;response&#34;</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">response</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 如果是计划动作，返回更新后的计划</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="p">{</span><span class="s2">&#34;plan&#34;</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">action</span><span class="o">.</span><span class="n">steps</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="err">@</span><span class="n">staticmethod</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">should_end</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">PlanExecute</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;路由节点：决定是否结束流程
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        根据当前状态判断工作流应继续执行还是结束
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        参数:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            state: 当前工作流状态
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        返回:
+</span></span></span><span class="line"><span class="cl"><span class="s2">            下一步节点名称（&#34;execute&#34;表示继续执行，END表示结束）
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 若状态中有response（最终答案），则返回END（结束）；否则返回&#34;execute&#34;（继续执行）</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">END</span> <span class="k">if</span> <span class="s2">&#34;response&#34;</span> <span class="ow">in</span> <span class="n">state</span> <span class="ow">and</span> <span class="n">state</span><span class="p">[</span><span class="s2">&#34;response&#34;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&#34;execute&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 图构建（工作流定义）</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">build_plan_and_execute_workflow</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">CompiledStateGraph</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;构建plan-execute工作流图
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">    定义工作流中的节点和节点之间的连接关系，构建完整的智能体工作流程
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">    返回:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        编译好的状态图(CompiledStateGraph)
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">workflow</span> <span class="o">=</span> <span class="n">StateGraph</span><span class="p">(</span><span class="n">PlanExecute</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 添加节点</span>
+</span></span><span class="line"><span class="cl">    <span class="n">workflow</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&#34;planner&#34;</span><span class="p">,</span> <span class="n">Nodes</span><span class="o">.</span><span class="n">plan_step</span><span class="p">)</span>  <span class="c1"># 规划节点</span>
+</span></span><span class="line"><span class="cl">    <span class="n">workflow</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&#34;execute&#34;</span><span class="p">,</span> <span class="n">Nodes</span><span class="o">.</span><span class="n">execute_step</span><span class="p">)</span>  <span class="c1"># 执行节点</span>
+</span></span><span class="line"><span class="cl">    <span class="n">workflow</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&#34;replan&#34;</span><span class="p">,</span> <span class="n">Nodes</span><span class="o">.</span><span class="n">replan_step</span><span class="p">)</span>  <span class="c1"># 重新规划节点</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 定义节点间的连接关系</span>
+</span></span><span class="line"><span class="cl">    <span class="n">workflow</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="s2">&#34;planner&#34;</span><span class="p">)</span>  <span class="c1"># 起始点 -&gt; 规划节点</span>
+</span></span><span class="line"><span class="cl">    <span class="n">workflow</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">&#34;planner&#34;</span><span class="p">,</span> <span class="s2">&#34;execute&#34;</span><span class="p">)</span>  <span class="c1"># 规划节点 -&gt; 执行节点</span>
+</span></span><span class="line"><span class="cl">    <span class="n">workflow</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">&#34;execute&#34;</span><span class="p">,</span> <span class="s2">&#34;replan&#34;</span><span class="p">)</span>  <span class="c1"># 执行节点 -&gt; 重新规划节点</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 添加条件边：根据重新规划的结果决定下一步</span>
+</span></span><span class="line"><span class="cl">    <span class="n">workflow</span><span class="o">.</span><span class="n">add_conditional_edges</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;replan&#34;</span><span class="p">,</span>  <span class="c1"># 源节点</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Nodes</span><span class="o">.</span><span class="n">should_end</span><span class="p">,</span>  <span class="c1"># 路由判断函数</span>
+</span></span><span class="line"><span class="cl">        <span class="p">[</span><span class="s2">&#34;execute&#34;</span><span class="p">,</span> <span class="n">END</span><span class="p">],</span>  <span class="c1"># 可能的目标节点</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 编译并返回工作流图</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">workflow</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">save_grath_image</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">CompiledStateGraph</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;保存工作流图为图片
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">    生成并保存工作流的可视化图表，默认使用mermaid api 生成图片，需要科学上网。
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">    参数:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        app: 编译好的状态图实例
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">from</span> <span class="n">PIL</span> <span class="n">import</span> <span class="ne">Image</span>
+</span></span><span class="line"><span class="cl">    <span class="n">import</span> <span class="n">io</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 获取图像二进制数据（使用mermaid API生成）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">image_bytes</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get_graph</span><span class="p">(</span><span class="n">xray</span><span class="o">=</span><span class="n">True</span><span class="p">)</span><span class="o">.</span><span class="n">draw_mermaid_png</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">image_stream</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">image_bytes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 保存为本地文件</span>
+</span></span><span class="line"><span class="cl">    <span class="n">with</span> <span class="ne">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_stream</span><span class="p">)</span> <span class="n">as</span> <span class="n">img</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&#34;plan_and_execute.png&#34;</span><span class="p">)</span>  <span class="c1"># 保存为PNG格式</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 主程序</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ----------------------------</span>
+</span></span><span class="line"><span class="cl"><span class="n">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;运行计划-执行智能体示例&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 1. 初始化环境变量</span>
+</span></span><span class="line"><span class="cl">    <span class="n">load_environment</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 2. 构建工作流</span>
+</span></span><span class="line"><span class="cl">    <span class="n">app</span> <span class="o">=</span> <span class="n">build_plan_and_execute_workflow</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 3. （可选）保存工作流图片（需科学上网）</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 默认使用mermaid api 生成图片，需要科学上网,才能执行成功</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># save_grath_image(app)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 4. 测试查询（用户输入）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;input&#34;</span><span class="p">:</span> <span class="s2">&#34;2024年澳大利亚网球公开赛男子单打冠军的家乡是哪里？&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 5. 设置递归限制（防止无限循环）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;recursion_limit&#34;</span><span class="p">:</span> <span class="n">Config</span><span class="o">.</span><span class="n">RECURSION_LIMIT</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 6. 流式运行工作流（实时输出每一步结果）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">astream</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&#34;__end__&#34;</span><span class="p">:</span>  <span class="c1"># 过滤掉结束标记</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">import</span> <span class="n">asyncio</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 运行主程序</span>
+</span></span><span class="line"><span class="cl">    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="63-运行测试">6.3 运行测试
+</h3><p>执行以下命令，由于使用tavily搜索引擎，需要配置科学上网哦：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python plan_and_execute.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>或者在IDE如<code>pycharm</code>中右键<code>运行</code>。</p>
+<p>执行结果如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">D</span><span class="p">:</span>\<span class="n">program</span>\<span class="n">anaconda3</span>\<span class="n">envs</span>\<span class="n">langchain_311_env</span>\<span class="n">python</span><span class="o">.</span><span class="n">exe</span> <span class="n">D</span><span class="p">:</span>\<span class="n">dev</span>\<span class="n">guwei</span>\<span class="n">tiny</span><span class="o">-</span><span class="n">agent</span><span class="o">-</span><span class="n">lab</span>\<span class="n">agent</span><span class="o">-</span><span class="n">practice</span>\<span class="n">cognitive_architecture</span>\<span class="n">plan_and_execute</span>\<span class="n">plan_and_execute</span><span class="o">.</span><span class="n">py</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s1">&#39;plan&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;确定2024年澳大利亚网球公开赛男子单打冠军是谁。&#39;</span><span class="p">,</span> <span class="s1">&#39;查找该冠军选手的家乡所在地。&#39;</span><span class="p">,</span> <span class="s1">&#39;返回该地点信息作为最终答案。&#39;</span><span class="p">]}</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">checkpoint</span><span class="p">]</span> <span class="n">State</span> <span class="n">at</span> <span class="n">the</span> <span class="n">end</span> <span class="n">of</span> <span class="n">step</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s1">&#39;messages&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">tasks</span><span class="p">]</span> <span class="n">Starting</span> <span class="mi">1</span> <span class="n">task</span> <span class="k">for</span> <span class="n">step</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="o">-</span> <span class="n">__start__</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="s1">&#39;messages&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">               <span class="s1">&#39;对于以下计划：</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">               <span class="s1">&#39;                        1. 确定2024年澳大利亚网球公开赛男子单打冠军是谁。</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">               <span class="s1">&#39;2. 查找该冠军选手的家乡所在地。</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">               <span class="s1">&#39;3. 返回该地点信息作为最终答案。</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">               <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">               <span class="s1">&#39;你的任务是执行第1步：确定2024年澳大利亚网球公开赛男子单打冠军是谁。。&#39;</span><span class="p">)]}</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">writes</span><span class="p">]</span> <span class="n">Finished</span> <span class="n">step</span> <span class="mi">0</span> <span class="n">with</span> <span class="n">writes</span> <span class="n">to</span> <span class="mi">1</span> <span class="n">channel</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="o">-</span> <span class="n">messages</span> <span class="o">-&gt;</span> <span class="p">[(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;对于以下计划：</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;                        1. 确定2024年澳大利亚网球公开赛男子单打冠军是谁。</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;2. 查找该冠军选手的家乡所在地。</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;3. 返回该地点信息作为最终答案。</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+</span></span><span class="line"><span class="cl">  <span class="s1">&#39;你的任务是执行第1步：确定2024年澳大利亚网球公开赛男子单打冠军是谁。。&#39;</span><span class="p">)]</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">checkpoint</span><span class="p">]</span> <span class="n">State</span> <span class="n">at</span> <span class="n">the</span> <span class="n">end</span> <span class="n">of</span> <span class="n">step</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s1">&#39;messages&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">HumanMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s1">&#39;对于以下计划：</span><span class="se">\n</span><span class="s1">                        1. 确定2024年澳大利亚网球公开赛男子单打冠军是谁。</span><span class="se">\n</span><span class="s1">2. 查找该冠军选手的家乡所在地。</span><span class="se">\n</span><span class="s1">3. 返回该地点信息作为最终答案。</span><span class="se">\n\n</span><span class="s1">你的任务是执行第1步：确定2024年澳大利亚网球公开赛男子单打冠军是谁。。&#39;</span><span class="p">,</span> <span class="n">additional_kwargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">response_metadata</span><span class="o">=</span><span class="p">{},</span> <span class="n">id</span><span class="o">=</span><span class="s1">&#39;961a5990-e723-490e-8a29-45e1ddb66451&#39;</span><span class="p">)]}</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">tasks</span><span class="p">]</span> <span class="n">Starting</span> <span class="mi">1</span> <span class="n">task</span> <span class="k">for</span> <span class="n">step</span> <span class="mi">1</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="o">-</span> <span class="n">agent</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="s1">&#39;is_last_step&#39;</span><span class="p">:</span> <span class="n">False</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"> <span class="s1">&#39;messages&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">HumanMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s1">&#39;对于以下计划：</span><span class="se">\n</span><span class="s1">                        1. 确定2024年澳大利亚网球公开赛男子单打冠军是谁。</span><span class="se">\n</span><span class="s1">2. 查找该冠军选手的家乡所在地。</span><span class="se">\n</span><span class="s1">3. 返回该地点信息作为最终答案。</span><span class="se">\n\n</span><span class="s1">你的任务是执行第1步：确定2024年澳大利亚网球公开赛男子单打冠军是谁。。&#39;</span><span class="p">,</span> <span class="n">additional_kwargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">response_metadata</span><span class="o">=</span><span class="p">{},</span> <span class="n">id</span><span class="o">=</span><span class="s1">&#39;961a5990-e723-490e-8a29-45e1ddb66451&#39;</span><span class="p">)],</span>
+</span></span><span class="line"><span class="cl"> <span class="s1">&#39;remaining_steps&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl"> <span class="o">......</span><span class="err">省略</span>
+</span></span><span class="line"><span class="cl"> 
+</span></span><span class="line"><span class="cl"> <span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="n">checkpoint</span><span class="p">]</span> <span class="n">State</span> <span class="n">at</span> <span class="n">the</span> <span class="n">end</span> <span class="n">of</span> <span class="n">step</span> <span class="mi">3</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s1">&#39;messages&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">HumanMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s1">&#39;对于以下计划：</span><span class="se">\n</span><span class="s1">                        1. 查找扬尼克·辛纳（Jannik Sinner）的家乡所在地。</span><span class="se">\n</span><span class="s1">2. 返回该地点信息作为最终答案。</span><span class="se">\n\n</span><span class="s1">你的任务是执行第1步：查找扬尼克·辛纳（Jannik Sinner）的家乡所在地。。&#39;</span><span class="p">,</span> <span class="n">additional_kwargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">response_metadata</span><span class="o">=</span><span class="p">{},</span> <span class="n">id</span><span class="o">=</span><span class="s1">&#39;a80a2c97-c82c-4852-8767-487e18107b77&#39;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">              <span class="n">AIMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">additional_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tool_calls&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;call_3aff83ab43c94e5d828682&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;arguments&#39;</span><span class="p">:</span> <span class="s1">&#39;{&#34;query&#34;: &#34;Jannik Sinner hometown&#34;}&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;tavily_search&#39;</span><span class="p">},</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;function&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}],</span> <span class="s1">&#39;refusal&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">},</span> <span class="n">response_metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;token_usage&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;completion_tokens&#39;</span><span class="p">:</span> <span class="mi">26</span><span class="p">,</span> <span class="s1">&#39;prompt_tokens&#39;</span><span class="p">:</span> <span class="mi">1175</span><span class="p">,</span> <span class="s1">&#39;total_tokens&#39;</span><span class="p">:</span> <span class="mi">1201</span><span class="p">,</span> <span class="s1">&#39;completion_tokens_details&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">,</span> <span class="s1">&#39;prompt_tokens_details&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">},</span> <span class="s1">&#39;model_name&#39;</span><span class="p">:</span> <span class="s1">&#39;qwen-plus-2025-04-28&#39;</span><span class="p">,</span> <span class="s1">&#39;system_fingerprint&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;chatcmpl-a398dbdc-edbf-9357-9281-6f69e4fe7b25&#39;</span><span class="p">,</span> <span class="s1">&#39;service_tier&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">,</span> <span class="s1">&#39;finish_reason&#39;</span><span class="p">:</span> <span class="s1">&#39;tool_calls&#39;</span><span class="p">,</span> <span class="s1">&#39;logprobs&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">},</span> <span class="n">id</span><span class="o">=</span><span class="s1">&#39;run--85564be0-28ac-4d7f-a700-ee6050307128-0&#39;</span><span class="p">,</span> <span class="n">tool_calls</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;tavily_search&#39;</span><span class="p">,</span> <span class="s1">&#39;args&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="s1">&#39;Jannik Sinner hometown&#39;</span><span class="p">},</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;call_3aff83ab43c94e5d828682&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;tool_call&#39;</span><span class="p">}],</span> <span class="n">usage_metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="mi">1175</span><span class="p">,</span> <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="mi">26</span><span class="p">,</span> <span class="s1">&#39;total_tokens&#39;</span><span class="p">:</span> <span class="mi">1201</span><span class="p">,</span> <span class="s1">&#39;input_token_details&#39;</span><span class="p">:</span> <span class="p">{},</span> <span class="s1">&#39;output_token_details&#39;</span><span class="p">:</span> <span class="p">{}}),</span>
+</span></span><span class="line"><span class="cl">              <span class="n">ToolMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s1">&#39;{&#34;query&#34;: &#34;Jannik Sinner hometown&#34;, &#34;follow_up_questions&#34;: null, &#34;answer&#34;: null, &#34;images&#34;: [], &#34;results&#34;: [{&#34;url&#34;: &#34;https://en.wikipedia.org/wiki/Jannik_Sinner&#34;, &#34;title&#34;: &#34;Jannik Sinner&#34;, &#34;content&#34;: &#34;Jannik Sinner was born 16 August 2001 to Hanspeter and Siglinde Sinner in ... He grew up in the town of Sexten in the Dolomites, the family hometown, where ...See more&#34;, &#34;score&#34;: 0.98563, &#34;raw_content&#34;: null}, {&#34;url&#34;: &#34;https://www.britannica.com/biography/Jannik-Sinner&#34;, &#34;title&#34;: &#34;Jannik Sinner | Height, Age, Wimbledon, Carlos Alcaraz, &amp; ...&#34;, &#34;content&#34;: &#34;Jannik Sinner has won four Grand Slam titles: the Australian Open twice (2024, 2025), Wimbledon once (2025), and the U.S. Open once (2024). **Jannik Sinner** (born August 16, 2001, San Candido, Italy) is an Italian tennis player who is a leading star in the generation of players rising in the wake of the indomitable Big Three (Novak Djokovic, Roger Federer, and Rafael Nadal). In 2024 Sinner won his first majors, at the Australian Open and the U.S. Open, and attained the number one ranking on the men’s ATP (Association of Tennis Professionals) tour. Sinner won four ATP titles in 2021 and advanced to the round of 16 in both the French Open and the U.S. Open.&#34;, &#34;score&#34;: 0.9835, &#34;raw_content&#34;: null}], &#34;response_time&#34;: 1.01, &#34;request_id&#34;: &#34;1ded3904-8b59-43c8-b290-0f5393490872&#34;}&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;tavily_search&#39;</span><span class="p">,</span> <span class="n">id</span><span class="o">=</span><span class="s1">&#39;3022a878-ae9c-4637-a84a-3fcbb984db66&#39;</span><span class="p">,</span> <span class="n">tool_call_id</span><span class="o">=</span><span class="s1">&#39;call_3aff83ab43c94e5d828682&#39;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">              <span class="n">AIMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s1">&#39;扬尼克·辛纳（Jannik Sinner）的家乡是意大利的桑坎迪多（San Candido）。他于2001年8月16日出生在那里。此外，他成长于多洛米蒂山脉的塞斯顿（Sexten）镇，这是他家庭的故乡。&#39;</span><span class="p">,</span> <span class="n">additional_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;refusal&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">},</span> <span class="n">response_metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;token_usage&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;completion_tokens&#39;</span><span class="p">:</span> <span class="mi">67</span><span class="p">,</span> <span class="s1">&#39;prompt_tokens&#39;</span><span class="p">:</span> <span class="mi">1652</span><span class="p">,</span> <span class="s1">&#39;total_tokens&#39;</span><span class="p">:</span> <span class="mi">1719</span><span class="p">,</span> <span class="s1">&#39;completion_tokens_details&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">,</span> <span class="s1">&#39;prompt_tokens_details&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">},</span> <span class="s1">&#39;model_name&#39;</span><span class="p">:</span> <span class="s1">&#39;qwen-plus-2025-04-28&#39;</span><span class="p">,</span> <span class="s1">&#39;system_fingerprint&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;chatcmpl-f6f9b966-f2db-9624-9c6d-3306ae217dc2&#39;</span><span class="p">,</span> <span class="s1">&#39;service_tier&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">,</span> <span class="s1">&#39;finish_reason&#39;</span><span class="p">:</span> <span class="s1">&#39;stop&#39;</span><span class="p">,</span> <span class="s1">&#39;logprobs&#39;</span><span class="p">:</span> <span class="n">None</span><span class="p">},</span> <span class="n">id</span><span class="o">=</span><span class="s1">&#39;run--d7f867fe-7fb2-4c76-b727-65897708a403-0&#39;</span><span class="p">,</span> <span class="n">usage_metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;input_tokens&#39;</span><span class="p">:</span> <span class="mi">1652</span><span class="p">,</span> <span class="s1">&#39;output_tokens&#39;</span><span class="p">:</span> <span class="mi">67</span><span class="p">,</span> <span class="s1">&#39;total_tokens&#39;</span><span class="p">:</span> <span class="mi">1719</span><span class="p">,</span> <span class="s1">&#39;input_token_details&#39;</span><span class="p">:</span> <span class="p">{},</span> <span class="s1">&#39;output_token_details&#39;</span><span class="p">:</span> <span class="p">{}})]}</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s1">&#39;past_steps&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;查找扬尼克·辛纳（Jannik Sinner）的家乡所在地。&#39;</span><span class="p">,</span> <span class="s1">&#39;扬尼克·辛纳（Jannik Sinner）的家乡是意大利的桑坎迪多（San Candido）。他于2001年8月16日出生在那里。此外，他成长于多洛米蒂山脉的塞斯顿（Sexten）镇，这是他家庭的故乡。&#39;</span><span class="p">)]}</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="s1">&#39;2024年澳大利亚网球公开赛男子单打冠军扬尼克·辛纳的家乡是意大利的桑坎迪多（San Candido）。&#39;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Process</span> <span class="n">finished</span> <span class="n">with</span> <span class="n">exit</span> <span class="n">code</span> <span class="mi">0</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最后响应结果为：<code>{'response': '2024年澳大利亚网球公开赛男子单打冠军扬尼克·辛纳的家乡是意大利的桑坎迪多（San Candido）。'}</code></p>
+<h3 id="64-结论">6.4 结论
+</h3><p>从设计角度看，<code>Plan-and-Execute</code>是对<code>ReAct</code>和<code>ReWOO</code>模式的进一步优化：</p>
+<ul>
+<li>相比<code>ReAct</code>，它的优势在于推理阶段就形成明确的长期规划，能指导执行路径，解决了<code>ReAct</code>缺乏对任务全局的统筹规划、复杂场景下易出现路径冗余或目标偏移的问题；</li>
+<li>相比<code>ReWOO</code>，它新增<code>eplanner（重规划器）</code>，实现了计划的动态调整机制，弥补了<code>ReWOO</code>一旦生成计划就无法灵活调整的缺陷 —— 避免了因某子任务执行结果偏离预期却无法修正，最终导致 “一步错、步步错” 的问题。</li>
+</ul>
+<p>不过<code>Plan-and-Execute</code>存在一个明显局限：任务需按顺序执行，下一个任务必须等待上一个完成才能启动，总执行时间等同于所有任务耗时之和，效率较低。改进的方式是：可将任务的 “线性列表” 式结构，转化为<strong>有向无环图（DAG）</strong> 结构 —— 通过 DAG 明确任务间的依赖关系，让无依赖的任务实现并行执行，可大幅缩短总耗时。这种改进思路类似于LLM Compiler`设计模式的逻辑。</p>
+<p>完整源码地址：</p>
+<ul>
+<li>GitHub 仓库：https://github.com/tinyseeking/tidy-agent-practice/tree/main/cognitive_pattern/plan_and_solve</li>
+<li>Gitee 仓库（国内）：https://gitee.com/tinyseeking/tidy-agent-practice/tree/main/cognitive_pattern/plan_and_solve</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+        
+        <div class="article-image">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250815105357593.png" width="1042" height="673" loading="lazy"
+                alt="Featured image of post 开源智能体框架——Self-Ask 原理、架构与代码实现">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #fcfdfd80 0%, #fcfdfdC0 100%);">
+            <h2 class="article-title">开源智能体框架——Self-Ask 原理、架构与代码实现</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6react-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+        
+        <div class="article-image">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6react-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250730154511612.png" width="1229" height="627" loading="lazy"
+                alt="Featured image of post 开源智能体框架——ReAct 原理、架构与代码实现">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #55575b80 0%, #f8f9f9C0 100%);">
+            <h2 class="article-title">开源智能体框架——ReAct 原理、架构与代码实现</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%90%AD%E5%BB%BA%E7%AC%AC%E4%B8%80%E4%B8%AArag%E5%AE%9E%E6%88%98%E5%AE%9E%E7%8E%B0%E6%9C%AC%E5%9C%B0%E6%96%87%E6%A1%A3%E6%99%BA%E8%83%BD%E9%97%AE%E7%AD%94/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%90%AD%E5%BB%BA%E7%AC%AC%E4%B8%80%E4%B8%AArag%E5%AE%9E%E6%88%98%E5%AE%9E%E7%8E%B0%E6%9C%AC%E5%9C%B0%E6%96%87%E6%A1%A3%E6%99%BA%E8%83%BD%E9%97%AE%E7%AD%94/images/image-20260102230727272.png" width="1448" height="714" loading="lazy"
+                alt="Featured image of post 手把手搭建第一个RAG实战：实现本地文档智能问答">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #219bdb80 0%, #fdfcfaC0 100%);">
+            <h2 class="article-title">手把手搭建第一个RAG实战：实现本地文档智能问答</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089.jpg" width="1372" height="639" loading="lazy"
+                alt="Featured image of post 构建 AI Agent 的技术架构">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #46464680 0%, #f9fafaC0 100%);">
+            <h2 class="article-title">构建 AI Agent 的技术架构</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/">
+        
+        <div class="article-image">
+            <img src="../../p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330.png" width="1313" height="538" loading="lazy"
+                alt="Featured image of post AI Agent 核心概念">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #9d5c5480 0%, #fefcfcC0 100%);">
+            <h2 class="article-title">AI Agent 核心概念</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

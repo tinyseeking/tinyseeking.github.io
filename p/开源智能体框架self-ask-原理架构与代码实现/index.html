@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="该框架是在思维链基础上进行改进，核心机制为：引导大语言模型在回答初始复杂问题前，显式地**自我提问**是否可以把问题改写/拆解成一个简单的子问题，并进行回答，回答时可以调用搜索工具来获得答案，然后根据工具返回结果，继续进行自我提问，直到模型认为无需继续提出子问题后，再整合之前的子问题及其答案，生成最终的答复。">
+<title>开源智能体框架——Self-Ask 原理、架构与代码实现</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="开源智能体框架——Self-Ask 原理、架构与代码实现">
+<meta property='og:description' content="该框架是在思维链基础上进行改进，核心机制为：引导大语言模型在回答初始复杂问题前，显式地**自我提问**是否可以把问题改写/拆解成一个简单的子问题，并进行回答，回答时可以调用搜索工具来获得答案，然后根据工具返回结果，继续进行自我提问，直到模型认为无需继续提出子问题后，再整合之前的子问题及其答案，生成最终的答复。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2026-01-19T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-01-19T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="开源智能体框架——Self-Ask 原理、架构与代码实现">
+<meta name="twitter:description" content="该框架是在思维链基础上进行改进，核心机制为：引导大语言模型在回答初始复杂问题前，显式地**自我提问**是否可以把问题改写/拆解成一个简单的子问题，并进行回答，回答时可以调用搜索工具来获得答案，然后根据工具返回结果，继续进行自我提问，直到模型认为无需继续提出子问题后，再整合之前的子问题及其答案，生成最终的答复。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#1-介绍">1 介绍</a></li>
+    <li><a href="#2-实验示例">2 实验示例</a></li>
+    <li><a href="#3-核心思想">3 核心思想</a></li>
+    <li><a href="#4-工作流程">4 <strong>工作流程</strong></a></li>
+    <li><a href="#5-应用场景">5. 应用场景</a></li>
+    <li><a href="#6-代码实现">6. 代码实现</a>
+      <ol>
+        <li><a href="#61-前置准备">6.1 前置准备</a></li>
+        <li><a href="#62-编写代码">6.2 编写代码</a></li>
+        <li><a href="#63-完整实现代码">6.3 完整实现代码</a></li>
+        <li><a href="#64--运行测试">6.4  运行测试</a></li>
+      </ol>
+    </li>
+    <li><a href="#7-总结">7 总结</a></li>
+    <li><a href="#8-实验测试及结果附录">8 实验测试及结果（附录）</a>
+      <ol>
+        <li><a href="#测试数据集">测试数据集</a></li>
+        <li><a href="#关键测试结果">关键测试结果</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250815105357593.png" width="1042" height="673" loading="lazy"
+                alt="Featured image of post 开源智能体框架——Self-Ask 原理、架构与代码实现" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">开源智能体框架——Self-Ask 原理、架构与代码实现</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            该框架是在思维链基础上进行改进，核心机制为：引导大语言模型在回答初始复杂问题前，显式地**自我提问**是否可以把问题改写/拆解成一个简单的子问题，并进行回答，回答时可以调用搜索工具来获得答案，然后根据工具返回结果，继续进行自我提问，直到模型认为无需继续提出子问题后，再整合之前的子问题及其答案，生成最终的答复。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-01-19T00:00:00Z'>2026年1月19日星期一</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 23 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#1-介绍">1 介绍</a></li>
+    <li><a href="#2-实验示例">2 实验示例</a></li>
+    <li><a href="#3-核心思想">3 核心思想</a></li>
+    <li><a href="#4-工作流程">4 <strong>工作流程</strong></a></li>
+    <li><a href="#5-应用场景">5. 应用场景</a></li>
+    <li><a href="#6-代码实现">6. 代码实现</a>
+      <ol>
+        <li><a href="#61-前置准备">6.1 前置准备</a></li>
+        <li><a href="#62-编写代码">6.2 编写代码</a></li>
+        <li><a href="#63-完整实现代码">6.3 完整实现代码</a></li>
+        <li><a href="#64--运行测试">6.4  运行测试</a></li>
+      </ol>
+    </li>
+    <li><a href="#7-总结">7 总结</a></li>
+    <li><a href="#8-实验测试及结果附录">8 实验测试及结果（附录）</a>
+      <ol>
+        <li><a href="#测试数据集">测试数据集</a></li>
+        <li><a href="#关键测试结果">关键测试结果</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="self-ask-原理架构与代码实现">Self-Ask 原理、架构与代码实现
+</h1><h2 id="1-介绍">1 介绍
+</h2><p>​		在自然语言处理领域，大语言模型（LLMs）已展现出强大能力。但当面对复杂的推理问题，特别是在处理需要将多个子问题的答案进行组合以得出最终解答的任务时，模型存在显著缺陷。即模型能正确回答了各个子问题，却无法整合这些信息以生成正确的答案。</p>
+<p>​		例如，模型能够准确回答 “贾斯汀・比伯是哪年出生的？” 以及 “大师赛冠军通常在哪些年份产生？”，但当被问及 “谁是贾斯汀・比伯出生那一年的大师赛冠军？”这样的2跳组合问题时，却可能给出错误答案。</p>
+<p>​		这一局限暴露了大模型的核心问题：<strong>擅长记忆事实，但不擅长基于事实进行推理</strong>。传统提示方法（如直接提问）无法引导模型 “主动思考”，导致复杂任务的解决依赖于训练数据中是否存在现成答案，而非真正的推理能力。</p>
+<p>​		2023 年 10 月，来自华盛顿大学、OpenAI 等机构的研究人员 Ofir Press、Muru Zhang 等在 arXiv 上发表了名为《Measuring and Narrowing the Compositionality Gap in Language Models》的论文，论文中引入了<strong>组合性差距</strong>这一术语，来描述在所有 “由多个子问题组成、且模型能把每个子问题都答对” 的组合问题里，模型把整个组合问题回答错误的比例。并且提出了一种创新的方法 —**Self-Ask（自我询问）框架：**让语言模型将复杂问题分解为更简单的子问题，先回答子问题再回答主问题方式，显著的缩小了组合性差距，并且可以在回答子问题时，轻松接入搜索引擎的搜索结果，进一步提高准确性。</p>
+<p>​		该框架是在思维链基础上进行改进，核心机制为：引导大语言模型在回答初始复杂问题前，显式地<strong>自我提问</strong>是否可以把问题改写/拆解成一个简单的子问题，并进行回答，回答时可以调用搜索工具来获得答案，然后根据工具返回结果，继续进行自我提问，直到模型认为无需继续提出子问题后，再整合之前的子问题及其答案，生成最终的答复。这是一种递归式的问题拆解与解答过程，能让模型更系统地剖析复杂问题，更深入地探索问题的各个方面，从而提高答案的质量和准确性 。这就如同人类面对复杂问题时（如做复杂数学题目），会将大问题拆分成多个小问题，逐个思考解决后再汇总答案。</p>
+<h2 id="2-实验示例">2 实验示例
+</h2><p>​		Self-Ask建立在思维链(CoT)的基础上，但不同于输出连续的、未划分的思维链，而是让模型在回答问题之前显示地提出它想要问的下一个后续问题。</p>
+<p>​		具体步骤是：通过在提示词中加入 1-shot 或 few-shot 提示演示如何回答问题，接着附加推理时的问题。在提示的末尾插入短语 “Are follow up questions needed here：”，然后模型输出响应。在大多数情况下，模型首先输出 “是”，表示需要后续问题，并输出后续问题（Follow up）；接着模型回答它，并添加<code>Intermediate answer：</code>用于放置子问题的中间答案，继续重复提问和回答后续问题，直到模型认为自己有足够的信息；此时，输出 “所以最终答案是：”；这使得最终答案易于解析，即最后一行中 “：” 后面的内容。在极少数情况下，语言模型会认为不需要提出后续问题，可以立即回答问题，具体提出多少个后续问题是由模型来思考决策的。</p>
+<p><img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250807111054222.png"
+	width="1180"
+	height="596"
+	srcset="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250807111054222_hu_9bf94955c6f9f438.png 480w, ../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250807111054222_hu_85b18fecbce1191f.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250807111054222"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="197"
+		data-flex-basis="475px"
+	
+></p>
+<p>​			  图：直接提示与思维链和self-ask方法对比。白色背景的文本是提示，绿色背景的文本是语言模型的输出，带下划线的文本是推理时的问题。</p>
+<p>上图示例中，展示了三种方法：直接提示、思维链、self-ask在回答问题<code>超导现象被发现时，美国的总统是谁？</code>的对比。</p>
+<ol>
+<li>
+<p>直接提示（模型直接输出答案）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">问题：西奥多・海克尔和哈里・沃恩・沃特金斯谁活得更久？
+</span></span><span class="line"><span class="cl">答案：哈里・沃恩・沃特金斯。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">问题：超导现象被发现时，美国的总统是谁？
+</span></span><span class="line"><span class="cl">答案：富兰克林・D・罗斯福 （错误）
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>思维链（模型先输出推理过程再给答案）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">问题：西奥多・海克尔和哈里・沃恩・沃特金斯谁活得更久？
+</span></span><span class="line"><span class="cl">答案：西奥多・海克尔去世时 65 岁。哈里・沃恩・沃特金斯去世时 69 岁。所以最终答案（人名）是：哈里・沃恩・沃特金斯。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">问题：超导现象被发现时，美国的总统是谁？
+</span></span><span class="line"><span class="cl">答案：超导现象于 1911 年由海克・卡末林・昂内斯发现。伍德罗・威尔逊在 1913 年至 1921 年期间担任美国总统。所以最终答案（总统名）是：伍德罗・威尔逊。（正确）
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>self-ask（模型显式拆解问题为子问题，逐一解答后整合答案，含 “Follow up:”“Intermediate answer:” 等结构化支架）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">问题：西奥多・海克尔和哈里・沃恩・沃特金斯谁活得更久？
+</span></span><span class="line"><span class="cl">这里需要后续问题吗：是。
+</span></span><span class="line"><span class="cl">Follow up：西奥多・海克尔去世时多大年纪？
+</span></span><span class="line"><span class="cl">Intermediate answer：西奥多・海克尔去世时 65 岁。
+</span></span><span class="line"><span class="cl">Follow up：哈里・沃恩・沃特金斯去世时多大年纪？
+</span></span><span class="line"><span class="cl">Intermediate answer：哈里・沃恩・沃特金斯去世时 69 岁。
+</span></span><span class="line"><span class="cl">所以最终答案是：哈里・沃恩・沃特金斯 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">问题：超导现象被发现时，美国的总统是谁？(真正的用户问题)
+</span></span><span class="line"><span class="cl">这里需要后续问题吗：是。
+</span></span><span class="line"><span class="cl">Follow up：超导现象是什么时候被发现的？
+</span></span><span class="line"><span class="cl">Intermediate answer：超导现象于 1911 年被发现。
+</span></span><span class="line"><span class="cl">Follow up：1911 年美国的总统是谁？
+</span></span><span class="line"><span class="cl">Intermediate answer：威廉・霍华德・塔夫脱。
+</span></span><span class="line"><span class="cl">所以最终答案是：威廉・霍华德・塔夫脱。（正确）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Self-ask 优于思维链的优势在于，它将完整问题的分解（通过提出子问题）与这些子问题的实际答案分离开来，这使得子问题的回答可以借助外部的工具，如搜索引擎。此外，Self-ask 提供的严格框架使模型更容易以简洁、可解析的方式陈述最终答案。在某些情况下，思维链不会输出简短形式的最终答案，而是倾向于使用完整句子。</p>
+</li>
+</ol>
+<p><strong>用搜索引擎工具改进</strong></p>
+<p>​		另外，self-ask 在回答子问题时，可以利用外部搜索工具，即在Follow-up后的子问题，用搜索引擎来代替LLM来回答子问题。该子问题被输入搜索引擎；获取搜索引擎的查询结果，再反馈给语言模型，语言模型生成另一个子问题，依此类推，直到输出最终答案。如下图所示：</p>
+<p><img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/38881e417fdb4390bdf9b63c7707ebe3.png"
+	width="491"
+	height="710"
+	srcset="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/38881e417fdb4390bdf9b63c7707ebe3_hu_b6a2e26ce04a2c81.png 480w, ../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/38881e417fdb4390bdf9b63c7707ebe3_hu_ff321276719d3064.png 1024w"
+	loading="lazy"
+	
+		alt="img"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="69"
+		data-flex-basis="165px"
+	
+></p>
+<p>上图展示了 Self - Ask 结合搜索引擎解决问题的流程示例，逐步推理得出最终答案，具体步骤如下：</p>
+<ol>
+<li>
+<p><strong>初始问题与子问题拆解</strong></p>
+<p>首先使用一个少样本提示词，并将初始问题附加到该提示词后，发送给模型（这里是使用的模型是GPT-3）。初始问题是 “In what year was the current tallest wooden lattice tower completed?”（目前最高的木制 lattice 塔是哪一年建成的？ ）。</p>
+<p>模型判断需要后续问题（“Are follow up questions needed here: Yes” ），并提出第一个子问题 “What is the current tallest wooden lattice tower?”（目前最高的木制 lattice 塔是什么？ ）</p>
+</li>
+<li>
+<p><strong>结合搜索引擎获取子问题答案</strong></p>
+<p>将子问题 “What is the current tallest wooden lattice tower?” 作为查询（“Query” ）发给搜索引擎，得到响应（“Response” ）“Radio Tower Gliwice” ，即确定最高木制 lattice 塔是 Gliwice 无线电塔。</p>
+</li>
+<li>
+<p><strong>基于子问题答案继续推理</strong></p>
+<p>记录中间答案（“Intermediate answer: Radio Tower Gliwice” ），并提出新子问题 “When was Gliwice Radio Tower completed?”（Gliwice 无线电塔是哪一年建成的？ ）</p>
+</li>
+<li>
+<p><strong>再次结合搜索引擎与模型得出最终答案</strong></p>
+<p>把新子问题作为查询发给搜索引擎，得到响应 “1935” 。记录中间答案（“Intermediate answer: 1935” ），整合信息后输出最终答案 “So the final answer is: 1935” ，即确定目标塔的建成年份是 1935 年。</p>
+</li>
+</ol>
+<p>​		 Self-Ask框架通过“拆解复杂问题生成子问题→借助外部工具（搜索引擎）获取子问题答案→模型整合信息推理” 的分步处理迭代循环，让模型更系统地解决多跳推理问题，也展示了大语言模型与外部工具协同工作的过程。</p>
+<p><strong>同类技术对比</strong></p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>维度</th>
+          <th>直接提示</th>
+          <th>思维链（CoT）</th>
+          <th>ReAct</th>
+          <th>self-ask</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>核心逻辑</strong></td>
+          <td>直接输出答案，无中间步骤。</td>
+          <td>引导模型输出连续推理步骤（如 “一步步思考”），但步骤无结构化格式。</td>
+          <td>结合推理和行动，可调用外部工具获取信息。</td>
+          <td>显式拆分成子问题，并记录中间结果。</td>
+      </tr>
+      <tr>
+          <td><strong>适用场景</strong></td>
+          <td>单跳事实问答（如 “XXX 的生日是哪天？”）</td>
+          <td>简单推理任务（如数学题）</td>
+          <td>适用于需要外部知识或实时信息支持的任务，如查询天气、获取最新新闻等</td>
+          <td>多跳推理、需要结合外部工具的任务</td>
+      </tr>
+      <tr>
+          <td><strong>工具整合</strong></td>
+          <td>无</td>
+          <td>弱（步骤无明确边界，难对接工具）</td>
+          <td>强（可调用外部工具获取信息）</td>
+          <td>强（子问题可直接作为工具查询输入）</td>
+      </tr>
+      <tr>
+          <td><strong>性能瓶颈-</strong></td>
+          <td>依赖模型自身知识、超出自身知识的问题易出现幻觉。</td>
+          <td>在处理需要外部知识的问题时，由于自身知识局限，准确性可能不足。</td>
+          <td>对外部工具的依赖性较强，若工具出现问题，会影响整体结果。</td>
+          <td>对于不需要中间问题的简单问题，可能会增加推理步骤，降低效率。</td>
+      </tr>
+  </tbody>
+</table></div>
+<h2 id="3-核心思想">3 核心思想
+</h2><p>​		self-ask 的核心思想是<strong>模拟人类分步推理的认知过程</strong>：面对复杂问题时，先将其拆解为一系列可解决的子问题，逐一解答子问题后，再整合结果得到最终答案。</p>
+<p>具体来说，通过以下设计方法实现：</p>
+<ul>
+<li><strong>显式子问题分解</strong>：用 “Follow up: [子问题]” 的提示词格式，引导模型先生成需要解决的小问题。</li>
+<li><strong>结构化中间输出</strong>：再通过模型生成小问题的答案，用 “Intermediate answer: [子问题答案]” 记录每步结果，确保推理过程可追踪。</li>
+<li><strong>动态终止机制</strong>：让模型自己决定是否需要更多子问题，依次迭代，直到信息足够，再用 “Final answer: [结果]” 输出答案。</li>
+</ul>
+<p>深层来看，self-ask 其实是降低了推理的 “难度”。复杂问题的难点在于 “一次性记住所有步骤并组合”，而拆分成子问题后，模型每次只需解决一个简单问题，最后再汇总，自然不容易出错。</p>
+<h2 id="4-工作流程">4 <strong>工作流程</strong>
+</h2><p>self-ask 实现工作流程如下图所示：</p>
+<p><img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250815105357593.png"
+	width="1042"
+	height="673"
+	srcset="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250815105357593_hu_5564f9ae6e2eb25b.png 480w, ../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250815105357593_hu_cd8bc92237f56d10.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250815105357593"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="154"
+		data-flex-basis="371px"
+	
+></p>
+<p>步骤说明如下：</p>
+<ol>
+<li><strong>输入问题</strong>：用户输入需要解决的复杂问题（多跳推理问题）。比如 “弗里达・卡罗出生地的电话区号是什么？”。</li>
+<li><strong>模型判断是否需要子问题</strong>：构建提示词（ “Are follow up questions needed here:”）引导模型判断是否需分解问题，若模型认为当前信息已经足够回复用户问题，则直接生成答案，否则生成子问题。</li>
+<li><strong>解析子问题</strong>：解析模型生成的子问题：<code>Follow up:</code> 后面的信息（如 “Follow up: 子问题内容”），子问题需为可独立解答的简单问题。</li>
+<li><strong>回答子问题</strong>：模型自主回答子问题，或调用外部工具（如搜索引擎）获取答案，避免模型知识过时或不足。</li>
+<li><strong>记录中间结果</strong>：用 “Intermediate answer:” 存储子问题答案，作为后续推理的依据。</li>
+<li><strong>重复迭代</strong>：返回步骤 2，判断是否需要更多子问题，直至模型认为信息足够。</li>
+<li><strong>整合与输出</strong>：模型基于所有中间答案，推理得到最终结果，用 “Final answer:” 输出。</li>
+</ol>
+<h2 id="5-应用场景">5. 应用场景
+</h2><p>self-ask 的适用场景如下：</p>
+<ol>
+<li>
+<p><strong>复杂事实性问答</strong>：这类场景的核心需求是准确回答涉及多步推理、需要多个事实信息支撑的问题。self-ask 框架通过拆解问题为中间问题，逐步获取事实信息，能够很好地满足这一需求，其逐步推理的方式与复杂事实性问答对信息准确性和完整性的要求相匹配。</p>
+</li>
+<li>
+<p><strong>知识图谱查询辅助</strong>：在知识图谱查询中，有时需要明确多个实体之间的关系，核心需求是理清实体关联路径。self-ask 可以通过提出中间问题，逐步明确实体间的关系。</p>
+</li>
+<li>
+<p><strong>多步骤问题解决</strong>：如解决数学应用题、逻辑推理题等，核心需求是清晰的步骤和准确的中间结果。self-ask 的中间问题拆解和逐步解答模式，能够满足这类场景对步骤和中间结果的要求。</p>
+</li>
+</ol>
+<h2 id="6-代码实现">6. 代码实现
+</h2><h3 id="61-前置准备">6.1 前置准备
+</h3><ul>
+<li>
+<p>环境要求：</p>
+<ul>
+<li>Python 3.11+</li>
+<li>安装依赖库：<code>pip install openai requests python-dotenv  TavilyClient</code></li>
+</ul>
+</li>
+<li>
+<p>基础配置：</p>
+<ul>
+<li>
+<p>设置API Key</p>
+<p>创建<code>.env</code>文件，配置模型 API访问密钥，这里使用千问模型，需配置QWEN_API_KEY及QWEN_BASE_URL。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 千问模型接口访问key
+</span></span><span class="line"><span class="cl"># 如何获取API Key：https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key
+</span></span><span class="line"><span class="cl">QWEN_API_KEY=&#34;sk-*******&#34;
+</span></span><span class="line"><span class="cl"># 千问模型接口访问地址
+</span></span><span class="line"><span class="cl">QWEN_BASE_URL=&#34;https://dashscope.aliyuncs.com/compatible-mode/v1&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>搜索引擎 API 密钥（这里使用tavily）</p>
+<p><code>.env</code>文件中配置搜索引擎tavily API 密钥：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># tavily 搜索API KEY
+</span></span><span class="line"><span class="cl"># 访问 https://tavily.com 注册并获取API Key,用户每月有1000次免费调用额度.
+</span></span><span class="line"><span class="cl">TAVILY_API_KEY=&#34;tvly-ZuSNSW4CehsNizV****&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+</li>
+</ul>
+<h3 id="62-编写代码">6.2 编写代码
+</h3><ol>
+<li>
+<p><strong>定义用于判断是否需要生成子问题的prompt</strong>（参考论文示例）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">_get_followup_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;用于判断是否需要生成子问题的prompt&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">        问题：</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        已有的推理过程：</span><span class="si">{</span><span class="n">history</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        接下来还需要问什么问题吗？请仅回答&#34;Yes&#34;或&#34;No&#34;。如果回答Yes，请同时给出具体的追问（格式：Follow up:[你的问题]）。
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>定义基于综合中间答案得到最终结果的prompt</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">    def _get_final_answer_prompt(self, query: str, history: str) -&gt; str:
+</span></span><span class="line"><span class="cl">        &#34;&#34;&#34;基于综合中间答案得到最终结果的prompt&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">        return f&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">        请根据以下问题和推理过程，给出最终答案：
+</span></span><span class="line"><span class="cl">        问题：{query}
+</span></span><span class="line"><span class="cl">        推理过程：{history}
+</span></span><span class="line"><span class="cl">        请直接给出答案，无需额外解释。
+</span></span><span class="line"><span class="cl">        &#34;&#34;&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>调用模型生成子问题或最终答案</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">_call_llm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;调用LLM生成回答&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">llm_model</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}],</span>
+</span></span><span class="line"><span class="cl">                <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span>  <span class="c1"># 降低随机性，保证输出稳定</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
+</span></span><span class="line"><span class="cl">        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;LLM调用失败: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="s2">&#34;&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>对接搜索引擎工具获取子问题的答案</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">    def _search(self, query: str) -&gt; Optional[str]:
+</span></span><span class="line"><span class="cl">        &#34;&#34;&#34;使用搜索答案&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">        if not tavily_api_Key:
+</span></span><span class="line"><span class="cl">            print(&#34;未配置tavily_api_Key，跳过搜索&#34;)
+</span></span><span class="line"><span class="cl">            return None
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        client = TavilyClient(api_key=tavily_api_Key)
+</span></span><span class="line"><span class="cl">        try:
+</span></span><span class="line"><span class="cl">            # 调用Tavily API执行搜索
+</span></span><span class="line"><span class="cl">            response = client.search(query, max_results=2)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            # 提取搜索结果项
+</span></span><span class="line"><span class="cl">            items = response.get(&#34;results&#34;, [])
+</span></span><span class="line"><span class="cl">            # 提取所有摘要并合并为字符串（用换行分隔）
+</span></span><span class="line"><span class="cl">            combined_summary = &#34;\n&#34;.join([item[&#34;content&#34;] for item in items])
+</span></span><span class="line"><span class="cl">            print(f&#34;搜索结果：\n{combined_summary}&#34;)
+</span></span><span class="line"><span class="cl">            return combined_summary
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        except Exception as e:
+</span></span><span class="line"><span class="cl">            print(f&#34;搜索过程中发生错误: {e}&#34;)
+</span></span><span class="line"><span class="cl">            return None
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>核心流程：<code>run</code></strong></p>
+<p>该方法实现 self-ask 的完整逻辑：拆解问题→生成子问题→求解子问题→整合答案，步骤如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;运行Self-Ask流程&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">current_history</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 1. 判断是否需要继续提问</span>
+</span></span><span class="line"><span class="cl">            <span class="n">followup_prompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_followup_prompt</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">current_history</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">followup_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">followup_prompt</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># 2. 解析是否需要子问题</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="s2">&#34;No&#34;</span> <span class="ow">in</span> <span class="n">followup_response</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="c1"># 无需更多子问题，生成最终答案</span>
+</span></span><span class="line"><span class="cl">                <span class="n">final_prompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_final_answer_prompt</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">current_history</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">final_answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">final_prompt</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="n">final_answer</span>
+</span></span><span class="line"><span class="cl">            <span class="k">elif</span> <span class="s2">&#34;Yes&#34;</span> <span class="ow">in</span> <span class="n">followup_response</span> <span class="ow">and</span> <span class="s2">&#34;Follow up:&#34;</span> <span class="ow">in</span> <span class="n">followup_response</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="c1"># 提取子问题</span>
+</span></span><span class="line"><span class="cl">                <span class="n">followup_question</span> <span class="o">=</span> <span class="n">followup_response</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;Follow up:&#34;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&#34;followup&#34;</span><span class="p">:</span> <span class="n">followup_question</span><span class="p">,</span> <span class="s2">&#34;answer&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;子问题 </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">followup_question</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1"># 3. 搜索子问题答案（失败则用LLM回答）</span>
+</span></span><span class="line"><span class="cl">                <span class="n">search_answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search</span><span class="p">(</span><span class="n">followup_question</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="n">search_answer</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">intermediate_answer</span> <span class="o">=</span> <span class="n">search_answer</span>
+</span></span><span class="line"><span class="cl">                <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;搜索无结果，使用LLM回答子问题：</span><span class="si">{</span><span class="n">followup_question</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">intermediate_answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">followup_question</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1"># 4. 记录中间答案，更新历史</span>
+</span></span><span class="line"><span class="cl">                <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&#34;answer&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">intermediate_answer</span>
+</span></span><span class="line"><span class="cl">                <span class="n">current_history</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Follow up:</span><span class="si">{</span><span class="n">followup_question</span><span class="si">}</span><span class="se">\n</span><span class="s2">Intermediate answer: </span><span class="si">{</span><span class="n">intermediate_answer</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;中间答案 </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">intermediate_answer</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="c1"># LLM输出格式异常，直接用LLM回答原问题</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;LLM输出格式异常，直接回答原问题&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 超过最大步骤，强制生成最终答案</span>
+</span></span><span class="line"><span class="cl">        <span class="n">final_prompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_final_answer_prompt</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">current_history</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">final_prompt</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ol>
+<h3 id="63-完整实现代码">6.3 完整实现代码
+</h3><p>完整代码位于项目根目录下：<code>cognitive_pattern/self_ask/self_ask.py</code></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">OpenAI</span><span class="p">,</span> <span class="n">Client</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">tavily</span> <span class="kn">import</span> <span class="n">TavilyClient</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 加载环境变量</span>
+</span></span><span class="line"><span class="cl"><span class="n">load_dotenv</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># tavily 搜索API KEY</span>
+</span></span><span class="line"><span class="cl"><span class="n">tavily_api_Key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;TAVILY_API_KEY&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">initialize_model_client</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Client</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">     获取模型调用客户端,使用openai SDK，支持所有兼容openai接口的模型服务，默认使用千问模型
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">     Returns:
+</span></span></span><span class="line"><span class="cl"><span class="s2">         OpenAI客户端实例
+</span></span></span><span class="line"><span class="cl"><span class="s2">     &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 获取千问API密钥</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 千问模型接口访问key</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 如何获取API Key：https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key</span>
+</span></span><span class="line"><span class="cl">    <span class="n">qwen_api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;QWEN_API_KEY&#34;</span><span class="p">)</span>  <span class="c1"># 从环境变量获取</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">qwen_api_key</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;缺少环境变量QWEN_API_KEY&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 获取千问请求端口URL</span>
+</span></span><span class="line"><span class="cl">    <span class="n">qwen_base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;QWEN_BASE_URL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">qwen_base_url</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;缺少环境变量QWEN_BASE_URL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">api_key</span><span class="o">=</span><span class="n">qwen_api_key</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">base_url</span><span class="o">=</span><span class="n">qwen_base_url</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">client</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">SelfAskAgent</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">Client</span><span class="p">,</span> <span class="n">llm_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&#34;qwen-plus-latest&#34;</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">        初始化Self-Ask代理
+</span></span></span><span class="line"><span class="cl"><span class="s2">        :param client: 模型调用客户端
+</span></span></span><span class="line"><span class="cl"><span class="s2">        :param llm_model: 用于生成子问题和答案的LLM模型,默认使用千问模式:qwen-plus-latest
+</span></span></span><span class="line"><span class="cl"><span class="s2">        :param max_steps: 最大推理步骤（防止无限循环）
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">llm_model</span> <span class="o">=</span> <span class="n">llm_model</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span> <span class="o">=</span> <span class="n">max_steps</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># 记录推理历史：子问题、中间答案</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">_call_llm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;调用LLM生成回答&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">llm_model</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}],</span>
+</span></span><span class="line"><span class="cl">                <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span>  <span class="c1"># 降低随机性，保证输出稳定</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
+</span></span><span class="line"><span class="cl">        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;LLM调用失败: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;使用搜索答案&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="ow">not</span> <span class="n">tavily_api_Key</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;未配置tavily_api_Key，跳过搜索&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">client</span> <span class="o">=</span> <span class="n">TavilyClient</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">tavily_api_Key</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 调用Tavily API执行搜索</span>
+</span></span><span class="line"><span class="cl">            <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">max_results</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># 提取搜索结果项</span>
+</span></span><span class="line"><span class="cl">            <span class="n">items</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;results&#34;</span><span class="p">,</span> <span class="p">[])</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 提取所有摘要并合并为字符串（用换行分隔）</span>
+</span></span><span class="line"><span class="cl">            <span class="n">combined_summary</span> <span class="o">=</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">item</span><span class="p">[</span><span class="s2">&#34;content&#34;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;搜索结果：</span><span class="se">\n</span><span class="si">{</span><span class="n">combined_summary</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">combined_summary</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;搜索过程中发生错误: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">_get_followup_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;生成用于判断是否需要子问题的prompt&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">        问题：</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        已有的推理过程：</span><span class="si">{</span><span class="n">history</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        接下来还需要问什么问题吗？请仅回答&#34;Yes&#34;或&#34;No&#34;。如果回答Yes，请同时给出具体的追问（格式：Follow up:[你的问题]）。
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">_get_final_answer_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;生成用于综合中间答案得到最终结果的prompt&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">        请根据以下问题和推理过程，给出最终答案：
+</span></span></span><span class="line"><span class="cl"><span class="s2">        问题：</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        推理过程：</span><span class="si">{</span><span class="n">history</span><span class="si">}</span><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">        请直接给出答案，无需额外解释。
+</span></span></span><span class="line"><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;&#34;&#34;运行Self-Ask流程&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">current_history</span> <span class="o">=</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_steps</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 1. 判断是否需要继续提问</span>
+</span></span><span class="line"><span class="cl">            <span class="n">followup_prompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_followup_prompt</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">current_history</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">followup_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">followup_prompt</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># 2. 解析是否需要子问题</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="s2">&#34;No&#34;</span> <span class="ow">in</span> <span class="n">followup_response</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="c1"># 无需更多子问题，生成最终答案</span>
+</span></span><span class="line"><span class="cl">                <span class="n">final_prompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_final_answer_prompt</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">current_history</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">final_answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">final_prompt</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="n">final_answer</span>
+</span></span><span class="line"><span class="cl">            <span class="k">elif</span> <span class="s2">&#34;Yes&#34;</span> <span class="ow">in</span> <span class="n">followup_response</span> <span class="ow">and</span> <span class="s2">&#34;Follow up:&#34;</span> <span class="ow">in</span> <span class="n">followup_response</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="c1"># 提取子问题</span>
+</span></span><span class="line"><span class="cl">                <span class="n">followup_question</span> <span class="o">=</span> <span class="n">followup_response</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&#34;Follow up:&#34;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&#34;followup&#34;</span><span class="p">:</span> <span class="n">followup_question</span><span class="p">,</span> <span class="s2">&#34;answer&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">})</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;子问题 </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">followup_question</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1"># 3. 搜索子问题答案（失败则用LLM回答）</span>
+</span></span><span class="line"><span class="cl">                <span class="n">search_answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search</span><span class="p">(</span><span class="n">followup_question</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="n">search_answer</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">intermediate_answer</span> <span class="o">=</span> <span class="n">search_answer</span>
+</span></span><span class="line"><span class="cl">                <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;搜索无结果，使用LLM回答子问题：</span><span class="si">{</span><span class="n">followup_question</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">intermediate_answer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">followup_question</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1"># 4. 记录中间答案，更新历史</span>
+</span></span><span class="line"><span class="cl">                <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&#34;answer&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">intermediate_answer</span>
+</span></span><span class="line"><span class="cl">                <span class="n">current_history</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Follow up:</span><span class="si">{</span><span class="n">followup_question</span><span class="si">}</span><span class="se">\n</span><span class="s2">Intermediate answer: </span><span class="si">{</span><span class="n">intermediate_answer</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;中间答案 </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">intermediate_answer</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="c1"># LLM输出格式异常，直接用LLM回答原问题</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;LLM输出格式异常，直接回答原问题&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 超过最大步骤，强制生成最终答案</span>
+</span></span><span class="line"><span class="cl">        <span class="n">final_prompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_final_answer_prompt</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">current_history</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_llm</span><span class="p">(</span><span class="n">final_prompt</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 示例运行</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 初始话模型调用客户端</span>
+</span></span><span class="line"><span class="cl">    <span class="n">client</span> <span class="o">=</span> <span class="n">initialize_model_client</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 初始化代理</span>
+</span></span><span class="line"><span class="cl">    <span class="n">agent</span> <span class="o">=</span> <span class="n">SelfAskAgent</span><span class="p">(</span><span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">max_steps</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 测试2跳问题</span>
+</span></span><span class="line"><span class="cl">    <span class="n">question</span> <span class="o">=</span> <span class="s2">&#34;超导被发现时，谁是美国总统？&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;问题：</span><span class="si">{</span><span class="n">question</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">answer</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;最终答案：</span><span class="si">{</span><span class="n">answer</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">#  测试4跳问题</span>
+</span></span><span class="line"><span class="cl">    <span class="n">question</span> <span class="o">=</span> <span class="s2">&#34;贾斯汀·比伯出生那年谁赢得了大师赛？,这个赢得了大师赛的人出生的那年谁是美国总统&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">问题：</span><span class="si">{</span><span class="n">question</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">answer</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;最终答案：</span><span class="si">{</span><span class="n">answer</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="64--运行测试">6.4  运行测试
+</h3><p><strong>测试</strong></p>
+<p>​	执行命令：<code>python self_ask.py</code></p>
+<p><strong>输出结果</strong></p>
+<p><img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250809120001040.png"
+	width="1725"
+	height="726"
+	srcset="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250809120001040_hu_dd8e8729a1457da9.png 480w, ../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250809120001040_hu_22d3e58b7422f53.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250809120001040"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="237"
+		data-flex-basis="570px"
+	
+></p>
+<p><img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250809120025683.png"
+	width="1693"
+	height="609"
+	srcset="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250809120025683_hu_21bfebf6d2763fba.png 480w, ../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6self-ask-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250809120025683_hu_7e561eb80b1a82e4.png 1024w"
+	loading="lazy"
+	
+		alt="image-20250809120025683"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="277"
+		data-flex-basis="667px"
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">D:\program\anaconda3\envs\langchain_311_env\python.exe D:\dev\guwei\tiny-agent-lab\agent-practice\cognitive_architecture\self_ask\self_ask.py 
+</span></span><span class="line"><span class="cl">问题：超导被发现时，谁是美国总统？
+</span></span><span class="line"><span class="cl">子问题 1: 超导是在哪一年被发现的？
+</span></span><span class="line"><span class="cl">搜索结果：
+</span></span><span class="line"><span class="cl">超导体的发现可以追溯到1911年，荷兰物理学家海克·卡末林·昂内斯（Heike Kamerlingh Onnes）在实验中发现，汞的电阻在冷却到液氦温度（约-269°C）时突然降至零。 这一发现标志着
+</span></span><span class="line"><span class="cl">在1911年，昂内斯测量了纯金属（汞，后来是锡和铅）在极低温度下的电导率，从而发现了石破天惊的超导现象。有意思的是，当时的一些科学家，如威廉·汤姆森（Lord
+</span></span><span class="line"><span class="cl">中间答案 1: 超导体的发现可以追溯到1911年，荷兰物理学家海克·卡末林·昂内斯（Heike Kamerlingh Onnes）在实验中发现，汞的电阻在冷却到液氦温度（约-269°C）时突然降至零。 这一发现标志着
+</span></span><span class="line"><span class="cl">在1911年，昂内斯测量了纯金属（汞，后来是锡和铅）在极低温度下的电导率，从而发现了石破天惊的超导现象。有意思的是，当时的一些科学家，如威廉·汤姆森（Lord
+</span></span><span class="line"><span class="cl">最终答案：威廉·霍华德·塔夫脱
+</span></span><span class="line"><span class="cl">--------------------------------------------------
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">问题：北京奥运会那年谁赢得了大师赛？,这个赢得了大师赛的人出生的那年谁是美国总统
+</span></span><span class="line"><span class="cl">子问题 1: 北京奥运会是哪一年举办的？
+</span></span><span class="line"><span class="cl">搜索结果：
+</span></span><span class="line"><span class="cl">第29届夏季奥林匹克运动会（Beijing 2008；Games of the XXIX Olympiad），又称 2008年 北京奥运会。 2008年8月8日晚上8时整在中国北京开幕，8月24日闭幕。 主办城市是北京，上海、天津、沈阳、秦皇岛、青岛为协办城市。
+</span></span><span class="line"><span class="cl">2008年北京奥运会的成功举办，是中国第一次举办世界性的体育赛事，这次奥运会既是中国走向世界的重要一步，也是向世界全面展示中国改革开放成就的重要舞台。
+</span></span><span class="line"><span class="cl">中间答案 1: 第29届夏季奥林匹克运动会（Beijing 2008；Games of the XXIX Olympiad），又称 2008年 北京奥运会。 2008年8月8日晚上8时整在中国北京开幕，8月24日闭幕。 主办城市是北京，上海、天津、沈阳、秦皇岛、青岛为协办城市。
+</span></span><span class="line"><span class="cl">2008年北京奥运会的成功举办，是中国第一次举办世界性的体育赛事，这次奥运会既是中国走向世界的重要一步，也是向世界全面展示中国改革开放成就的重要舞台。
+</span></span><span class="line"><span class="cl">子问题 2: 2008年大师赛（高尔夫）的冠军是谁？
+</span></span><span class="line"><span class="cl">搜索结果：
+</span></span><span class="line"><span class="cl">历届冠军 ; 2008 · 特雷弗·伊梅尔曼 · 南非, −8, 3 ; 2007 · 扎克·詹森 · 美国, +1, 2
+</span></span><span class="line"><span class="cl">美国大师赛The Masters ; 2008, Trevor Immelman, South Africa ; 2007, Zach Johnson, United States ; 2006, Phil Mickelson (2), United States ; 2005
+</span></span><span class="line"><span class="cl">中间答案 2: 历届冠军 ; 2008 · 特雷弗·伊梅尔曼 · 南非, −8, 3 ; 2007 · 扎克·詹森 · 美国, +1, 2
+</span></span><span class="line"><span class="cl">美国大师赛The Masters ; 2008, Trevor Immelman, South Africa ; 2007, Zach Johnson, United States ; 2006, Phil Mickelson (2), United States ; 2005
+</span></span><span class="line"><span class="cl">子问题 3: 特雷弗·伊梅尔曼（Trevor Immelman）是哪一年出生的？
+</span></span><span class="line"><span class="cl">搜索结果：
+</span></span><span class="line"><span class="cl">特雷弗·伊梅尔曼（Trevor Immelman，1979年12月16日—）是一位南非职业高尔夫球手。 出生在南非的开普敦。 于1999年转为职业球员。 他在2008年战胜了世界排名第一的老虎伍兹，
+</span></span><span class="line"><span class="cl">特雷弗·伊梅尔曼（Trevor Immelman，1979年12月16日—），南非职业高尔夫运动员，出生于开普敦高尔夫世家。5岁开始打球，1998年赢得US业余公共林克斯锦标赛冠军，1999年转为
+</span></span><span class="line"><span class="cl">中间答案 3: 特雷弗·伊梅尔曼（Trevor Immelman，1979年12月16日—）是一位南非职业高尔夫球手。 出生在南非的开普敦。 于1999年转为职业球员。 他在2008年战胜了世界排名第一的老虎伍兹，
+</span></span><span class="line"><span class="cl">特雷弗·伊梅尔曼（Trevor Immelman，1979年12月16日—），南非职业高尔夫运动员，出生于开普敦高尔夫世家。5岁开始打球，1998年赢得US业余公共林克斯锦标赛冠军，1999年转为
+</span></span><span class="line"><span class="cl">最终答案：1979年美国总统是吉米·卡特。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="7-总结">7 总结
+</h2><p>综上，self-ask 是一种为提升语言模型组合性推理能力设计的结构化提示框架，核心思想是通过显式拆解复杂问题为子问题、分步求解并整合答案，以缩小组合性差距（模型能正确回答子问题却无法生成整体答案的比例），是增强大模型复杂任务处理能力的重要思路。</p>
+<p>其对子问题的解答上，可灵活集成外部工具进行处理，可以做如下优化：</p>
+<ul>
+<li><strong>多工具集成</strong>：除搜索引擎外，整合计算器、数据库查询、API 调用等，适配不同类型问题。</li>
+<li><strong>工具选择机制</strong>：让模型自主判断子问题需要哪种工具，而非固定优先搜索。</li>
+</ul>
+<h2 id="8-实验测试及结果附录">8 实验测试及结果（附录）
+</h2><p>论文中的使用多跳问答来量化语言模型的推理能力，通过设计数据集、对比提示方法及结合外部工具，系统探究了组合性差距的特性及缩小策略，具体如下：</p>
+<h3 id="测试数据集">测试数据集
+</h3><p>实验使用 4 类数据集，涵盖自动生成、手动构建及已有公开数据集，确保测试的全面性：</p>
+<ul>
+<li>
+<p><strong>Compositional Celebrities (CC)</strong>：自动生成的 8.6k 个 2 跳 问题，基于 17 类模板（如 “名人出生地的国家代码”“名人出生年份的诺贝尔奖得主”），特点是子事实（如名人出生地、年份相关事实）在训练数据中常见，但组合形式罕见（几乎未在训练数据或互联网中出现），可有效区分模型的 “记忆” 与 “推理” 能力；</p>
+</li>
+<li>
+<p><strong>2WikiMultiHopQA</strong>和<strong>Musique</strong>：已有的公开 2-hop 问题数据集，基于维基百科事实，用于跨数据集验证方法的通用性与稳定性。</p>
+</li>
+<li>
+<p><strong>Bamboogle</strong>：手动构建的 125 个 2-hop 问题，源自维基百科关键条目，问题高度多样化（无固定模板），且经筛选确保搜索引擎的 “精选摘要” 输出错误（证明问题未在网络中广泛存在），用于测试模型对非结构化、复杂问题的推理能力。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">论文中获取Bamboogle数据的方式：通过查询文章主题的两个不相关事实来生成每篇文章的 2 跳问题。例如，在阅读 “旅行者 2 号” 的文章时，我们了解到它是第一个接近天王星的探测器，并且它是用泰坦 IIIE 火箭发射的，由此产生了问题：“第一个接近天王星的航天器是用什么火箭发射的？” 然后，我们将我们的问题输入互联网搜索引擎，只有当查询引出的 “精选摘要” 答案不正确时，才将其添加到最终数据集；我们使用搜索引擎来筛选我们的数据集，因为我们假设搜索引擎无法回答这些问题，表明这些问题不在网络上。
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<p>​		这种问题形式有很多优点：几乎所有问题都有唯一正确答案，易于分解为子问题（让我们能验证语言模型是否了解背景事实），而且大多数问题的答案范围很广（不同于是非题或选择题）。因此，随机猜对正确答案的概率很低。</p>
+<h3 id="关键测试结果">关键测试结果
+</h3><ol>
+<li>
+<p><strong>组合性差距的特性</strong>：</p>
+<ul>
+<li>GPT-3 系列中，模型规模从 0.35B 增至 175B 时，单跳问题准确率提升显著快于多跳问题，组合性差距稳定在 40% 左右（Instruct 与非 Instruct 模型一致），表明更大模型更擅长记忆事实而非组合推理；</li>
+<li>模型对事实的信心（perplexity，即对正确子问题答案的困惑度）与组合能力正相关：当子问题答案的最大困惑度极低（1.000-1.002）时，组合问题准确率达 81.1%，显著高于高困惑度场景（42.6%）。</li>
+</ul>
+</li>
+<li>
+<p><strong>对比同类方法的效果</strong>：</p>
+<p>以下表格呈现了论文中不同方法在各测试数据集上的准确率结果。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>方法</th>
+          <th>Bamboogle</th>
+          <th>2WikiMultiHopQA</th>
+          <th>Musique</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>直接提示</td>
+          <td>17.6</td>
+          <td>25.4</td>
+          <td>5.6</td>
+      </tr>
+      <tr>
+          <td>思维链</td>
+          <td>46.4</td>
+          <td>29.8</td>
+          <td>12.6</td>
+      </tr>
+      <tr>
+          <td>搜索引擎</td>
+          <td>0.0</td>
+          <td>2.2</td>
+          <td>1.5</td>
+      </tr>
+      <tr>
+          <td>搜索引擎 + 后处理</td>
+          <td>-</td>
+          <td>26.3</td>
+          <td>6.5</td>
+      </tr>
+      <tr>
+          <td>self-ask</td>
+          <td>57.6</td>
+          <td>30.0</td>
+          <td>13.8</td>
+      </tr>
+      <tr>
+          <td>self-ask+ 搜索</td>
+          <td>60.0</td>
+          <td>40.1</td>
+          <td>15.2</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>结合数据可得出以下关键结论：</p>
+<ul>
+<li>
+<p>诱导性提示显著优于直接提示：self-ask 使组合问题准确率大幅提升，甚至能缩小组合性差距（部分模型中接近闭合）；</p>
+</li>
+<li>
+<p>self-ask 优于思维链：在 Bamboogle（高多样性问题）上，self-ask 准确率（57.6%）比思维链（46.4%）高 11%，因结构化拆解更适应非模板化问题；在 2WikiMultiHopQA 和 Musique 上，self-ask 准确率（30.0%、13.8%）略高于思维链（29.8%、12.6%）；</p>
+</li>
+<li>
+<p>思维链存在格式一致性问题：在 Bamboogle 中，40% 的思维链输出为完整句子（非短形式答案），而 self-ask 因结构化支架，该比例仅 17%（结合搜索引擎后降至 3%）。</p>
+</li>
+<li>
+<p>self-ask + 搜索引擎进一步提升性能：在 2WikiMultiHopQA 上准确率达 40.1%（高于 self-ask 的 30.0%），在 Musique（15.2% vs 13.8%）和 Bamboogle（60.0% vs 57.6%）上提升 5%-10%，因搜索引擎补充了模型缺失的实时或罕见事实；</p>
+</li>
+<li>
+<p>兼容性优势：无需修改模型或提示，仅通过 API 接口即可联动，实现简单（数行代码）。</p>
+</li>
+<li>
+<p>与同类分解式方法（如 Least-to-most）相比，self-ask 在相近准确率下生成的 tokens 更少（如 2WikiMultiHopQA 中，self-ask 平均生成 569 tokens，Least-to-most 为 844 tokens），速度快 30% 以上，更高效。</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>完整源码地址：</p>
+<ul>
+<li>GitHub 仓库：https://github.com/tinyseeking/tidy-agent-practice/tree/main/cognitive_pattern/self_ask</li>
+<li>Gitee 仓库（国内）：https://gitee.com/tinyseeking/tidy-agent-practice/tree/main/cognitive_pattern/self_ask</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+        
+        <div class="article-image">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250826174630927.png" width="1110" height="689" loading="lazy"
+                alt="Featured image of post 开源智能体框架——Plan-and-execute 原理、架构与代码实现">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #43434380 0%, #fefefeC0 100%);">
+            <h2 class="article-title">开源智能体框架——Plan-and-execute 原理、架构与代码实现</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6react-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+        
+        <div class="article-image">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6react-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250730154511612.png" width="1229" height="627" loading="lazy"
+                alt="Featured image of post 开源智能体框架——ReAct 原理、架构与代码实现">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #55575b80 0%, #f8f9f9C0 100%);">
+            <h2 class="article-title">开源智能体框架——ReAct 原理、架构与代码实现</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%90%AD%E5%BB%BA%E7%AC%AC%E4%B8%80%E4%B8%AArag%E5%AE%9E%E6%88%98%E5%AE%9E%E7%8E%B0%E6%9C%AC%E5%9C%B0%E6%96%87%E6%A1%A3%E6%99%BA%E8%83%BD%E9%97%AE%E7%AD%94/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%89%8B%E6%8A%8A%E6%89%8B%E6%90%AD%E5%BB%BA%E7%AC%AC%E4%B8%80%E4%B8%AArag%E5%AE%9E%E6%88%98%E5%AE%9E%E7%8E%B0%E6%9C%AC%E5%9C%B0%E6%96%87%E6%A1%A3%E6%99%BA%E8%83%BD%E9%97%AE%E7%AD%94/images/image-20260102230727272.png" width="1448" height="714" loading="lazy"
+                alt="Featured image of post 手把手搭建第一个RAG实战：实现本地文档智能问答">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #219bdb80 0%, #fdfcfaC0 100%);">
+            <h2 class="article-title">手把手搭建第一个RAG实战：实现本地文档智能问答</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/images/image-20251212112412089.jpg" width="1372" height="639" loading="lazy"
+                alt="Featured image of post 构建 AI Agent 的技术架构">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #46464680 0%, #f9fafaC0 100%);">
+            <h2 class="article-title">构建 AI Agent 的技术架构</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/">
+        
+        <div class="article-image">
+            <img src="../../p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/images/image-20250411160708330.png" width="1313" height="538" loading="lazy"
+                alt="Featured image of post AI Agent 核心概念">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #9d5c5480 0%, #fefcfcC0 100%);">
+            <h2 class="article-title">AI Agent 核心概念</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
