@@ -3,7 +3,34 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://tinyseeking.github.io/</loc>
-    <lastmod>2026-01-26T00:00:00+00:00</lastmod>
+    <lastmod>2026-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/tags/ai-agent/</loc>
+    <lastmod>2026-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/categories/ai-agent/</loc>
+    <lastmod>2026-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/categories/</loc>
+    <lastmod>2026-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/post/</loc>
+    <lastmod>2026-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/tags/</loc>
+    <lastmod>2026-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/</loc>
+    <lastmod>2026-02-03T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/</loc>
+    <lastmod>2026-02-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</loc>
+    <lastmod>2026-01-28T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</loc>
+    <lastmod>2026-01-27T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://tinyseeking.github.io/page/</loc>
     <lastmod>2026-01-26T00:00:00+00:00</lastmod>
@@ -11,20 +38,8 @@
     <loc>https://tinyseeking.github.io/%E5%85%B3%E4%BA%8E/</loc>
     <lastmod>2026-01-26T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://tinyseeking.github.io/tags/ai-agent/</loc>
-    <lastmod>2026-01-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://tinyseeking.github.io/categories/ai-agent/</loc>
-    <lastmod>2026-01-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://tinyseeking.github.io/categories/</loc>
-    <lastmod>2026-01-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://tinyseeking.github.io/post/</loc>
-    <lastmod>2026-01-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://tinyseeking.github.io/tags/</loc>
-    <lastmod>2026-01-25T00:00:00+00:00</lastmod>
+    <loc>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</loc>
+    <lastmod>2026-01-26T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/</loc>
     <lastmod>2026-01-25T00:00:00+00:00</lastmod>

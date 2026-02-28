@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="人工智能（AI）正飞速发展，2025 年最大的转变是向  **智能体系统（agentic systems）**迈进 —— 这类 AI 能够进行规划、协作，并跨多步骤执行任务。团队不再依赖单一模型处理所有事情，而是构建由专业智能体组成的网络，它们可以像真实工作流一样协同运作。">
+<title>使用 LangChain 构建多智能体工作流</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="使用 LangChain 构建多智能体工作流">
+<meta property='og:description' content="人工智能（AI）正飞速发展，2025 年最大的转变是向  **智能体系统（agentic systems）**迈进 —— 这类 AI 能够进行规划、协作，并跨多步骤执行任务。团队不再依赖单一模型处理所有事情，而是构建由专业智能体组成的网络，它们可以像真实工作流一样协同运作。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2026-02-03T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-02-03T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="使用 LangChain 构建多智能体工作流">
+<meta name="twitter:description" content="人工智能（AI）正飞速发展，2025 年最大的转变是向  **智能体系统（agentic systems）**迈进 —— 这类 AI 能够进行规划、协作，并跨多步骤执行任务。团队不再依赖单一模型处理所有事情，而是构建由专业智能体组成的网络，它们可以像真实工作流一样协同运作。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#tldr-极简总结">TL;DR 极简总结</a></li>
+    <li><a href="#什么是多智能体">什么是多智能体？</a></li>
+    <li><a href="#在-langchain-中多智能体-究竟意味着什么">在 LangChain 中，“多智能体” 究竟意味着什么</a></li>
+    <li><a href="#多智能体工作流的价值以及为什么-langchain-处于领先地位">多智能体工作流的价值，以及为什么 LangChain 处于领先地位</a>
+      <ol>
+        <li><a href="#为什么-langchain-脱颖而出">为什么 LangChain 脱颖而出</a></li>
+      </ol>
+    </li>
+    <li><a href="#2025-年的-langchain-智能体架构">2025 年的 LangChain 智能体架构</a>
+      <ol>
+        <li><a href="#核心智能体类型">核心智能体类型</a></li>
+      </ol>
+    </li>
+    <li><a href="#你实际会用到的-langchain-组件">你实际会用到的 LangChain 组件</a></li>
+    <li><a href="#为什么要使用-langchain-多智能体">为什么要使用 LangChain 多智能体？</a></li>
+    <li><a href="#使用-langchain-构建多-ai-智能体工作流步骤">使用 LangChain 构建多 AI 智能体工作流步骤</a>
+      <ol>
+        <li><a href="#步骤-1从问题出发而非从模型出发">步骤 1：从问题出发，而非从模型出发</a></li>
+        <li><a href="#第二步定义智能体角色接口与成功标准">第二步：定义智能体角色、接口与成功标准</a></li>
+        <li><a href="#第三步选择控制模式--架构"><strong>第三步：选择控制模式 / 架构</strong></a></li>
+        <li><a href="#第四步选择合适的模型与-langchain-组件"><strong>第四步：选择合适的模型与 LangChain 组件</strong></a></li>
+        <li><a href="#第五步用清晰的提示词工具与校验构建智能体">第五步：用清晰的提示词、工具与校验构建智能体</a></li>
+        <li><a href="#第六步编排与串联整个系统">第六步：编排与串联整个系统</a></li>
+        <li><a href="#第七步增加可观测性安全与治理能力">第七步：增加可观测性、安全与治理能力</a></li>
+        <li><a href="#第八步试点度量与优化">第八步：试点、度量与优化</a></li>
+        <li><a href="#第九步安全部署与扩容">第九步：安全部署与扩容</a></li>
+      </ol>
+    </li>
+  </ol>
+
+  <ol>
+    <li><a href="#多智能体工作流设计最佳实践"><strong>多智能体工作流设计最佳实践</strong></a></li>
+    <li><a href="#多智能体系统与企业自动化的未来">多智能体系统与企业自动化的未来</a></li>
+    <li><a href="#核心总结">核心总结</a></li>
+    <li><a href="#常见问题faq">常见问题（FAQ）</a></li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/">
+            <img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fdbd1b23601318794f079b6a6d19a3ef13257f871.png" width="1920" height="1080" loading="lazy"
+                alt="Featured image of post 使用 LangChain 构建多智能体工作流" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/">使用 LangChain 构建多智能体工作流</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            人工智能（AI）正飞速发展，2025 年最大的转变是向  **智能体系统（agentic systems）**迈进 —— 这类 AI 能够进行规划、协作，并跨多步骤执行任务。团队不再依赖单一模型处理所有事情，而是构建由专业智能体组成的网络，它们可以像真实工作流一样协同运作。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-02-03T00:00:00Z'>2026年2月3日星期二</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 12 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#tldr-极简总结">TL;DR 极简总结</a></li>
+    <li><a href="#什么是多智能体">什么是多智能体？</a></li>
+    <li><a href="#在-langchain-中多智能体-究竟意味着什么">在 LangChain 中，“多智能体” 究竟意味着什么</a></li>
+    <li><a href="#多智能体工作流的价值以及为什么-langchain-处于领先地位">多智能体工作流的价值，以及为什么 LangChain 处于领先地位</a>
+      <ol>
+        <li><a href="#为什么-langchain-脱颖而出">为什么 LangChain 脱颖而出</a></li>
+      </ol>
+    </li>
+    <li><a href="#2025-年的-langchain-智能体架构">2025 年的 LangChain 智能体架构</a>
+      <ol>
+        <li><a href="#核心智能体类型">核心智能体类型</a></li>
+      </ol>
+    </li>
+    <li><a href="#你实际会用到的-langchain-组件">你实际会用到的 LangChain 组件</a></li>
+    <li><a href="#为什么要使用-langchain-多智能体">为什么要使用 LangChain 多智能体？</a></li>
+    <li><a href="#使用-langchain-构建多-ai-智能体工作流步骤">使用 LangChain 构建多 AI 智能体工作流步骤</a>
+      <ol>
+        <li><a href="#步骤-1从问题出发而非从模型出发">步骤 1：从问题出发，而非从模型出发</a></li>
+        <li><a href="#第二步定义智能体角色接口与成功标准">第二步：定义智能体角色、接口与成功标准</a></li>
+        <li><a href="#第三步选择控制模式--架构"><strong>第三步：选择控制模式 / 架构</strong></a></li>
+        <li><a href="#第四步选择合适的模型与-langchain-组件"><strong>第四步：选择合适的模型与 LangChain 组件</strong></a></li>
+        <li><a href="#第五步用清晰的提示词工具与校验构建智能体">第五步：用清晰的提示词、工具与校验构建智能体</a></li>
+        <li><a href="#第六步编排与串联整个系统">第六步：编排与串联整个系统</a></li>
+        <li><a href="#第七步增加可观测性安全与治理能力">第七步：增加可观测性、安全与治理能力</a></li>
+        <li><a href="#第八步试点度量与优化">第八步：试点、度量与优化</a></li>
+        <li><a href="#第九步安全部署与扩容">第九步：安全部署与扩容</a></li>
+      </ol>
+    </li>
+  </ol>
+
+  <ol>
+    <li><a href="#多智能体工作流设计最佳实践"><strong>多智能体工作流设计最佳实践</strong></a></li>
+    <li><a href="#多智能体系统与企业自动化的未来">多智能体系统与企业自动化的未来</a></li>
+    <li><a href="#核心总结">核心总结</a></li>
+    <li><a href="#常见问题faq">常见问题（FAQ）</a></li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="使用-langchain-构建多智能体工作流">使用 LangChain 构建多智能体工作流
+</h1><p>人工智能（AI）正飞速发展，2025 年最大的转变是向  **智能体系统（agentic systems）**迈进 —— 这类 AI 能够进行规划、协作，并跨多步骤执行任务。团队不再依赖单一模型处理所有事情，而是构建由专业智能体组成的网络，它们可以像真实工作流一样协同运作。</p>
+<p>LangChain 已成为这一转型中的关键框架。其生态系统让构建与运行<strong>稳定、可预测、可直接上线</strong>的 LangChain 多智能体变得更加简单。</p>
+<p>在本指南中，我们将讲解 LangChain 中多智能体工作流的运行原理、重要价值，以及你如何一步步从零开始构建。</p>
+<h2 id="tldr-极简总结">TL;DR 极简总结
+</h2><ul>
+<li>
+<p><strong>为什么多智能体很重要</strong>：将工作流拆分为专业智能体，相比单智能体系统，能提升准确性、稳定性与可扩展性。</p>
+</li>
+<li>
+<p><strong>LangChain 如何提供帮助</strong>：提供核心构建模块、智能体、工具、记忆、LangGraph 与编排能力，用于设计结构化多智能体流程。</p>
+</li>
+<li>
+<p><strong>这类系统成功的关键</strong>：清晰的角色、严格的格式规范、校验机制、规范的通信与持续测试，保证多智能体工作流可靠运行。</p>
+</li>
+<li>
+<p><strong>Ema 的定位</strong>：针对生产级自动化，Ema 在 LangChain 之上提供治理、集成、可观测性与结果导向的编排能力。</p>
+</li>
+</ul>
+<h2 id="什么是多智能体">什么是多智能体？
+</h2><p>我们所说的<a class="link" href="https://www.ema.co/additional-blogs/addition-blogs/multi-agent-ai-systems-concepts"  target="_blank" rel="noopener"
+    >**多智能体系统</a>**，是指多个由大语言模型（LLM）驱动的独立主体，为实现更宏大的目标协同工作。每个智能体都有自己的提示词、模型、工具与逻辑，并通过信息传递完成步骤间的协作。</p>
+<p>从本质上看，任何多智能体架构都由两个问题定义：</p>
+<ul>
+<li>有哪些智能体？</li>
+<li>它们如何连接？</li>
+</ul>
+<p><strong>图结构</strong>是最直观的呈现方式。在 LangGraph 中，每个智能体是一个节点，边定义了信息与控制流如何在它们之间传递。智能体更新共享状态，流转规则决定下一个执行的智能体。它本质上是一个状态机：每个智能体代表一个状态，边决定工作流的走向。</p>
+<p>在理解高层概念后，下一步就是看它在 LangChain 内部如何实现。</p>
+<h2 id="在-langchain-中多智能体-究竟意味着什么">在 LangChain 中，“多智能体” 究竟意味着什么
+</h2><p><img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/bf14d5971d2afcbd5c2baf530182c0f4a29f683a-1920x1080-177190354107912.jpeg"
+	width="1920"
+	height="1080"
+	srcset="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/bf14d5971d2afcbd5c2baf530182c0f4a29f683a-1920x1080-177190354107912_hu_94d8c2bfe76cc6fd.jpeg 480w, ../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/bf14d5971d2afcbd5c2baf530182c0f4a29f683a-1920x1080-177190354107912_hu_523e5e7f67f40edc.jpeg 1024w"
+	loading="lazy"
+	
+		alt="Hero Banner"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="177"
+		data-flex-basis="426px"
+	
+></p>
+<p>在 LangChain 中，<strong>多智能体工作流</strong>是一个协调系统，不同智能体负责流程中的不同环节。你不再让一个模型包办一切，而是创建一组专业化组件：</p>
+<ul>
+<li>
+<p><strong>智能体（Agent）</strong>：由 LLM 驱动的单元，接收指令、推理并执行动作。</p>
+</li>
+<li>
+<p><strong>工具（Tool）</strong>：智能体可调用的外部函数，如 API、数据库、代码执行、搜索、Python 工具等。</p>
+</li>
+<li>
+<p><strong>状态（State）</strong>：智能体完成任务后传递的动态数据。</p>
+</li>
+<li>
+<p><strong>调度器（可选，Supervisor）</strong>：更高层级的智能体，决定下一个执行的智能体。</p>
+</li>
+<li>
+<p><strong>图（通过 LangGraph）</strong>：结构化布局，展示智能体如何连接、何时运行。</p>
+</li>
+</ul>
+<p>简单来说，你从 “一个大智能体包办一切”，转向 <strong>“一组聚焦、协同、模拟真实业务流程的智能体集合”</strong>。</p>
+<p>下面我们来看为什么这种方案对真实业务如此重要。</p>
+<h2 id="多智能体工作流的价值以及为什么-langchain-处于领先地位">多智能体工作流的价值，以及为什么 LangChain 处于领先地位
+</h2><p>单智能体系统适用于简单、线性的任务，但真实企业工作流很少符合这种模式。它们依赖多种工具、并行流程、校验层与严格合规要求。当一个智能体试图管理所有事情时，提示词会变得臃肿、上下文窗口溢出、工具调用不稳定。</p>
+<p><a class="link" href="https://www.ema.co/additional-blogs/addition-blogs/understanding-multi-agent-ai-frameworks"  target="_blank" rel="noopener"
+    >多智能体工作流</a>通过<strong>给每个智能体明确、聚焦的职责</strong>解决这一问题：一个负责规划、一个负责检索、一个负责校验、一个负责执行。系统开始像协作团队一样运作，这也与现实组织的运行方式一致。</p>
+<p>企业已经切实感受到这一点：单一 LLM 在演示中效果很好，但在真实负载、集成、长上下文、治理要求下会力不从心。而多智能体设计提供了这些环境所需的<strong>结构与可靠性</strong>。</p>
+<h3 id="为什么-langchain-脱颖而出">为什么 LangChain 脱颖而出
+</h3><p>LangChain 成为多智能体系统的首选框架，因为它在<strong>灵活性与结构化</strong>之间取得了最佳平衡。开发者无需从零构建，就能协调多个智能体。</p>
+<p>如今大多数自主智能体团队都将 LangChain 作为核心编排层。2024 到 2025 年，其 GitHub Star 数与包下载量激增，Star 数已突破 12 万。许多团队将 LangChain 与向量数据库结合，为智能体提供长期记忆与更稳定的上下文管理。</p>
+<p>这些趋势印证了 LangChain 在构建<strong>可靠、可上线</strong>的多智能体系统方面的口碑。</p>
+<p>这些趋势反映了 LangChain 能够打造出<strong>可靠、可上线</strong>的多智能体系统的缘由。有了这样的背景信息，接下来让我们来看看 LangChain 是如何在内部构建这些智能体的。</p>
+<h2 id="2025-年的-langchain-智能体架构">2025 年的 LangChain 智能体架构
+</h2><p>到 2025 年，LangChain 智能体架构已成熟为<strong>模块化、分层系统</strong>，每个智能体负责工作流中的特定环节：规划、执行、通信或评估。这种职责分离让多智能体系统更易扩展、调试与扩展。</p>
+<h3 id="核心智能体类型">核心智能体类型
+</h3><ol>
+<li>
+<p><strong>规划智能体（Planner Agent）</strong></p>
+<p>作为战略大脑，理解用户目标，拆分为小任务，确定执行顺序，选择调用的智能体或工具，并根据新上下文调整计划。</p>
+</li>
+<li>
+<p><strong>执行智能体（Executor Agents）</strong></p>
+<p>负责完成规划定义的实际工作，每个专注特定功能：</p>
+<ul>
+<li>RAG 智能体：检索文档</li>
+<li>代码生成智能体：编写 / 修复脚本</li>
+<li>翻译智能体：格式 / 语言转换</li>
+</ul>
+</li>
+<li>
+<p><strong>通信智能体（Communicator Agent）</strong></p>
+<p>管理步骤间的交接，为下一个智能体重构输出格式，保留上下文，确保信息不丢失。</p>
+</li>
+<li>
+<p><strong>评估智能体（Evaluator Agent）</strong></p>
+<p>作为质量检查点，校验输出的准确性、相关性与一致性。异常时可将任务退回规划器或转发给其他执行器。</p>
+</li>
+</ol>
+<p>所有智能体都运行在 LangChain 编排层下，管理共享状态、协调动作、支持并行执行与故障恢复。</p>
+<p>开发者可使用 LangChain 内置的 <code>MultiAgentExecutor</code>，或集成 CrewAI、OpenAI AutoGen 等运行时进行生产部署。</p>
+<p>接下来，让我们来看看这些智能体能够正常运转所依赖的实际组成部分。</p>
+<h2 id="你实际会用到的-langchain-组件">你实际会用到的 LangChain 组件
+</h2><p><img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252F14d609233c8eafd0a95c43cd2bf7adfdd2cfbd45.png"
+	width="1920"
+	height="1080"
+	srcset="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252F14d609233c8eafd0a95c43cd2bf7adfdd2cfbd45_hu_881ca417a29b121d.png 480w, ../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252F14d609233c8eafd0a95c43cd2bf7adfdd2cfbd45_hu_74e1bb262fb620c.png 1024w"
+	loading="lazy"
+	
+		alt="Hero Banner"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="177"
+		data-flex-basis="426px"
+	
+></p>
+<p>LangChain 提供一套精简的构建模块，用于设计多智能体系统：</p>
+<ol>
+<li><strong>LangGraph</strong>：图引擎，支持节点、边、重试、分支逻辑。将工作流建模为状态图，用于调度、路由与复杂编排。当您需要实现代理自主性但又不需要完整的图时，请使用它。</li>
+<li><strong>AgentExecutor</strong>：运行单个智能体的运行时，处理提示词、工具与结构化输出。</li>
+<li><strong>Tools</strong>：智能体可调用的确定性函数或集成：API、数据库、搜索、代码执行、文件生成、自定义连接器。工具使代理能够采取行动。</li>
+<li><strong>Memory</strong>：短期缓冲或基于向量的长期存储，让智能体跨步骤回忆上下文。</li>
+<li><strong>State management</strong>：显式状态传递（通过 LangGraph），每个步骤接收、更新、返回明确定义的字段，避免上下文覆盖。</li>
+<li><strong>Sandboxes</strong>：隔离环境，安全运行代码或外部进程，避免主系统风险。</li>
+</ol>
+<p>这些组件组合在一起，让 LangChain 成为实用、对开发者友好的多智能体工作流平台，能够实现真正的多智能体工作流程。一旦您了解了核心组件，多智能体设置所带来的好处就会变得更加清晰。</p>
+<h2 id="为什么要使用-langchain-多智能体">为什么要使用 LangChain 多智能体？
+</h2><p>随着任务复杂度提升，单智能体架构会逐渐失效。LangChain 让多智能体方案变得实用可靠，主要优势：</p>
+<ol>
+<li><strong>专业化带来更高准确率</strong>：每个智能体只做一件事，结果更稳定。</li>
+<li><strong>并行任务提升性能</strong>：独立任务可同时运行，降低延迟、提高吞吐量。</li>
+<li><strong>更容易调试</strong>：出问题只需检查单个智能体，而非巨型提示词。</li>
+<li><strong>设计可扩展</strong>：增删改智能体无需重构整个系统。</li>
+<li><strong>治理更清晰</strong>：每个智能体可拥有独立规则、提示词、权限与安全约束，适合企业级使用。</li>
+<li><strong>更贴合真实业务</strong>：与团队协作模式一致，适用于客服、文档处理、研究、风险评估等场景。</li>
+</ol>
+<p>先解决了这些优势问题，接下来让我们逐步详细讲解如何实际构建一个多智能体工作流。</p>
+<h2 id="使用-langchain-构建多-ai-智能体工作流步骤">使用 LangChain 构建多 AI 智能体工作流步骤
+</h2><p><img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fdbd1b23601318794f079b6a6d19a3ef13257f871.png"
+	width="1920"
+	height="1080"
+	srcset="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fdbd1b23601318794f079b6a6d19a3ef13257f871_hu_e0efb30a83c9f215.png 480w, ../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fdbd1b23601318794f079b6a6d19a3ef13257f871_hu_6cb7e69188346246.png 1024w"
+	loading="lazy"
+	
+		alt="Hero Banner"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="177"
+		data-flex-basis="426px"
+	
+></p>
+<h3 id="步骤-1从问题出发而非从模型出发">步骤 1：从问题出发，而非从模型出发
+</h3><p>先明确你想要达成的<strong>业务目标</strong>—— 例如更快的问题分诊、会议纪要、发票核验，或是任何当前耗时费力的工作。</p>
+<p>把工作流拆解为清晰步骤，例如：<strong>采集 → 清洗 → 分析 → 校验 → 执行</strong></p>
+<p>每一步都可以成为一个独立的智能体。</p>
+<p>这样能让范围更务实，并确保每个智能体都对应<strong>真实业务价值</strong>。</p>
+<h3 id="第二步定义智能体角色接口与成功标准">第二步：定义智能体角色、接口与成功标准
+</h3><p>为每个智能体明确以下内容：</p>
+<ul>
+<li><strong>输入结构</strong>：它接收什么</li>
+<li><strong>输出结构</strong>：必须返回的精确格式</li>
+<li><strong>工具</strong>：允许调用的 API、数据库查询或函数</li>
+<li><strong>成功标准</strong>：校验规则或置信度阈值</li>
+</ul>
+<p>清晰的契约可以避免不可预测的行为，让流程衔接更干净。</p>
+<h3 id="第三步选择控制模式--架构"><strong>第三步：选择控制模式 / 架构</strong>
+</h3><p>选择适配你工作流的编排方式：</p>
+<ul>
+<li><strong>主管 / 编排器</strong>：最适合线性、可预测的业务流程</li>
+<li><strong>LangGraph / 状态图</strong>：适合分支逻辑、重试、审计与复杂流程</li>
+<li><strong>路由 + 专家智能体</strong>：适合将任务分发给多个专用智能体</li>
+<li><strong>共享草稿区</strong>：适用于协作式推理（谨慎使用）</li>
+</ul>
+<p>控制模式决定了系统的<strong>可靠性、可观测性与可维护性</strong>。</p>
+<h3 id="第四步选择合适的模型与-langchain-组件"><strong>第四步：选择合适的模型与 LangChain 组件</strong>
+</h3><p>根据成本、速度与能力为每个智能体选择模型，再搭配 LangChain 基础组件：</p>
+<ul>
+<li><strong>AgentExecutor</strong>：运行单个智能体</li>
+<li><strong>工具</strong>：确定性函数、API、沙箱、搜索、数据库</li>
+<li><strong>记忆</strong>：短期缓冲或基于向量的长期记忆</li>
+<li><strong>LangGraph</strong>：用于结构化多智能体路由</li>
+</ul>
+<p>让组件与任务精准匹配，能让系统更稳定、更经济。</p>
+<h3 id="第五步用清晰的提示词工具与校验构建智能体">第五步：用清晰的提示词、工具与校验构建智能体
+</h3><p>将每个智能体设计为<strong>专注、可测试</strong>的单元：</p>
+<ul>
+<li>编写简洁的系统提示词，并附带任务专属示例</li>
+<li>输出严格的 JSON 或结构化格式</li>
+<li>尽可能使用确定性工具</li>
+<li>立即校验输出，不匹配则重试或快速失败</li>
+</ul>
+<p>把提示词当作 API 来设计，保证工作流可预测。</p>
+<h3 id="第六步编排与串联整个系统">第六步：编排与串联整个系统
+</h3><p>单个智能体表现稳定后，用选定的架构将它们串联：</p>
+<ul>
+<li>在节点之间校验输入与输出</li>
+<li>增加重试、降级路径与升级规则</li>
+<li>为高风险决策增加可选的人工审核点</li>
+</ul>
+<p>先用模拟数据做集成测试，再接入真实模型。</p>
+<h3 id="第七步增加可观测性安全与治理能力">第七步：增加可观测性、安全与治理能力
+</h3><p>为工作流接入日志与追踪，监控：</p>
+<ul>
+<li>提示词与输出</li>
+<li>智能体决策</li>
+<li>模型版本与 Token 消耗</li>
+<li>工具调用与状态变化</li>
+</ul>
+<p>实施企业级安全措施：如个人隐私信息脱敏、加密、角色权限控制、提示词版本管理。</p>
+<p>这些防护措施让系统具备<strong>生产环境可用</strong>的能力。</p>
+<h3 id="第八步试点度量与优化">第八步：试点、度量与优化
+</h3><p>先小规模试点，并监控：</p>
+<ul>
+<li>准确率与错误模式</li>
+<li>延迟与吞吐量</li>
+<li>Token 使用量与成本</li>
+</ul>
+<p>通过优化提示词、缓存、并行执行、更新智能体角色来提升效果。</p>
+<h3 id="第九步安全部署与扩容">第九步：安全部署与扩容
+</h3><p>选择运行环境：</p>
+<ul>
+<li><strong>无服务器（Serverless）</strong>：维护成本低，适合流量波动大的场景</li>
+<li><strong>容器 + Kubernetes</strong>：可控性、可观测性更强，扩容更稳定</li>
+</ul>
+<p>使用自动扩缩容、缓存、并行与熔断机制，<strong>永远保留回滚方案</strong>。</p>
+<p>理解这些步骤后，再去看团队在构建真实多智能体系统时最常用的架构模式会更有帮助。</p>
+<h1 id="你可以搭建的常见多智能体架构">你可以搭建的常见多智能体架构
+</h1><p>不同工作流需要不同结构。LangChain 和 LangGraph 支持多种在真实系统中稳定可用的模式，以下是最常见的几种：</p>
+<p><img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fe153ea0ae77864824ed1cfca49c022cb5ac4f224.jpeg"
+	width="900"
+	height="600"
+	srcset="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fe153ea0ae77864824ed1cfca49c022cb5ac4f224_hu_a288c3b2bcbe7f99.jpeg 480w, ../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fe153ea0ae77864824ed1cfca49c022cb5ac4f224_hu_ec5b7815a45c269f.jpeg 1024w"
+	loading="lazy"
+	
+		alt="Hero Banner"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="150"
+		data-flex-basis="360px"
+	
+></p>
+<p>每种模式都各有取舍，但它们都强化了同一个核心原则：<strong>结构至关重要</strong>。如果让智能体在没有明确规则的情况下自由交互，会导致行为不可预测。当你的架构与企业内部真实业务流程完全匹配时，系统会变得更加稳定，也更容易理解与推理。</p>
+<p>结构搭建完成后，下一步就是在系统不断扩展的过程中，保持工作流的可靠性。</p>
+<h2 id="多智能体工作流设计最佳实践"><strong>多智能体工作流设计最佳实践</strong>
+</h2><p>多智能体系统功能强大，但只有在设计严谨规范时才能保持稳定可靠。以下实践在基于 LangChain 和 LangGraph 搭建的各类生产级工作流中均被反复验证有效：</p>
+<ul>
+<li>
+<p><strong>保持角色精简聚焦</strong>：让每个智能体只承担一项职责。专业化能提升准确率、减少幻觉，并大幅降低调试难度。</p>
+</li>
+<li>
+<p><strong>谨慎控制上下文</strong>：只向智能体提供其必需的信息。精简的输入能让提示更清晰、降低成本、提升一致性。</p>
+</li>
+<li>
+<p><strong>使用严格的结构化输出格式</strong>：为每个智能体定义 JSON 或基于 Schema 的输出。清晰的格式能让下游流程交接可预测，消除歧义。</p>
+</li>
+<li>
+<p><strong>优先使用确定性工具</strong>：当智能体调用 API 或外部函数时，优先选择输出稳定、可复现的工具。确定性工具是工作流的稳定锚点，能减少结果波动。</p>
+</li>
+<li>
+<p><strong>增加防护机制与故障安全措施</strong>：使用超时、重试、备用模型，以及可选的人工审核步骤 —— 尤其在高风险或关键任务中。</p>
+</li>
+<li>
+<p><strong>避免过度碎片化</strong>：智能体数量过多会引入噪声与额外开销。少数几个定义清晰的智能体，通常优于几十个职责重叠的智能体。</p>
+</li>
+<li>
+<p><strong>监控每一次智能体决策</strong>：追踪提示词、输出结果、工具调用与状态流转。可视性对调试、评估和企业治理至关重要。</p>
+</li>
+</ul>
+<p>综合来看，这些实践指明了多智能体系统的发展方向，也解释了它们为何正成为企业自动化的核心。</p>
+<h2 id="多智能体系统与企业自动化的未来">多智能体系统与企业自动化的未来
+</h2><p>向多智能体工作流的转变并非一时风潮。它反映了真实企业的实际运作方式：公司不会依赖单个人处理所有事务，而是依靠有着明确分工、交接流程与责任体系的团队。多智能体系统遵循同样的模式，这也是它们正成为企业自动化核心的原因。</p>
+<p>LangChain 非常适合探索这种思路，尤其在你试验智能体角色、规划逻辑或小型内部工作流时。但当需求扩展到以下场景时：</p>
+<ul>
+<li>
+<p>可靠的编排能力</p>
+</li>
+<li>
+<p>与现有系统集成</p>
+</li>
+<li>
+<p>企业级治理能力</p>
+</li>
+<li>
+<p>可预测的执行结果</p>
+</li>
+<li>
+<p>可规模化的运营</p>
+</li>
+</ul>
+<p>你就需要一个为生产环境而生的平台。</p>
+<h2 id="核心总结">核心总结
+</h2><p>多智能体系统正在重塑企业复杂工作的自动化方式。LangChain 是体验多智能体的优秀起点，但要将这类工作流投入生产，仅靠精巧提示词远远不够。你需要稳定的编排、治理能力、深度集成，以及专为真实业务场景打造的平台。</p>
+<h2 id="常见问题faq">常见问题（FAQ）
+</h2><ol>
+<li>
+<p><strong>什么是多智能体 AI 系统？</strong></p>
+<p>多智能体系统由多个专业 AI 智能体协同完成任务。每个智能体专注单一角色，让整体工作流更精准、高效、易于扩展。</p>
+</li>
+<li>
+<p><strong>LangChain 如何用于构建多智能体工作流？</strong></p>
+<p>LangChain 提供智能体、工具、记忆与链状组件，支持搭建并串联多个大模型驱动的执行步骤，管理推理、工具调用与流程交接，让智能体顺畅协作。</p>
+</li>
+<li>
+<p><strong>开发者为何要在 LangChain 中使用 LangGraph？</strong></p>
+<p>LangGraph 增加了基于图的控制层，定义智能体之间的连接方式与状态流转逻辑，让复杂或分支型工作流更可预测、易调试，更适合生产环境。</p>
+</li>
+<li>
+<p><strong>什么是 LangChain 智能体？</strong></p>
+<p>LangChain 智能体是基于大语言模型的组件，可在工作流中自主推理、调用工具并执行操作。每个智能体都有专属提示、工具与适配特定任务的逻辑。</p>
+</li>
+<li>
+<p><strong>LangChain 智能体有哪些应用案例？</strong></p>
+<p>常见场景包括研究助手、代码生成智能体、文档处理工具、入驻引导机器人、多步骤客服系统等。任何需要 “推理 + 执行” 的任务都适合采用智能体架构。</p>
+</li>
+<li>
+<p><strong>搭建多智能体系统必须使用 GPT‑4、Claude 3 等高级模型吗？</strong></p>
+<p>并非必须。很多智能体在 GPT‑3.5、Mistral、Claude Sonnet 这类更快、更经济的模型上就能良好运行。可将高级模型用于高推理需求任务，常规步骤使用轻量模型，以此控制成本。</p>
+<p><img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/image-20260224110037631.png"
+	width="1108"
+	height="322"
+	srcset="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/image-20260224110037631_hu_dde60bab7324b278.png 480w, ../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/image-20260224110037631_hu_e009fcae467b743b.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260224110037631"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="344"
+		data-flex-basis="825px"
+	
+></p>
+</li>
+</ol>
+<p>参考来源：https://www.ema.co/additional-blogs/addition-blogs/multi-agent-workflows-langchain-langgraph</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/">
+        
+        <div class="article-image">
+            <img src="../../p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/images/image-1-17667340159537.png" width="2000" height="1425" loading="lazy"
+                alt="Featured image of post 主流开源 Rerank 模型解析与选型指南（2026 版）">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #659df780 0%, #e5f3ffC0 100%);">
+            <h2 class="article-title">主流开源 Rerank 模型解析与选型指南（2026 版）</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145321939.png" width="1909" height="945" loading="lazy"
+                alt="Featured image of post 深入解析AgentGPT：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #181c1e80 0%, #e9eceeC0 100%);">
+            <h2 class="article-title">深入解析AgentGPT：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/235015461-543a897f-70cc-4b63-941a-2ae3c9172b11-17241256699664.png" width="2978" height="2205" loading="lazy"
+                alt="Featured image of post 深入解析BabyAGI：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #24282980 0%, #f6fafaC0 100%);">
+            <h2 class="article-title">深入解析BabyAGI：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240730120705816.png" width="1138" height="704" loading="lazy"
+                alt="Featured image of post 深入解析AutoGPT：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #4b4d5080 0%, #fafbfcC0 100%);">
+            <h2 class="article-title">深入解析AutoGPT：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+        
+        <div class="article-image">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250826174630927.png" width="1110" height="689" loading="lazy"
+                alt="Featured image of post 开源智能体框架——Plan-and-execute 原理、架构与代码实现">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #43434380 0%, #fefefeC0 100%);">
+            <h2 class="article-title">开源智能体框架——Plan-and-execute 原理、架构与代码实现</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="AgentGPT是一个自主AI代理平台，它使用户能够在浏览器中创建和部署可定制的自主AI代理。只需要指定一个目标，然后观看它自动开始一段激动人心的旅程，以完成指定的任务.">
+<title>深入解析AgentGPT：原理、实战与源码拆解</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="深入解析AgentGPT：原理、实战与源码拆解">
+<meta property='og:description' content="AgentGPT是一个自主AI代理平台，它使用户能够在浏览器中创建和部署可定制的自主AI代理。只需要指定一个目标，然后观看它自动开始一段激动人心的旅程，以完成指定的任务.">
+<meta property='og:url' content='https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2026-01-28T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-01-28T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="深入解析AgentGPT：原理、实战与源码拆解">
+<meta name="twitter:description" content="AgentGPT是一个自主AI代理平台，它使用户能够在浏览器中创建和部署可定制的自主AI代理。只需要指定一个目标，然后观看它自动开始一段激动人心的旅程，以完成指定的任务."><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#介绍">介绍</a></li>
+    <li><a href="#安装">安装</a>
+      <ol>
+        <li><a href="#前提条件">前提条件</a></li>
+        <li><a href="#docker-方式安装">Docker 方式安装</a></li>
+        <li><a href="#命令行安装非docker方式">命令行安装（非docker方式）</a>
+          <ol>
+            <li><a href="#一下载源码及运行setubbat脚本"><strong>一、下载源码及运行setub.bat脚本</strong></a></li>
+            <li><a href="#二参数配置"><strong>二、参数配置</strong></a></li>
+            <li><a href="#三数据库表结构初始化"><strong>三、数据库表结构初始化</strong></a></li>
+            <li><a href="#四运行项目">四、运行项目</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#使用示例">使用示例</a>
+      <ol>
+        <li><a href="#登录">登录</a></li>
+        <li><a href="#输入目标">输入目标</a></li>
+        <li><a href="#目标分解">目标分解</a></li>
+        <li><a href="#执行子任务">执行子任务</a></li>
+        <li><a href="#生成总结">生成总结</a></li>
+      </ol>
+    </li>
+    <li><a href="#运行原理">运行原理</a></li>
+    <li><a href="#源码解析">源码解析</a>
+      <ol>
+        <li><a href="#一前端向后端发送请求start启动agent">一、前端向后端发送请求<code>/start</code>（启动Agent）</a></li>
+        <li><a href="#二前端先向后端发送请求analyze-任务分析请求">二、前端先向后端发送请求/analyze （任务分析请求）</a></li>
+        <li><a href="#三前端再向后端发送请求execute任务执行请求">三、前端再向后端发送请求/execute（任务执行请求）</a></li>
+        <li><a href="#四前端向后端发送请求summarize总结请求">四、前端向后端发送请求/summarize（总结请求）</a></li>
+        <li><a href="#五前端获取外部的工具列表">五、前端获取外部的工具列表</a></li>
+      </ol>
+    </li>
+    <li><a href="#参考">参考</a></li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145321939.png" width="1909" height="945" loading="lazy"
+                alt="Featured image of post 深入解析AgentGPT：原理、实战与源码拆解" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">深入解析AgentGPT：原理、实战与源码拆解</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            AgentGPT是一个自主AI代理平台，它使用户能够在浏览器中创建和部署可定制的自主AI代理。只需要指定一个目标，然后观看它自动开始一段激动人心的旅程，以完成指定的任务.
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-01-28T00:00:00Z'>2026年1月28日星期三</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 22 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#介绍">介绍</a></li>
+    <li><a href="#安装">安装</a>
+      <ol>
+        <li><a href="#前提条件">前提条件</a></li>
+        <li><a href="#docker-方式安装">Docker 方式安装</a></li>
+        <li><a href="#命令行安装非docker方式">命令行安装（非docker方式）</a>
+          <ol>
+            <li><a href="#一下载源码及运行setubbat脚本"><strong>一、下载源码及运行setub.bat脚本</strong></a></li>
+            <li><a href="#二参数配置"><strong>二、参数配置</strong></a></li>
+            <li><a href="#三数据库表结构初始化"><strong>三、数据库表结构初始化</strong></a></li>
+            <li><a href="#四运行项目">四、运行项目</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#使用示例">使用示例</a>
+      <ol>
+        <li><a href="#登录">登录</a></li>
+        <li><a href="#输入目标">输入目标</a></li>
+        <li><a href="#目标分解">目标分解</a></li>
+        <li><a href="#执行子任务">执行子任务</a></li>
+        <li><a href="#生成总结">生成总结</a></li>
+      </ol>
+    </li>
+    <li><a href="#运行原理">运行原理</a></li>
+    <li><a href="#源码解析">源码解析</a>
+      <ol>
+        <li><a href="#一前端向后端发送请求start启动agent">一、前端向后端发送请求<code>/start</code>（启动Agent）</a></li>
+        <li><a href="#二前端先向后端发送请求analyze-任务分析请求">二、前端先向后端发送请求/analyze （任务分析请求）</a></li>
+        <li><a href="#三前端再向后端发送请求execute任务执行请求">三、前端再向后端发送请求/execute（任务执行请求）</a></li>
+        <li><a href="#四前端向后端发送请求summarize总结请求">四、前端向后端发送请求/summarize（总结请求）</a></li>
+        <li><a href="#五前端获取外部的工具列表">五、前端获取外部的工具列表</a></li>
+      </ol>
+    </li>
+    <li><a href="#参考">参考</a></li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="深入解析agentgpt原理实战与源码拆解">深入解析AgentGPT：原理、实战与源码拆解
+</h1><h2 id="介绍">介绍
+</h2><p>​       AgentGPT是一个自主AI代理平台，它使用户能够在浏览器中创建和部署可定制的自主AI代理。只需要指定一个目标，然后观看它自动开始一段激动人心的旅程，以完成指定的任务。AgentGPT通过调用大型语言模型（如GPT-4）来实现目标，旨在在无需人类干预的情况下理解目标、制定策略并交付结果。</p>
+<p>​        AgentGPT的基本思路是：给它一个任意目标，AgentGPT首先会对目标进行分解成一系列子任务，然后对每一项子任务进行分析思考、并按需要使用外部工具来执行任务，然后完成所有子任务。并从子任务的执行结果来学习总结，最终完成用户的目标。而且这一系列过程是自动完成的。可以把它看成是 AutoGPT与 babyAGI结合的增强版本，而且还提供了网页端，用户会话管理及历史交互的数据库存储。</p>
+<h2 id="安装">安装
+</h2><p>​		本节指导您在本地安装 AgentGPT。有两种安装方式：docker安装及命令行(非docker)安装。官方建议使用 Docker 进行安装，因为Docker 简化了安装过程，所有的依赖项都已处理好，使得安装过程更加简单，出错的可能性更小。</p>
+<p>​		 由于我们主要是在学习，为了更好的了解项目结构、配置、及其运行过程，我们这里推荐使用命令行的方式来运行。</p>
+<h3 id="前提条件">前提条件
+</h3><p>在开始之前，需要安装了以下软件:</p>
+<ol>
+<li><a class="link" href="https://git-scm.com/downloads"  target="_blank" rel="noopener"
+    >Git</a>：是一个开源的分布式版本控制系统，用于从github中下载项目代码。</li>
+<li><a class="link" href="https://nodejs.org/en/download"  target="_blank" rel="noopener"
+    >Node.js</a>：一个开源、跨平台的 JavaScript 运行时环境，运行前端时需要。</li>
+<li>OpenAI API key ：由于国内无法直连openAI的官方接口，解决方法是可以使用第三方提供的服务，或使用azure openAl 的接口服务。推荐使用azure openAI。</li>
+</ol>
+<h3 id="docker-方式安装">Docker 方式安装
+</h3><p>除了上述的先决条件外，还需要安装Docker。按照以下步骤进行Docker的安装：</p>
+<ul>
+<li>下载并安装Docker</li>
+</ul>
+<p><strong>Docker方式安装步骤</strong>如下：</p>
+<ol>
+<li>
+<p>打开<strong>Terminal</strong></p>
+</li>
+<li>
+<p>clone 存储库并进入目录 ，通过运行以下命令来克隆存储库并进入目录：</p>
+<p><strong>Mac/Linux 用户</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git clone https://github.com/reworkd/AgentGPT.git
+</span></span><span class="line"><span class="cl">cd AgentGPT
+</span></span><span class="line"><span class="cl">./setup.sh
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>Windows 用户</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git clone https://github.com/reworkd/AgentGPT.git
+</span></span><span class="line"><span class="cl">cd AgentGPT
+</span></span><span class="line"><span class="cl">./setup.bat
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>按照运行setup.bat脚本中的设置向导，添加openAI API密钥。</p>
+<p>一旦所有服务都开始运行，在web浏览器上访问http://localhost:3000。</p>
+</li>
+</ol>
+<h3 id="命令行安装非docker方式">命令行安装（非docker方式）
+</h3><h4 id="一下载源码及运行setubbat脚本"><strong>一、下载源码及运行setub.bat脚本</strong>
+</h4><p>非Docker方式安装，同样需要下载源代码，并运行setup.sh脚本（window环境下运行setup.bat脚本）配置ENV文件，同时需要更新Prisma的配置指向本地SQLite实例。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Prisma是一个开源的数据库工具和对象关系映射(ORM)框架，通过提供丰富的功能和强大的集成支持，简化了开发人员与数据库的交互过程，提高了开发效率和代码质量。Prisma与TypeScript紧密集成，确保了开发过程中的类型安全性。它支持多种数据库，包括MySQL、PostgreSQL、MongoDB等，并且支持多种编程语言，如JavaScript、TypeScript、Go等。Prisma还提供了高效、类型安全的数据访问方式，使开发者能够获得有关数据库事件的通知。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">git clone https://github.com/reworkd/AgentGPT.git
+</span></span><span class="line"><span class="cl">cd AgentGPT
+</span></span><span class="line"><span class="cl">./setup.sh
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>运行setub.bat脚本会引导你设置一些必要的参数，如openAI API密钥。 如果你使用的是第三方连接openAI或 azure 提供的openAI 服务时，可以先不设置，直接回车。</p>
+<p>AgentGPT 代码包括 platform（后端工程）和 next（前端工程）两个部分。</p>
+<p>脚本运行完成后，会在 platform（后端工程）目录及 next（前端工程）目录下分别创建<code>.env</code>文件，然后在该文件中设置OPENAI_API_KEY及数据库连接配置。使用第三方连接openAI或 azure 提供的openAI 服务时，还需要配置OPENAI_API_BASE。</p>
+<h4 id="二参数配置"><strong>二、参数配置</strong>
+</h4><p>在后端工程目<code>platform</code>找到名为.env.template的文件，复制并将其命名为.env</p>
+<p>具体配置如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="c1">#部署环境，默认development(开发模式)，该模式使用简化的身份验证机制，以便于测试和调试。这种方式不安全，
+</span></span></span><span class="line"><span class="cl"><span class="c1">#不应在生产环境中使用。
+</span></span></span><span class="line"><span class="cl"><span class="n">NODE_ENV</span><span class="o">=</span><span class="n">development</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">NEXT_PUBLIC_VERCEL_ENV</span><span class="o">=</span><span class="err">${</span><span class="n">NODE_ENV</span><span class="err">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">...</span><span class="o">//</span><span class="err">省略部分默认配置</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">#使用第三方的OAuth身份验证登录时配置 (在非development模式下有效):
+</span></span></span><span class="line"><span class="cl"><span class="n">GOOGLE_CLIENT_ID</span><span class="o">=***</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">GOOGLE_CLIENT_SECRET</span><span class="o">=***</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">GITHUB_CLIENT_ID</span><span class="o">=***</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">GITHUB_CLIENT_SECRET</span><span class="o">=***</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">DISCORD_CLIENT_SECRET</span><span class="o">=***</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">DISCORD_CLIENT_ID</span><span class="o">=***</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1"># Backend:
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_ENVIRONMENT</span><span class="o">=</span><span class="err">${</span><span class="n">NODE_ENV</span><span class="err">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_FF_MOCK_MODE_ENABLED</span><span class="o">=</span><span class="no">false</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_MAX_LOOPS</span><span class="o">=</span><span class="err">${</span><span class="n">NEXT_PUBLIC_MAX_LOOPS</span><span class="err">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">#重要配置OPENAI_API_KEY、REWORKD_PLATFORM_OPENAI_API_BASE
+</span></span></span><span class="line"><span class="cl"><span class="c1">#支持兼容 OpenAI 接口的模型服务(如：千问、DeepSeek、智谱等)，使用此类服务时，需对应调整 #`REWORKD_PLATFORM_OPENAI_API_KEY`、`REWORKD_PLATFORM_OPENAI_API_BASE` 参数的值。
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&#34;替换为你自己的api key&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_FRONTEND_URL</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">3000</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_RELOAD</span><span class="o">=</span><span class="no">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">#若使用第三方连接openAI、azure提供的openAI服务、兼容 OpenAI 接口的模型服务，配置请求的端口
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_OPENAI_API_BASE</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="p">.</span><span class="n">chatanywhere</span><span class="p">.</span><span class="n">tech</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_SERP_API_KEY</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_REPLICATE_API_KEY</span><span class="o">=</span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1"># 后端连接数据库配置 (Backend):
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_DATABASE_USER</span><span class="o">=</span><span class="n">root</span><span class="w">   </span><span class="c1">#连接数据库的用户名
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_DATABASE_PASSWORD</span><span class="o">=</span><span class="err">修改为你自己的数据库密钥</span><span class="w">  </span><span class="c1">#连接数据库的密码
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_DATABASE_HOST</span><span class="o">=</span><span class="n">localhost</span><span class="w">   </span><span class="c1">#连接数据库的IP地址
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_DATABASE_PORT</span><span class="o">=</span><span class="mi">3306</span><span class="w">  </span><span class="c1">#连接数据库的IP端口
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_DATABASE_NAME</span><span class="o">=</span><span class="n">reworkd_platform</span><span class="w">   </span><span class="c1">#连接数据库名称
+</span></span></span><span class="line"><span class="cl"><span class="n">REWORKD_PLATFORM_DATABASE_URL</span><span class="o">=</span><span class="n">mysql</span><span class="p">:</span><span class="o">//</span><span class="err">${</span><span class="n">REWORKD_PLATFORM_DATABASE_USER</span><span class="err">}</span><span class="p">:</span><span class="err">${</span><span class="n">REWORKD_PLATFORM_DATABASE_PASSWORD</span><span class="err">}</span><span class="o">@</span><span class="err">${</span><span class="n">REWORKD_PLATFORM_DATABASE_HOST</span><span class="err">}</span><span class="p">:</span><span class="err">${</span><span class="n">REWORKD_PLATFORM_DATABASE_PORT</span><span class="err">}</span><span class="o">/</span><span class="err">${</span><span class="n">REWORKD_PLATFORM_DATABASE_NAME</span><span class="err">}</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>修改<code>next/.env</code> 文件，具体配置如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#部署环境，默认development(开发模式)，该模式使用简化的身份验证机制，以便于测试和调试。这种方式不安全，
+</span></span><span class="line"><span class="cl">#不应在生产环境中使用。
+</span></span><span class="line"><span class="cl">NODE_ENV=development
+</span></span><span class="line"><span class="cl">NEXT_PUBLIC_VERCEL_ENV=${NODE_ENV}
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># NextJS 与后端交互的URL:
+</span></span><span class="line"><span class="cl">NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+</span></span><span class="line"><span class="cl">NEXT_PUBLIC_MAX_LOOPS=100
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Next Auth config:
+</span></span><span class="line"><span class="cl">NEXTAUTH_SECRET=Ak+3iVAMOMLeLX2ahh9ZyAUIeoMs2YAnyNyHR9VKhwk=
+</span></span><span class="line"><span class="cl">NEXTAUTH_URL=http://localhost:3000
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">#使用第三方的OAuth身份验证登录时配置 (在非development模式下有效):
+</span></span><span class="line"><span class="cl">GOOGLE_CLIENT_ID=***
+</span></span><span class="line"><span class="cl">GOOGLE_CLIENT_SECRET=***
+</span></span><span class="line"><span class="cl">GITHUB_CLIENT_ID=***
+</span></span><span class="line"><span class="cl">GITHUB_CLIENT_SECRET=***
+</span></span><span class="line"><span class="cl">DISCORD_CLIENT_SECRET=***
+</span></span><span class="line"><span class="cl">DISCORD_CLIENT_ID=***
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 前端连接数据库配置 (Frontend):
+</span></span><span class="line"><span class="cl">DATABASE_USER=root
+</span></span><span class="line"><span class="cl">DATABASE_PASSWORD=修改为你自己的数据库密钥
+</span></span><span class="line"><span class="cl">DATABASE_HOST=localhost
+</span></span><span class="line"><span class="cl">DATABASE_PORT=3306
+</span></span><span class="line"><span class="cl">DATABASE_NAME=reworkd_platform
+</span></span><span class="line"><span class="cl">DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="三数据库表结构初始化"><strong>三、数据库表结构初始化</strong>
+</h4><p>AgentGPT使用数据库来持久化数据，如保存用户的注册信息及自定义Agent的历史交互等信息。</p>
+<p>由于在官方下载的源文件中，找到的相关数据库初始化文件是<code>\db\setup.sql</code> ，但在该文件中，只有创建数据库的执行语句，并没有数据库表结构初始化的执行语句。所以我这里参照源代码整理了一份，在mysql数据库中，按setup.sql中的语句，创建好数据库reworkd_platform后，再执行以下语句创建表结构：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for agent
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">agent</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">agent</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">userId</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">goal</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">deleteDate</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">createDate</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for agent_run
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">agent_run</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">agent_run</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">user_id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">goal</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">create_date</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for agent_task
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">agent_task</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">agent_task</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">run_id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">type</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">create_date</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for agenttask
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">agenttask</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">agenttask</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">agentId</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">type</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">status</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">value</span><span class="o">`</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">CHARACTER</span><span class="w"> </span><span class="kt">SET</span><span class="w"> </span><span class="n">utf8mb4</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">info</span><span class="o">`</span><span class="w"> </span><span class="kt">text</span><span class="w"> </span><span class="k">CHARACTER</span><span class="w"> </span><span class="kt">SET</span><span class="w"> </span><span class="n">utf8mb4</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">sort</span><span class="o">`</span><span class="w"> </span><span class="kt">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">createDate</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">deleteDate</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for oauth_credentials
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">oauth_credentials</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">oauth_credentials</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">user_id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">organization_id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">provider</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">state</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">redirect_uri</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">token_type</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">access_token_enc</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">access_token_expiration</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">refresh_token_enc</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">scope</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">create_date</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">update_date</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">delete_date</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for organization
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">organization</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">organization</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">created_by</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for organization_user
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">organization_user</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">organization_user</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">user_id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">organization_id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">role</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">create_date</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">update_date</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">delete_date</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for session
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="n">session</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="n">session</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">sessionToken</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">userId</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">expires</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- Table structure for user
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- ----------------------------
+</span></span></span><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="o">`</span><span class="k">user</span><span class="o">`</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="o">`</span><span class="k">user</span><span class="o">`</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">name</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">email</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">emailVerified</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">image</span><span class="o">`</span><span class="w"> </span><span class="kt">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">super_admin</span><span class="o">`</span><span class="w"> </span><span class="kt">tinyint</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="o">`</span><span class="n">createDate</span><span class="o">`</span><span class="w"> </span><span class="kt">datetime</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="no">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="p">)</span><span class="w"> </span><span class="kp">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="kp">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="四运行项目">四、运行项目
+</h4><p>配置好参数及创建了库表结构之后，运行以下命令来配置Next.js项目：</p>
+<p>运行前端项目，cd 到下载根目录的<code>next</code>文件夹下，执行以下命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">// Frontend
+</span></span><span class="line"><span class="cl">cd ./next
+</span></span><span class="line"><span class="cl">npm install
+</span></span><span class="line"><span class="cl">npm run dev
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>打开另一个窗口中，运行以下命令来启动后端:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">// 确保您处于项目的根目标
+</span></span><span class="line"><span class="cl">cd ./platform
+</span></span><span class="line"><span class="cl">poetry install
+</span></span><span class="line"><span class="cl">poetry run python -m reworkd_platform
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>所有服务启动后，您可以在浏览器输入 http://localhost:3000 即可访问。</p>
+<p>运行成功，会出现如下界面：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145321939.png"
+	width="1909"
+	height="945"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145321939_hu_fbfe63faa75e9c0c.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145321939_hu_18cc65b0f1074151.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240826145321939"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="202"
+		data-flex-basis="484px"
+	
+></p>
+<h2 id="使用示例">使用示例
+</h2><h3 id="登录">登录
+</h3><p>运行成功后，首先需要登录后才能使用，点击左下角的<code>Sign in</code> 链接，弹出对话框如下所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145346905.png"
+	width="1882"
+	height="936"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145346905_hu_3b199e15a8091d71.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145346905_hu_471675e03fcc5db.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240826145346905"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="201"
+		data-flex-basis="482px"
+	
+></p>
+<p>点击<code>Sign in</code> 按钮，弹出登录界面，如下所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145432828.png"
+	width="1889"
+	height="884"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145432828_hu_449e5f39db6c12af.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145432828_hu_e7c9dc5abec01baa.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240826145432828"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="213"
+		data-flex-basis="512px"
+	
+></p>
+<p>由于我们之前配置的是开发模式<code>NODE_ENV=development</code>(<code>.env</code>文件中)，该模式简化了身份验证机制，只需要输入用户名即可，便于测试和调试。如果在生产环境中，需要修改为production。</p>
+<p>输入用户名，即可登录，登录后左下角会显示用户名，左边菜单显示之前创建的Agent列表。如下图所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145534914.png"
+	width="1904"
+	height="939"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145534914_hu_6444eb875b571e42.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145534914_hu_80afd5b598d410f.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240826145534914"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="202"
+		data-flex-basis="486px"
+	
+></p>
+<h3 id="输入目标">输入目标
+</h3><p>agentGPT预先配置了三个Agent（TravelGPT、CalculusGPT、HustleGPT），您可以点击其中一个进行运行，也可以在下面的目标框中输入你要实现的目标，然后点击下面的运行<img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240827165507845.png"
+	width="41"
+	height="21"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240827165507845_hu_7b01792b61ee7b7d.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240827165507845_hu_781db6d19e466d39.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240827165507845"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="195"
+		data-flex-basis="468px"
+	
+>按钮开始运行。</p>
+<p>作为测试，我这里点击已配置的HustleGPT Agent，实现的目标是“Create a comprehensive report for how to scale a startup to 1000 customers “ ，翻译为中文为“编写一份详尽的报告，介绍如何将初创企业扩大到拥有1000名客户” 。接下来，我们就看着AengtGPT自动的为我们完成任务了。</p>
+<h3 id="目标分解">目标分解
+</h3><p>AgentGPT 首先会对目标进行分解，生成一系列的子任务，这里生成了5个子任务，如下所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151241732.png"
+	width="1896"
+	height="922"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151241732_hu_4ab4ce26a26b7301.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151241732_hu_bf042713df839251.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240826151241732"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="205"
+		data-flex-basis="493px"
+	
+></p>
+<h3 id="执行子任务">执行子任务
+</h3><p>接着，AgentGPT会自动的依次完成每一个子任务， 在完成任务过程中，首先会对任务进行分析决策，返回要如何处理的方案，如是否需要调用工具搜索外部数据或执行代码等等。然后根据处理方案进行执行以完成任务。</p>
+<p>如：这里处理“如何制定初创企业整长策略吸引更多客户”子任务时，对该任务分析决策的结果是，先进行web搜索，根据搜索的结果生成总结。如下所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151352698.png"
+	width="1900"
+	height="934"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151352698_hu_8441a9a145598a27.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151352698_hu_b0d2cf2c0a5f813f.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240826151352698"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="203"
+		data-flex-basis="488px"
+	
+></p>
+<h3 id="生成总结">生成总结
+</h3><p>在完成所有子任务后，还可以生成总结。如下图所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151610216.png"
+	width="1876"
+	height="934"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151610216_hu_11c1b70f2488ab6c.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826151610216_hu_f5435011827313bb.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240826151610216"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="200"
+		data-flex-basis="482px"
+	
+></p>
+<p>点击“Summarize”按钮，则AgentGPT会根据目标、所有的子任务及其执行结果来生成总结。如下图所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826153025449.png"
+	width="1893"
+	height="943"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826153025449_hu_57ad1ec682c6a113.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826153025449_hu_a8a6b4c234b4f0bc.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240826153025449"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="200"
+		data-flex-basis="481px"
+	
+></p>
+<p>最后，还可以导出为图片或PDF，如上图画红框所示。</p>
+<h2 id="运行原理">运行原理
+</h2><p>​	AgentGPT项目包含前端和后端，主要的运行流程如下：</p>
+<ol>
+<li>
+<p>用户输入一个目标，前端向后端发送请求<code>/start</code>（启动目标Agent），后端根据用户的目标构建提示词调用大模型，返回实现目标的子任务列表。</p>
+</li>
+<li>
+<p>前端依次遍历处理每一个子任务，先向后端发送请求/analyze （任务分析请求）,传入参数：目标，当前任务及可用的工具列表。后端接收请求，调用大模型对任务进行分析决策，返回如何处理该任务的行动命令（action）。返回示例如下：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240828100347783.png"
+	width="823"
+	height="88"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240828100347783_hu_afd98e3903ca97da.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240828100347783_hu_a4fa85191ef59bf9.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240828100347783"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="935"
+		data-flex-basis="2244px"
+	
+></p>
+</li>
+<li>
+<p>然后，前端向后端发送请求/execute（任务执行请求）,传入参数：目标、当前任务、上一步返回的任务分析结果(包含执行的行动命令)。后端执行参数中指定的行动命令，以完成该任务。返回任务完成的结果。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">AgentGPT中默认集成了些工具命令如：Search（谷歌搜索）、Image（用于素描、绘制或生成图像）、Code（编写和审查代码）、SID（查找私人信息）。
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>重复执行2、3步骤，直到所有子任务都执行完成。</p>
+</li>
+<li>
+<p>执行完成后，可以对所有子任务的执行结果进行总结，用户点击总结按钮，前端向后端发送请求/summarize（总结请求），传入参数：目标、所有子任务的执行结果。后端调用大模型生成总结信息并返回。</p>
+<p>另外，在第一步前端调用<code>/start</code>返回后会创建agent，并保存agent信息到数据库agent表中。在2、3、5步执行后也会更新agent任务的执行信息到表agent_task（任务执行事件记录）、agentTask（任务执行详细记录）中。所以AgentGPT，其实记录了用户历史的Agent交互记录。</p>
+</li>
+</ol>
+<p>另外，在第一步前端调用<code>/start</code>返回后会创建agent，并保存agent信息到数据库中。在2、3、5步执行后也会保存agent任务的执行信息到数据库中，并更新agent任务的执行状态。所以AgentGPT，其实记录了用户历史的Agent交互记录。</p>
+<h2 id="源码解析">源码解析
+</h2><p>AgentGPT项目包含两个部分，前端及后端工程，前端采用next框架，后端采用Uvicorn +FastAPI 架构。</p>
+<p>后端源码在reworkd_platform目录下，其代码结构如下：</p>
+<ul>
+<li>db：定义实体对象，与数据库表结构的映射关系，及CRUD操作。</li>
+<li>schemas：主要定义一些请求传输对象的结构及其数据验证信息。如AgentRun、UserBase等对象的字段及数据验证，验证使用<em>Pydantic</em>库。</li>
+<li>services：定义一些通用的服务类，如：AWS的S3存储服务、pinecone向量数据库的添加、查询服务、Token的计算服务、安全加解密服务等。</li>
+<li>tests：测试相关的代码。</li>
+<li>web：处理前端发送的请求。
+<ul>
+<li>/api/agent：<strong>agent处理的核心</strong>，包含定义处理agent请求的接口，及具体实现逻辑的服务类。</li>
+<li>/api/auth：授权相关操作，定义第三方oauth的授权登录等。</li>
+<li>/api/memory：增加记忆功能，如将任务生成嵌入到向量数据库中，后续可从向量数据库中搜索相似性任务上下文。</li>
+<li>/api/monitoring：出错处理及健康检测接口服务。</li>
+</ul>
+</li>
+</ul>
+<p>接下来我们主要根据运行流程，来深入源码了解其实现细节。</p>
+<h3 id="一前端向后端发送请求start启动agent">一、前端向后端发送请求<code>/start</code>（启动Agent）
+</h3><p>用户输入目标，点击运行后。前端向后端发送请求<code>/start</code>，后端根据用户的目标构建提示词调用大模型，返回实现目标的子任务列表。该请求接口的处理代码在<code>/web/api/agent/views.py</code>中定义，代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#定义处理post请求&#34;/start&#34;
+</span></span><span class="line"><span class="cl">@router.post(
+</span></span><span class="line"><span class="cl">    &#34;/start&#34;,
+</span></span><span class="line"><span class="cl">)
+</span></span><span class="line"><span class="cl">async def start_tasks(
+</span></span><span class="line"><span class="cl">    req_body: AgentRun = Depends(agent_start_validator),
+</span></span><span class="line"><span class="cl">    agent_service: AgentService = Depends(get_agent_service(agent_start_validator)),
+</span></span><span class="line"><span class="cl">) -&gt; NewTasksResponse:
+</span></span><span class="line"><span class="cl">	#调用agent_service服务的start_goal_agent方法，传入目标，获取新的任务列表，并返回给前端.
+</span></span><span class="line"><span class="cl">    new_tasks = await agent_service.start_goal_agent(goal=req_body.goal)
+</span></span><span class="line"><span class="cl">    return NewTasksResponse(newTasks=new_tasks, run_id=req_body.run_id)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用agent_service服务的start_goal_agent方法，传入目标，获取新的任务列表。agent_service的实现类是<code>/web/api/agent/agent_service/open_ai_agent_service.py</code>，其中start_goal_agent方法的实现如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">    #传入目标，构造提示，调用大模型生成新的任务列表，并按字符串数组格式返回.
+</span></span><span class="line"><span class="cl"> 	async def start_goal_agent(self, *, goal: str) -&gt; List[str]:
+</span></span><span class="line"><span class="cl">        #传入提示词模板 start_goal_prompt，构造聊天模型的提示.
+</span></span><span class="line"><span class="cl">        prompt = ChatPromptTemplate.from_messages(
+</span></span><span class="line"><span class="cl">            [SystemMessagePromptTemplate(prompt=start_goal_prompt)]
+</span></span><span class="line"><span class="cl">        )
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        #计算并设置模型输出的最大token数。OpenAI 计算token数是合并计算 Prompt和 Completion 的总           #token数,要求总 token 数不能超过模型上限(如默认模型 token 上限为 4096).
+</span></span><span class="line"><span class="cl">        #计算公式为:max_allowed_tokens(模型许可的最大长度)-prompt_token(提示词的token长度).
+</span></span><span class="line"><span class="cl">        self.token_service.calculate_max_tokens(
+</span></span><span class="line"><span class="cl">            self.model,
+</span></span><span class="line"><span class="cl">            prompt.format_prompt(
+</span></span><span class="line"><span class="cl">                goal=goal,
+</span></span><span class="line"><span class="cl">                language=self.settings.language,
+</span></span><span class="line"><span class="cl">            ).to_string(),
+</span></span><span class="line"><span class="cl">        )
+</span></span><span class="line"><span class="cl">		
+</span></span><span class="line"><span class="cl">		#调用大模型并进行容错处理，返回生成的新任务列表响应.
+</span></span><span class="line"><span class="cl">        completion = await call_model_with_handling(
+</span></span><span class="line"><span class="cl">            self.model,
+</span></span><span class="line"><span class="cl">            ChatPromptTemplate.from_messages(
+</span></span><span class="line"><span class="cl">                [SystemMessagePromptTemplate(prompt=start_goal_prompt)]
+</span></span><span class="line"><span class="cl">            ),
+</span></span><span class="line"><span class="cl">            {&#34;goal&#34;: goal, &#34;language&#34;: self.settings.language},
+</span></span><span class="line"><span class="cl">            settings=self.settings,
+</span></span><span class="line"><span class="cl">            callbacks=self.callbacks,
+</span></span><span class="line"><span class="cl">        )
+</span></span><span class="line"><span class="cl">    	
+</span></span><span class="line"><span class="cl">        #解析大模型返回的响应数据，格式为json的字符串数组
+</span></span><span class="line"><span class="cl">        task_output_parser = TaskOutputParser(completed_tasks=[])
+</span></span><span class="line"><span class="cl">        tasks = parse_with_handling(task_output_parser, completion)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        return tasks
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里主要的是使用提示start_goal_prompt，该提示其实是遵循 Plan-and-Solve 框架的提示模板来生成新任务列表，提示信息如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="c1"># Create initial tasks using plan and solve prompting</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># https://github.com/AGI-Edgerunners/Plan-and-Solve-Prompting</span>
+</span></span><span class="line"><span class="cl"><span class="n">start_goal_prompt</span> <span class="o">=</span> <span class="n">PromptTemplate</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">template</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;You are a task creation AI called AgentGPT. 
+</span></span></span><span class="line"><span class="cl"><span class="s2">You answer in the &#34;{language}&#34; language. You have the following objective &#34;{goal}&#34;. 
+</span></span></span><span class="line"><span class="cl"><span class="s2">Return a list of search queries that would be required to answer the entirety of the objective. 
+</span></span></span><span class="line"><span class="cl"><span class="s2">Limit the list to a maximum of 5 queries. Ensure the queries are as succinct as possible. 
+</span></span></span><span class="line"><span class="cl"><span class="s2">For simple questions use a single query.
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">Return the response as a JSON array of strings. Examples:
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">query: &#34;Who is considered the best NBA player in the current season?&#34;, answer: [&#34;current NBA MVP candidates&#34;]
+</span></span></span><span class="line"><span class="cl"><span class="s2">query: &#34;How does the Olympicpayroll brand currently stand in the market, and what are its prospects and strategies for expansion in NJ, NY, and PA?&#34;, answer: [&#34;Olympicpayroll brand comprehensive analysis 2023&#34;, &#34;customer reviews of Olympicpayroll.com&#34;, &#34;Olympicpayroll market position analysis&#34;, &#34;payroll industry trends forecast 2023-2025&#34;, &#34;payroll services expansion strategies in NJ, NY, PA&#34;]
+</span></span></span><span class="line"><span class="cl"><span class="s2">query: &#34;How can I create a function to add weight to edges in a digraph using {language}?&#34;, answer: [&#34;algorithm to add weight to digraph edge in {language}&#34;]
+</span></span></span><span class="line"><span class="cl"><span class="s2">query: &#34;What is the current weather in New York?&#34;, answer: [&#34;current weather in New York&#34;]
+</span></span></span><span class="line"><span class="cl"><span class="s2">query: &#34;5 + 5?&#34;, answer: [&#34;Sum of 5 and 5&#34;]
+</span></span></span><span class="line"><span class="cl"><span class="s2">query: &#34;What is a good homemade recipe for KFC-style chicken?&#34;, answer: [&#34;KFC style chicken recipe at home&#34;]
+</span></span></span><span class="line"><span class="cl"><span class="s2">query: &#34;What are the nutritional values of almond milk and soy milk?&#34;, answer: [&#34;nutritional information of almond milk&#34;, &#34;nutritional information of soy milk&#34;]&#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">input_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;goal&#34;</span><span class="p">,</span> <span class="s2">&#34;language&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>翻译如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">使用plan and solve提示创建初始任务列表
+</span></span><span class="line"><span class="cl"># https：//github.com/AGI-Edgerunners/Plan-and-Solve-Prompting
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">开始目标提示模板：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">模板内容为：“你是一个名为AgentGPT的任务创建AI。
+</span></span><span class="line"><span class="cl">你用{language}回答问题。你的目标是{goal}。
+</span></span><span class="line"><span class="cl">返回一个需要回答整个目标的搜索查询列表。
+</span></span><span class="line"><span class="cl">将列表限制在最多5个查询。确保查询尽可能简洁。
+</span></span><span class="line"><span class="cl">对于简单的问题使用单个查询。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">返回JSON格式的字符串数组响应。示例：
+</span></span><span class="line"><span class="cl">查询：“谁被认为是当前赛季NBA最好的球员？”，答案：“当前NBA MVP候选人”
+</span></span><span class="line"><span class="cl">查询：“奥林匹克支付品牌在市场上目前处于何种地位？它在新泽西州、纽约州和宾夕法尼亚州的扩张前景和战略是什么？”，答案：“奥林匹克支付品牌全面分析2023”、“Olympicpayroll.com客户评价”、“奥林匹克支付市场地位分析”、“薪资行业趋势预测2023-2025”、“薪资服务在新泽西州、纽约州和宾夕法尼亚州的扩张策略”
+</span></span><span class="line"><span class="cl">查询：“如何使用 {language} 创建一个为有向图中的边添加权重的函数？”，答案：“{语言} 中为有向图边添加权重的算法”
+</span></span><span class="line"><span class="cl">查询：“纽约的当前天气如何？”，答案：“纽约的当前天气”
+</span></span><span class="line"><span class="cl">查询：“5 + 5等于多少？”，答案：“5和5的和”
+</span></span><span class="line"><span class="cl">查询：“有什么好的自制肯德基鸡肉配方？”，答案：“在家制作肯德基风格鸡肉的食谱”
+</span></span><span class="line"><span class="cl">查询：“杏仁奶和豆浆的营养成分是什么？”，答案：“杏仁奶的营养信息”，“豆浆的营养信息”
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="二前端先向后端发送请求analyze-任务分析请求">二、前端先向后端发送请求/analyze （任务分析请求）
+</h3><p>前端依次遍历处理每一个子任务，先向后端发送请求/analyze （任务分析请求）,传入参数：目标，当前任务及可用的工具列表。后端接收请求，调用大模型对任务进行分析决策，返回如何处理该任务的行动命令（action）。</p>
+<p>该请求接口的处理代码同样在<code>/web/api/agent/views.py</code>中定义，代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="c1">#定义处理post请求&#34;/analyze&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="err">@</span><span class="n">router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&#34;/analyze&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">async</span> <span class="k">def</span> <span class="nf">analyze_tasks</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">req_body</span><span class="p">:</span> <span class="n">AgentTaskAnalyze</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">agent_analyze_validator</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="n">agent_service</span><span class="p">:</span> <span class="n">AgentService</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_agent_service</span><span class="p">(</span><span class="n">agent_analyze_validator</span><span class="p">)),</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Analysis</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">#调用agent_service服务的analyze_task_agent方法，传入目标，当前任务，可用的工具列表.返回如何处理     #该任务的行动命令</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">await</span> <span class="n">agent_service</span><span class="o">.</span><span class="n">analyze_task_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">goal</span><span class="o">=</span><span class="n">req_body</span><span class="o">.</span><span class="n">goal</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">task</span><span class="o">=</span><span class="n">req_body</span><span class="o">.</span><span class="n">task</span> <span class="ow">or</span> <span class="s2">&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tool_names</span><span class="o">=</span><span class="n">req_body</span><span class="o">.</span><span class="n">tool_names</span> <span class="ow">or</span> <span class="p">[],</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用agent_service服务的analyze_task_agent方法。该方法实际调用大模型对任务进行分析决策，返回需要执行的行动命令。实现类是<code>/web/api/agent/agent_service/open_ai_agent_service.py</code>，其中该方法的实现如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl">    <span class="c1">#根据传入的目标、当前任务、可用工具列表，构造提示，调用大模型获取如何处理该任务的行动命令，</span>
+</span></span><span class="line"><span class="cl">	<span class="n">async</span> <span class="k">def</span> <span class="nf">analyze_task_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">goal</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tool_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Analysis</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    	<span class="c1">#获取可用工具列表</span>
+</span></span><span class="line"><span class="cl">        <span class="n">user_tools</span> <span class="o">=</span> <span class="n">await</span> <span class="n">get_user_tools</span><span class="p">(</span><span class="n">tool_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">oauth_crud</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1">#构建Function Calling 调用工具的信息描述,让大模型来选择使用哪个工具(或Function)，大模型实际         #上并不会真的执行函数，它会根据你给与它的上下文信息来推断要执行的函数，以及函数对应的Arguments，         #然后以JSON的方式输出函数名和参数信息，随后就可以根据JSON信息来真正的执行Function。</span>
+</span></span><span class="line"><span class="cl">        <span class="n">functions</span> <span class="o">=</span> <span class="n">list</span><span class="p">(</span><span class="n">map</span><span class="p">(</span><span class="n">get_tool_function</span><span class="p">,</span> <span class="n">user_tools</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1">#使用analyze_task_prompt提示模板构建提示，传入目标、当前任务</span>
+</span></span><span class="line"><span class="cl">        <span class="n">prompt</span> <span class="o">=</span> <span class="n">analyze_task_prompt</span><span class="o">.</span><span class="n">format_prompt</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">goal</span><span class="o">=</span><span class="n">goal</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">language</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">language</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">		
+</span></span><span class="line"><span class="cl">		<span class="c1">#计算并设置模型输出的最大token数，原因之前已经说明</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">token_service</span><span class="o">.</span><span class="n">calculate_max_tokens</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">prompt</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">str</span><span class="p">(</span><span class="n">functions</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">#调用大模型并进行容错处理，返回响应结果.返回下一步要使用哪个工具(或Function)的决策。</span>
+</span></span><span class="line"><span class="cl">        <span class="n">message</span> <span class="o">=</span> <span class="n">await</span> <span class="n">openai_error_handler</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="k">func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">apredict_messages</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">messages</span><span class="o">=</span><span class="n">prompt</span><span class="o">.</span><span class="n">to_messages</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">functions</span><span class="o">=</span><span class="n">functions</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">callbacks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">		
+</span></span><span class="line"><span class="cl">		<span class="c1">#获取大模型响应的下一步需要执行的函数信息及其参数</span>
+</span></span><span class="line"><span class="cl">        <span class="n">function_call</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">additional_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;function_call&#34;</span><span class="p">,</span> <span class="p">{})</span>
+</span></span><span class="line"><span class="cl">        <span class="n">completion</span> <span class="o">=</span> <span class="n">function_call</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;arguments&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">#解析调用参数</span>
+</span></span><span class="line"><span class="cl">            <span class="n">pydantic_parser</span> <span class="o">=</span> <span class="n">PydanticOutputParser</span><span class="p">(</span><span class="n">pydantic_object</span><span class="o">=</span><span class="n">AnalysisArguments</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">analysis_arguments</span> <span class="o">=</span> <span class="n">parse_with_handling</span><span class="p">(</span><span class="n">pydantic_parser</span><span class="p">,</span> <span class="n">completion</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">#构造返回数据对象Analysis,格式是：{action:str, reasoning: str,arg: str}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">Analysis</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">action</span><span class="o">=</span><span class="n">function_call</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;name&#34;</span><span class="p">,</span> <span class="n">get_tool_name</span><span class="p">(</span><span class="n">get_default_tool</span><span class="p">())),</span>
+</span></span><span class="line"><span class="cl">                <span class="o">**</span><span class="n">analysis_arguments</span><span class="o">.</span><span class="n">dict</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">except</span> <span class="p">(</span><span class="n">OpenAIError</span><span class="p">,</span> <span class="n">ValidationError</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">Analysis</span><span class="o">.</span><span class="n">get_default_analysis</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里关键使用的提示是analyze_task_prompt，该提示信息如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl">   <span class="n">template</span><span class="o">=</span><span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">    High level objective: &#34;{goal}&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Current task: &#34;{task}&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Based on this information, use the best function to make progress or accomplish the task entirely.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Select the correct function by being smart and efficient. Ensure &#34;reasoning&#34; and only &#34;reasoning&#34; is in the
+</span></span></span><span class="line"><span class="cl"><span class="s2">    {language} language.
+</span></span></span><span class="line"><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Note you MUST select a function.
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">input_variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;goal&#34;</span><span class="p">,</span> <span class="s2">&#34;task&#34;</span><span class="p">,</span> <span class="s2">&#34;language&#34;</span><span class="p">],</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>翻译如下:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">template</span><span class="o">=</span> <span class="s2">&#34; &#34;</span>
+</span></span><span class="line"><span class="cl"><span class="err">高级目标</span><span class="p">:</span><span class="err">“</span><span class="p">{</span><span class="n">goal</span><span class="p">}</span><span class="err">”</span>
+</span></span><span class="line"><span class="cl"><span class="err">当前任务</span><span class="p">:</span><span class="err">“</span><span class="p">{</span><span class="n">task</span><span class="p">}</span><span class="err">”</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">基于这些信息，选择最佳的函数来取得进展或完成任务。</span>
+</span></span><span class="line"><span class="cl"><span class="err">聪明高效地选择正确的函数。确保“推理”并且只有“推理”使用在</span><span class="p">{</span><span class="n">language</span><span class="p">}</span><span class="err">中定义的语言。</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="err">注意你必须选择一个函数。</span>
+</span></span><span class="line"><span class="cl"><span class="err">”“”</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="n">Input_variables</span> <span class="o">=</span><span class="p">[</span><span class="s2">&#34;goal&#34;</span><span class="err">，</span> <span class="s2">&#34;task&#34;</span><span class="err">，</span> <span class="s2">&#34;language&#34;</span><span class="p">]</span><span class="err">，</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="三前端再向后端发送请求execute任务执行请求">三、前端再向后端发送请求/execute（任务执行请求）
+</h3><p>上一步对任务进行分析决策,获取完成该任务要执行的行动命令（action）。然后前端向后端发送请求/execute（任务执行请求）,传入参数：目标、当前任务、上一步返回的分析决策结果(包含行动命令）。后端执行参数中指定的行动命令，以完成该任务,返回任务完成的结果。</p>
+<p>该请求接口的处理代码同样在<code>/web/api/agent/views.py</code>中定义，代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#定义处理post请求&#34;/execute&#34;
+</span></span><span class="line"><span class="cl">@router.post(&#34;/execute&#34;)
+</span></span><span class="line"><span class="cl">async def execute_tasks(
+</span></span><span class="line"><span class="cl">    req_body: AgentTaskExecute = Depends(agent_execute_validator),
+</span></span><span class="line"><span class="cl">    agent_service: AgentService = Depends(
+</span></span><span class="line"><span class="cl">        get_agent_service(validator=agent_execute_validator, streaming=True),
+</span></span><span class="line"><span class="cl">    ),
+</span></span><span class="line"><span class="cl">) -&gt; FastAPIStreamingResponse:
+</span></span><span class="line"><span class="cl">	#调用agent_service服务的execute_task_agent方法，传入参数：目标、当前任务、上一步的分析决策。       #返回执行动作的结果.
+</span></span><span class="line"><span class="cl">    return await agent_service.execute_task_agent(
+</span></span><span class="line"><span class="cl">        goal=req_body.goal or &#34;&#34;,
+</span></span><span class="line"><span class="cl">        task=req_body.task or &#34;&#34;,
+</span></span><span class="line"><span class="cl">        analysis=req_body.analysis,
+</span></span><span class="line"><span class="cl">    )
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用agent_service服务的execute_task_agent方法。该方法执行上一步分析决策的行动命令,并返回执行结果。实现类是<code>/web/api/agent/agent_service/open_ai_agent_service.py</code>，其中该方法的实现如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl">    <span class="c1"># 根据命令名称获取对应的工具类，实例化工具类,调用其call方法进行执行，返回执行结果。</span>
+</span></span><span class="line"><span class="cl">	<span class="n">async</span> <span class="k">def</span> <span class="nf">execute_task_agent</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="bp">self</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">goal</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">analysis</span><span class="p">:</span> <span class="n">Analysis</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamingResponse</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># TODO: 更成熟的max_tokens计算方法</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">max_tokens</span> <span class="o">&gt;</span> <span class="mi">3000</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">max_tokens</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">max_tokens</span> <span class="o">-</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">3000</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">         
+</span></span><span class="line"><span class="cl">        <span class="c1">#根据命令名称获取对应的工具类</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tool_class</span> <span class="o">=</span> <span class="n">get_tool_from_name</span><span class="p">(</span><span class="n">analysis</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">#实例化工具类,调用其call方法进行执行</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">await</span> <span class="n">tool_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">language</span><span class="p">)</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">goal</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">task</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">analysis</span><span class="o">.</span><span class="n">arg</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">oauth_crud</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>AgentGPT中默认集成了些工具，如：Search（谷歌搜索）、Image（用于素描、绘制或生成图像）、Code（编写和审查代码）、SID（查找私人信息）。</p>
+<h3 id="四前端向后端发送请求summarize总结请求">四、前端向后端发送请求/summarize（总结请求）
+</h3><p>当所有子任务都执行完成后，可以对执行结果进行总结，用户点击总结按钮，前端向后端发送请求/summarize（总结请求），传入参数：目标、所有子任务的执行结果。后端调用大模型生成总结信息并返回。</p>
+<p>该请求接口的处理代码同样在<code>/web/api/agent/views.py</code>中定义，代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#定义处理post请求&#34;/summarize&#34;
+</span></span><span class="line"><span class="cl">@router.post(&#34;/summarize&#34;)
+</span></span><span class="line"><span class="cl">async def summarize(
+</span></span><span class="line"><span class="cl">    req_body: AgentSummarize = Depends(agent_summarize_validator),
+</span></span><span class="line"><span class="cl">    agent_service: AgentService = Depends(
+</span></span><span class="line"><span class="cl">        get_agent_service(
+</span></span><span class="line"><span class="cl">            validator=agent_summarize_validator,
+</span></span><span class="line"><span class="cl">            streaming=True,
+</span></span><span class="line"><span class="cl">            llm_model=&#34;gpt-3.5-turbo-16k&#34;,
+</span></span><span class="line"><span class="cl">        ),
+</span></span><span class="line"><span class="cl">    ),
+</span></span><span class="line"><span class="cl">) -&gt; FastAPIStreamingResponse:
+</span></span><span class="line"><span class="cl">	#调用agent_service服务的summarize_task_agent方法，传入参数：目标，所有子任务的执行结果列表。返回     #生成的总结信息。
+</span></span><span class="line"><span class="cl">    return await agent_service.summarize_task_agent(
+</span></span><span class="line"><span class="cl">        goal=req_body.goal or &#34;&#34;,
+</span></span><span class="line"><span class="cl">        results=req_body.results,
+</span></span><span class="line"><span class="cl">    )
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用agent_service服务的summarize_task_agent方法。该方法根据所有子任务的执行结果列表、目标构建提示，调用大模型生成总结信息响应。实现类是<code>/web/api/agent/agent_service/open_ai_agent_service.py</code>，其中该方法的实现如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">	#根据所有子任务的执行结果列表、目标构建提示，调用大模型生成总结信息响应
+</span></span><span class="line"><span class="cl">	async def summarize_task_agent(
+</span></span><span class="line"><span class="cl">        self,
+</span></span><span class="line"><span class="cl">        *,
+</span></span><span class="line"><span class="cl">        goal: str,
+</span></span><span class="line"><span class="cl">        results: List[str],
+</span></span><span class="line"><span class="cl">    ) -&gt; FastAPIStreamingResponse:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        self.model.model_name = &#34;gpt-3.5-turbo-16k&#34;
+</span></span><span class="line"><span class="cl">        self.model.max_tokens = 8000  # Total tokens = prompt tokens + completion tokens
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        snippet_max_tokens = 7000  # Leave room for the rest of the prompt
+</span></span><span class="line"><span class="cl">        #计算模型输出的最大token数
+</span></span><span class="line"><span class="cl">        text_tokens = self.token_service.tokenize(&#34;&#34;.join(results))
+</span></span><span class="line"><span class="cl">        #截取最大token数范围内的文本
+</span></span><span class="line"><span class="cl">        text = self.token_service.detokenize(text_tokens[0:snippet_max_tokens])
+</span></span><span class="line"><span class="cl">        logger.info(f&#34;Summarizing text: {text}&#34;)
+</span></span><span class="line"><span class="cl">		
+</span></span><span class="line"><span class="cl">		#调用大模型，生成总结响应
+</span></span><span class="line"><span class="cl">        return summarize(
+</span></span><span class="line"><span class="cl">            model=self.model,
+</span></span><span class="line"><span class="cl">            language=self.settings.language,
+</span></span><span class="line"><span class="cl">            goal=goal,
+</span></span><span class="line"><span class="cl">            text=text,
+</span></span><span class="line"><span class="cl">        )
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行 summarize 方法，其内部其实是构建langchain 的chain，调用大模型，生成总结响应。 代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">def summarize(
+</span></span><span class="line"><span class="cl">    model: BaseChatModel,
+</span></span><span class="line"><span class="cl">    language: str,
+</span></span><span class="line"><span class="cl">    goal: str,
+</span></span><span class="line"><span class="cl">    text: str,
+</span></span><span class="line"><span class="cl">) -&gt; FastAPIStreamingResponse:
+</span></span><span class="line"><span class="cl">    from reworkd_platform.web.api.agent.prompts import summarize_prompt
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	#构建langchain 的chain
+</span></span><span class="line"><span class="cl">    chain = LLMChain(llm=model, prompt=summarize_prompt)
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl">	#生成总结并流式响应返回
+</span></span><span class="line"><span class="cl">    return StreamingResponse.from_chain(
+</span></span><span class="line"><span class="cl">        chain,
+</span></span><span class="line"><span class="cl">        {
+</span></span><span class="line"><span class="cl">            &#34;goal&#34;: goal,
+</span></span><span class="line"><span class="cl">            &#34;language&#34;: language,
+</span></span><span class="line"><span class="cl">            &#34;text&#34;: text,
+</span></span><span class="line"><span class="cl">        },
+</span></span><span class="line"><span class="cl">        media_type=&#34;text/event-stream&#34;,
+</span></span><span class="line"><span class="cl">    )
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="五前端获取外部的工具列表">五、前端获取外部的工具列表
+</h3><p>AgentGPT前端在启动Agent之前，会请求接口<code>/tools</code>获取用户的可用工具列表。在向后端发送请求/analyze （任务分析请求）,对任务进行分析决策，获取下一步如何处理该任务的行动命令时，作为可用工具列表参数传入。</p>
+<p>该请求接口的处理代码在<code>/web/api/agent/views.py</code>中定义，代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="c1">#定义处理get请求&#34;/tools&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;/tools&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">async</span> <span class="k">def</span> <span class="nf">get_user_tools</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ToolsResponse</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">#获取外部的工具列表，默认定义的有三个：Image（用于素描、绘制或生成图像）、Code（编写和审查代码）、</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">#SID（查找私人信息）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tools</span> <span class="o">=</span> <span class="n">get_external_tools</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">#构建ToolModel对象数组，ToolModel对象包含名称、描述、颜色、图片URL</span>
+</span></span><span class="line"><span class="cl">    <span class="n">formatted_tools</span> <span class="o">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ToolModel</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">name</span><span class="o">=</span><span class="n">get_tool_name</span><span class="p">(</span><span class="k">tool</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="n">description</span><span class="o">=</span><span class="k">tool</span><span class="o">.</span><span class="n">public_description</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">color</span><span class="o">=</span><span class="s2">&#34;TODO: Change to image of tool&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">image_url</span><span class="o">=</span><span class="k">tool</span><span class="o">.</span><span class="n">image_url</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="k">tool</span> <span class="ow">in</span> <span class="n">tools</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="k">tool</span><span class="o">.</span><span class="n">available</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">ToolsResponse</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="n">formatted_tools</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>以上这些就是AgentGPT的核心接口。</p>
+<p>剩下的还有些非主流程的辅助功能，如：</p>
+<ul>
+<li>授权相关操作（如第三方oauth的授权登录），接口定义在<code>reworkd_platform/web/api/auth/views.py</code>中。</li>
+<li>出错处理及健康检测接口服务，接口定义在<code>reworkd_platform/web/api/monitoring/views.py</code>中。</li>
+</ul>
+<p>实现也相对比较简单，这里就不再列出来，有兴趣的朋友，可以进到相应的目录文件中查看。</p>
+<p>项目相关代码及文件放在网盘中，地址：</p>
+<p>链接：https://pan.quark.cn/s/11ca682f0ec7
+提取码：KXJr</p>
+<h2 id="参考">参考
+</h2><p><a class="link" href="https://github.com/reworkd/AgentGPT"  target="_blank" rel="noopener"
+    >https://github.com/reworkd/AgentGPT</a></p>
+<p><a class="link" href="https://docs.reworkd.ai/development/setup"  target="_blank" rel="noopener"
+    >https://docs.reworkd.ai/development/setup</a></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/">
+        
+        <div class="article-image">
+            <img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fdbd1b23601318794f079b6a6d19a3ef13257f871.png" width="1920" height="1080" loading="lazy"
+                alt="Featured image of post 使用 LangChain 构建多智能体工作流">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #13511380 0%, #fefefeC0 100%);">
+            <h2 class="article-title">使用 LangChain 构建多智能体工作流</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/">
+        
+        <div class="article-image">
+            <img src="../../p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/images/image-1-17667340159537.png" width="2000" height="1425" loading="lazy"
+                alt="Featured image of post 主流开源 Rerank 模型解析与选型指南（2026 版）">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #659df780 0%, #e5f3ffC0 100%);">
+            <h2 class="article-title">主流开源 Rerank 模型解析与选型指南（2026 版）</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/235015461-543a897f-70cc-4b63-941a-2ae3c9172b11-17241256699664.png" width="2978" height="2205" loading="lazy"
+                alt="Featured image of post 深入解析BabyAGI：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #24282980 0%, #f6fafaC0 100%);">
+            <h2 class="article-title">深入解析BabyAGI：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240730120705816.png" width="1138" height="704" loading="lazy"
+                alt="Featured image of post 深入解析AutoGPT：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #4b4d5080 0%, #fafbfcC0 100%);">
+            <h2 class="article-title">深入解析AutoGPT：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+        
+        <div class="article-image">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250826174630927.png" width="1110" height="689" loading="lazy"
+                alt="Featured image of post 开源智能体框架——Plan-and-execute 原理、架构与代码实现">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #43434380 0%, #fefefeC0 100%);">
+            <h2 class="article-title">开源智能体框架——Plan-and-execute 原理、架构与代码实现</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

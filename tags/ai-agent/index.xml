@@ -6,8 +6,43 @@
     <description>Recent content in AI Agent on Tiny 的技术博客</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sun, 25 Jan 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 03 Feb 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://tinyseeking.github.io/tags/ai-agent/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>使用 LangChain 构建多智能体工作流</title>
+      <link>https://tinyseeking.github.io/p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/</link>
+      <pubDate>Tue, 03 Feb 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/</guid>
+      <description>&lt;h1 id=&#34;使用-langchain-构建多智能体工作流&#34;&gt;使用 LangChain 构建多智能体工作流&#xD;&#xA;&lt;/h1&gt;&lt;p&gt;人工智能（AI）正飞速发展，2025 年最大的转变是向  **智能体系统（agentic systems）**迈进 —— 这类 AI 能够进行规划、协作，并跨多步骤执行任务。团队不再依赖单一模型处理所有事情，而是构建由专业智能体组成的网络，它们可以像真实工作流一样协同运作。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>主流开源 Rerank 模型解析与选型指南（2026 版）</title>
+      <link>https://tinyseeking.github.io/p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/</link>
+      <pubDate>Sun, 01 Feb 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/</guid>
+      <description>&lt;h1 id=&#34;主流开源-rerank-模型解析与选型指南2026-版&#34;&gt;主流开源 Rerank 模型解析与选型指南（2026 版）&#xD;&#xA;&lt;/h1&gt;&lt;p&gt;​&#x9;&#x9;在检索增强生成（RAG）场景中，Rerank（重排序）是决定检索精度的关键环节。核心作用是对向量检索、关键词检索等初步召回的候选文档进行精细排序，筛选出与查询最相关的结果，以提升检索精度。本文聚焦 6 款主流开源 Rerank 模型，从技术特性、性能表现、部署成本、适用场景等核心维度展开深度解析，结合 2025 年最新评测数据输出可落地的选型建议，助力开发者搭建高效的检索系统。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>深入解析AgentGPT：原理、实战与源码拆解</title>
+      <link>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</link>
+      <pubDate>Wed, 28 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</guid>
+      <description>&lt;h1 id=&#34;深入解析agentgpt原理实战与源码拆解&#34;&gt;深入解析AgentGPT：原理、实战与源码拆解&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;介绍&#34;&gt;介绍&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​       AgentGPT是一个自主AI代理平台，它使用户能够在浏览器中创建和部署可定制的自主AI代理。只需要指定一个目标，然后观看它自动开始一段激动人心的旅程，以完成指定的任务。AgentGPT通过调用大型语言模型（如GPT-4）来实现目标，旨在在无需人类干预的情况下理解目标、制定策略并交付结果。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>深入解析BabyAGI：原理、实战与源码拆解</title>
+      <link>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</link>
+      <pubDate>Tue, 27 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</guid>
+      <description>&lt;h1 id=&#34;深入解析babyagi原理实战与源码拆解&#34;&gt;深入解析BabyAGI：原理、实战与源码拆解&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;什么是babyagi&#34;&gt;什么是BabyAGI？&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​        BabyAGI是AI驱动的任务管理系统的一个实例，它使用 OpenAI 和向量数据库（例如 Chroma 或 Weaviate）来创建、优先级排序和执行任务。&lt;/p&gt;&#xA;&lt;p&gt;​        该系统背后的主要思想是：根据先前任务执行的结果和预定义的目标创建任务。该系统是通过使用 OpenAI 的自然语言处理（NLP）的能力根据目标创建新任务，并使用Chroma/Weaveate存储并检索任务的结果来构建提示上下文。这是原始的 &lt;a class=&#34;link&#34; href=&#34;https://twitter.com/yoheinakajima/status/1640934493489070080?s=20&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;&#xD;&#xA;    &gt;Task-Driven Autonomous Agent&lt;/a&gt; （任务驱动的自治代理，2023年3月28日）的简化版本。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>深入解析AutoGPT：原理、实战与源码拆解</title>
+      <link>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</link>
+      <pubDate>Mon, 26 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/</guid>
+      <description>&lt;h1 id=&#34;深入解析autogpt原理实战与源码拆解&#34;&gt;深入解析AutoGPT：原理、实战与源码拆解&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;介绍&#34;&gt;介绍&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​    自ChatGPT发布以来，涌现了许多围绕大模型(即LLM)的应用开发框架，authGPT就是其中之一，在github上截止2024年7月达到160K颗star。这篇文章我们全面深入讲解autoGTP，首先了解autoGPT是什么，它的整体架构是怎么组织的，再通过实际使用示例来探究其运作原理及流程、最后对源码进行解析，来看它是如何实现的。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>开源智能体框架——Plan-and-execute 原理、架构与代码实现</title>
       <link>https://tinyseeking.github.io/p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/</link>

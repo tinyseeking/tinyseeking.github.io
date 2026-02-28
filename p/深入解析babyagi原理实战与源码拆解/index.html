@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="BabyAGI是AI驱动的任务管理系统的一个实例，它使用 OpenAI 和向量数据库（例如 Chroma 或 Weaviate）来创建、优先级排序和执行任务。">
+<title>深入解析BabyAGI：原理、实战与源码拆解</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="深入解析BabyAGI：原理、实战与源码拆解">
+<meta property='og:description' content="BabyAGI是AI驱动的任务管理系统的一个实例，它使用 OpenAI 和向量数据库（例如 Chroma 或 Weaviate）来创建、优先级排序和执行任务。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2026-01-27T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-01-27T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="深入解析BabyAGI：原理、实战与源码拆解">
+<meta name="twitter:description" content="BabyAGI是AI驱动的任务管理系统的一个实例，它使用 OpenAI 和向量数据库（例如 Chroma 或 Weaviate）来创建、优先级排序和执行任务。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#什么是babyagi">什么是BabyAGI？</a></li>
+    <li><a href="#工作原理">工作原理</a></li>
+    <li><a href="#如何使用">如何使用</a>
+      <ol>
+        <li><a href="#在docker-容器内运行">在docker 容器内运行</a></li>
+      </ol>
+    </li>
+    <li><a href="#运行示例">运行示例</a>
+      <ol>
+        <li><a href="#一从任务存储中取出第一个任务执行">一、从任务存储中取出第一个任务执行</a></li>
+        <li><a href="#二根据任务的执行结果创建新的任务列表">二、根据任务的执行结果，创建新的任务列表</a></li>
+        <li><a href="#三重新排序任务列表优先级">三、重新排序任务列表优先级</a></li>
+      </ol>
+    </li>
+    <li><a href="#源码解析">源码解析</a>
+      <ol>
+        <li><a href="#任务执行代理execution_agent">任务执行代理（execution_agent）</a></li>
+        <li><a href="#任务创建代理task_creation_agent">任务创建代理（task_creation_agent）</a></li>
+        <li><a href="#任务排序代理prioritization_agent">任务排序代理（prioritization_agent）</a></li>
+        <li><a href="#results_storage-结果存储器">results_storage (结果存储器)</a></li>
+        <li><a href="#tasks_storage-任务存储">tasks_storage （任务存储）</a></li>
+      </ol>
+    </li>
+    <li><a href="#结语">结语</a></li>
+    <li><a href="#参考文档">参考文档</a></li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/235015461-543a897f-70cc-4b63-941a-2ae3c9172b11-17241256699664.png" width="2978" height="2205" loading="lazy"
+                alt="Featured image of post 深入解析BabyAGI：原理、实战与源码拆解" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">深入解析BabyAGI：原理、实战与源码拆解</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            BabyAGI是AI驱动的任务管理系统的一个实例，它使用 OpenAI 和向量数据库（例如 Chroma 或 Weaviate）来创建、优先级排序和执行任务。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-01-27T00:00:00Z'>2026年1月27日星期二</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 15 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#什么是babyagi">什么是BabyAGI？</a></li>
+    <li><a href="#工作原理">工作原理</a></li>
+    <li><a href="#如何使用">如何使用</a>
+      <ol>
+        <li><a href="#在docker-容器内运行">在docker 容器内运行</a></li>
+      </ol>
+    </li>
+    <li><a href="#运行示例">运行示例</a>
+      <ol>
+        <li><a href="#一从任务存储中取出第一个任务执行">一、从任务存储中取出第一个任务执行</a></li>
+        <li><a href="#二根据任务的执行结果创建新的任务列表">二、根据任务的执行结果，创建新的任务列表</a></li>
+        <li><a href="#三重新排序任务列表优先级">三、重新排序任务列表优先级</a></li>
+      </ol>
+    </li>
+    <li><a href="#源码解析">源码解析</a>
+      <ol>
+        <li><a href="#任务执行代理execution_agent">任务执行代理（execution_agent）</a></li>
+        <li><a href="#任务创建代理task_creation_agent">任务创建代理（task_creation_agent）</a></li>
+        <li><a href="#任务排序代理prioritization_agent">任务排序代理（prioritization_agent）</a></li>
+        <li><a href="#results_storage-结果存储器">results_storage (结果存储器)</a></li>
+        <li><a href="#tasks_storage-任务存储">tasks_storage （任务存储）</a></li>
+      </ol>
+    </li>
+    <li><a href="#结语">结语</a></li>
+    <li><a href="#参考文档">参考文档</a></li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="深入解析babyagi原理实战与源码拆解">深入解析BabyAGI：原理、实战与源码拆解
+</h1><h2 id="什么是babyagi">什么是BabyAGI？
+</h2><p>​        BabyAGI是AI驱动的任务管理系统的一个实例，它使用 OpenAI 和向量数据库（例如 Chroma 或 Weaviate）来创建、优先级排序和执行任务。</p>
+<p>​        该系统背后的主要思想是：根据先前任务执行的结果和预定义的目标创建任务。该系统是通过使用 OpenAI 的自然语言处理（NLP）的能力根据目标创建新任务，并使用Chroma/Weaveate存储并检索任务的结果来构建提示上下文。这是原始的 <a class="link" href="https://twitter.com/yoheinakajima/status/1640934493489070080?s=20"  target="_blank" rel="noopener"
+    >Task-Driven Autonomous Agent</a> （任务驱动的自治代理，2023年3月28日）的简化版本。</p>
+<h2 id="工作原理">工作原理
+</h2><p>该系统通过在一个无限循环中运行，该循环执行以下步骤：</p>
+<ol>
+<li>从任务列表中拉取第一个未完成的任务。首次运行时，获取的是用户配置的初始任务和目标。</li>
+<li>将目标及任务构建提示词，发送给<strong>执行代理(execution_agent)</strong>，执行代理调用 OpenAI 的 API 根据上下文完成任务，获取任务的响应结果。</li>
+<li>丰富响应结果，并将其存储在<a class="link" href="https://docs.trychroma.com/"  target="_blank" rel="noopener"
+    >Chroma</a> / <a class="link" href="https://weaviate.io/"  target="_blank" rel="noopener"
+    >Weaviate</a>(向量数据库)中。</li>
+<li>使用**任务创建代理(task_creation_agent)<strong>根据目标和上一个任务的结果创建新任务，并使用</strong>排序代理(prioritization_agent)**重新排列任务列表的优先级。 并继续到第一步，不断循环，直到完成所有任务。</li>
+</ol>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/235015461-543a897f-70cc-4b63-941a-2ae3c9172b11-17241256699664.png"
+	width="2978"
+	height="2205"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/235015461-543a897f-70cc-4b63-941a-2ae3c9172b11-17241256699664_hu_48597fdf61d83f1c.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/235015461-543a897f-70cc-4b63-941a-2ae3c9172b11-17241256699664_hu_ee384546d9386147.png 1024w"
+	loading="lazy"
+	
+		alt="图像"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="135"
+		data-flex-basis="324px"
+	
+></p>
+<p>从上面的流程图可以看到，该执行过程，主要包括三个代理动作：</p>
+<ul>
+<li>
+<p><strong>任务执行代理（execution_agent）</strong></p>
+<p>执行代理是系统的核心，它利用OpenAI的API来处理任务。该代理的实现是 execution_agent() 函数，该函数采用两个参数：目标和任务。向OpenAI的API发送提示，提示包括 AI 系统任务、目标和任务本身的描述，然后返回字符串（string ）形式任务结果。</p>
+</li>
+<li>
+<p><strong>任务创建代理（task_creation_agent）</strong></p>
+<p>任务创建代理，使用OpenAI的API基于当前对象和之前任务执行的结果创建新任务。其实现是<code>task_creation_agent（）</code>函数，该函数有四个参数：目标、上一个任务的结果、任务描述和当前任务列表。它向OpenAI的API发送提示，并以字符串形式返回新任务列表。然后，该函数将新任务列表作为字典列表返回，其中每个字典都包含任务的名称。</p>
+</li>
+<li>
+<p><strong>排序代理（prioritization_agent）</strong></p>
+<p>排序代理，用于重新排列任务列表优先级。其实现是<code>prioritization_agent()</code>函数，该函数接受一个参数，即当前任务的 ID。向OpenAI的API发送提示，返回已重新排序的新任务列表(以数字编号)。</p>
+</li>
+</ul>
+<p>另外，使用Chroma/Weaveate来存储和检索任务结果以获取上下文。根据table_name变量中指定的表名创建Chroma/Weaveate集合（collection）。然后使用Chroma/Weaveate将任务的结果与任务名称及其它元数据一起存储在集合中。</p>
+<h2 id="如何使用">如何使用
+</h2><p>使用BabyAGI，按照以下步骤操作：</p>
+<ol>
+<li>
+<p>通过命令 <code>git clone https://github.com/yoheinakajima/babyagi.git </code> 克隆 repository(仓库), 然后使用cd进入克隆的存储目录.</p>
+</li>
+<li>
+<p>安装所需的软件包：<code>pip install -r requirements.txt</code></p>
+</li>
+<li>
+<p>将.env.example文件复制一份，并把文件名改为 .env。也可以执行命令：<code>cp .env.example .env</code>。并按需设置以下（4-8步骤）的变量。</p>
+</li>
+<li>
+<p>在OpenAI_API_key中设置OpenAI API密钥、配置OpenAI_PI_MODEL变量。</p>
+<ul>
+<li>
+<p>默认使用的模型是openAI的<strong>gpt-3.5-turbo</strong>。支持所有OpenAI模型，以及Llama.cpp中的Llama及其变体，要使用其他模型，请通过LLM_model设置或使用命令行来指定。</p>
+</li>
+<li>
+<p>默认使用Chroma作为向量数据库，如果要使用Weaviate，还需要设置相关的附加变量，详见<a class="link" href="https://github.com/yoheinakajima/babyagi/blob/main/docs/weaviate.md"  target="_blank" rel="noopener"
+    >此处</a>.</p>
+</li>
+<li>
+<p>若是使用第三方代理而不是直接连接openAI，则还需要配置OPENAI_API_BASE 参数。</p>
+</li>
+<li>
+<p>同时，该项目也支持千问、DeepSeek、智谱等兼容 OpenAI 接口的第三方模型服务，使用此类服务时，需对应调整 <code>LLM_MODEL</code>、<code>OPENAI_API_KEY</code>、<code>OPENAI_API_BASE</code> 三个参数的值。</p>
+<p>如下配置所示：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">LLM_MODEL=gpt-3.5-turbo # alternatively, gpt-4, text-davinci-003, etc
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">OPENAI_API_KEY= Replace with your key #替换为你的key
+</span></span><span class="line"><span class="cl">OPENAI_API_BASE=https://api.xxx.com/ #使用第三方代理时需配置
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+</li>
+<li>
+<p>在RESULTS_STORE_NAME变量中设置表的名称。任务结果存储在这里。</p>
+</li>
+<li>
+<p>（可选）在 BABY_NAME 变量中设置BabyAGI实例的名称。</p>
+</li>
+<li>
+<p>（可选）在 OBJECTIVE 变量中设置任务管理系统的目标。</p>
+</li>
+<li>
+<p>（可选）在 INITIAL_TASK 变量中设置系统的第一个任务。</p>
+</li>
+<li>
+<p>运行脚本：<code>python babyagi.py</code></p>
+</li>
+</ol>
+<p>上述所有可选值也可以在命令行上指定。</p>
+<h3 id="在docker-容器内运行">在docker 容器内运行
+</h3><p>你也可以使用docker容器来运行，需要先安装 Docker 和 Docker Compose。Docker Desktop 是最简单的选择，到地址<code>https://www.docker.com/products/docker-desktop/</code>下载安装即可：</p>
+<p>要在 Docker 容器中运行系统，请按照上述步骤设置 .env 文件，然后运行以下命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">docker-compose up
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">注意：BabyAGI是一个任务管理系统，被设计为连续运行。这可能导致API的高使用率、内存和资金。所以，请务必谨慎使用，同时监控系统的行为以及确保应用程序的有效性非常重要。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="运行示例">运行示例
+</h2><p>我们通过一个示例来看使用的效果，首先需要设定一个目标及初始任务，官方默认的目标是Solve world hunger，初始任务是Develop a task list。我们把目标改为：培养孩子的兴趣，初始任务改为：制定任务清单。</p>
+<p>具体配置参数如下:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">#设置表的名称,任务结果存储在这里。
+</span></span><span class="line"><span class="cl">RESULTS_STORE_NAME=baby-agi-interest-table
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># BabyAGI实例的名称
+</span></span><span class="line"><span class="cl">INSTANCE_NAME=BabyInterestAGI
+</span></span><span class="line"><span class="cl">COOPERATIVE_MODE=none # local
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 定义目标
+</span></span><span class="line"><span class="cl">OBJECTIVE=培养孩子的兴趣
+</span></span><span class="line"><span class="cl">#OBJECTIVE=Solve world hunger
+</span></span><span class="line"><span class="cl"># 初始任务
+</span></span><span class="line"><span class="cl">#INITIAL_TASK=Develop a task list
+</span></span><span class="line"><span class="cl">INITIAL_TASK=制定任务清单
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>配置参数后，运行脚本<code>python babyagi.py</code>。</p>
+<h3 id="一从任务存储中取出第一个任务执行">一、从任务存储中取出第一个任务执行
+</h3><p>首先，打印出目标及初始任务，列出当前的任务列表，列表中只有一个任务，即初始任务：制定任务清单。取出该任务，并执行后，获取任务的结果。如下所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821145624460.png"
+	width="1421"
+	height="808"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821145624460_hu_793c037c865caae9.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821145624460_hu_a1cb0258915a094e.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240821145624460"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="175"
+		data-flex-basis="422px"
+	
+></p>
+<h3 id="二根据任务的执行结果创建新的任务列表">二、根据任务的执行结果，创建新的任务列表
+</h3><p>接着，根据任务的执行结果及目标、任务的描述，调用任务创建代理(task_create_agent)，生成新的任务列表响应。这里生成了2个新的任务（红色框部分）。并将任添加进任务存储中（绿色框部分），如下所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155209534.png"
+	width="1501"
+	height="745"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155209534_hu_d1a62d99799f9f56.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155209534_hu_636eae13981f257d.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240821155209534"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="201"
+		data-flex-basis="483px"
+	
+></p>
+<h3 id="三重新排序任务列表优先级">三、重新排序任务列表优先级
+</h3><p>最后，调用任务排序代理（prioritization_agent），重新排列任务列表优先级。主程序会把排序后的任务列表替换tasks_storage 中的旧任务列表。所示如下：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155415525.png"
+	width="1532"
+	height="511"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155415525_hu_3112acdd868faf31.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155415525_hu_e8bbe002234e3d23.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240821155415525"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="299"
+		data-flex-basis="719px"
+	
+></p>
+<p>到此完成一轮流程。</p>
+<p>继续重新开始一轮循环，列出任务存储中的任务列表，这里可以看到列表中有两条任务，即上一轮重新排序后的任务列表。取出第一条任务执行。获取结果，所示如下：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155824892.png"
+	width="1527"
+	height="371"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155824892_hu_82b53e0efafc6a7c.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821155824892_hu_2ccefd20ccc9d430.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240821155824892"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="411"
+		data-flex-basis="987px"
+	
+></p>
+<p>以此，不断循环，直到任务存储中没有任务需要处理为止。但我这里经过几轮循环后，任务变得越来越细，如下所示：</p>
+<p><img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821160640284.png"
+	width="1531"
+	height="463"
+	srcset="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821160640284_hu_95353915d22d91b2.png 480w, ../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240821160640284_hu_a6a2a0f9a3770ed0.png 1024w"
+	loading="lazy"
+	
+		alt="image-20240821160640284"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="330"
+		data-flex-basis="793px"
+	
+></p>
+<p>可以看到，生成了7个子任务。视乎没有看到能结束的时候。这里果断停止了运行，可以看到，运行BabyAGI需要耗费大量的token。</p>
+<h2 id="源码解析">源码解析
+</h2><p>BabyAGI 的核心代码比较简单，主要是在主程序目录下的 babyagi.py文件中，运行的主流程代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">def main():
+</span></span><span class="line"><span class="cl">    loop = True
+</span></span><span class="line"><span class="cl">    while loop:
+</span></span><span class="line"><span class="cl">        #只要存储中存在任务，则往下执行.
+</span></span><span class="line"><span class="cl">        if not tasks_storage.is_empty():
+</span></span><span class="line"><span class="cl">            # 打印任务列表
+</span></span><span class="line"><span class="cl">            print(&#34;\033[95m\033[1m&#34; + &#34;\n*****TASK LIST*****\n&#34; + &#34;\033[0m\033[0m&#34;)
+</span></span><span class="line"><span class="cl">            for t in tasks_storage.get_task_names():
+</span></span><span class="line"><span class="cl">                print(&#34; • &#34; + str(t))
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            # Step 1: 取出第一个未完成的任务
+</span></span><span class="line"><span class="cl">            task = tasks_storage.popleft()
+</span></span><span class="line"><span class="cl">            #打印接下来要执行的任务
+</span></span><span class="line"><span class="cl">            print(&#34;\033[92m\033[1m&#34; + &#34;\n*****NEXT TASK*****\n&#34; + &#34;\033[0m\033[0m&#34;)
+</span></span><span class="line"><span class="cl">            print(str(task[&#34;task_name&#34;]))
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            # 发送给任务执行代理去完成任务，传入两个参数：目标、任务名称。该执行代理向OpenAI的API发送提			   # 示，提示包括AI系统任务、目标和任务本身的描述，返回字符串（string ）形式任务结果。
+</span></span><span class="line"><span class="cl">            result = execution_agent(OBJECTIVE, str(task[&#34;task_name&#34;]))
+</span></span><span class="line"><span class="cl">            print(&#34;\033[93m\033[1m&#34; + &#34;\n*****TASK RESULT*****\n&#34; + &#34;\033[0m\033[0m&#34;)
+</span></span><span class="line"><span class="cl">            print(result)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            # Step 2: 丰富结果并存储任务、及其执行结果、ID 在 results_storage 中.
+</span></span><span class="line"><span class="cl">            # 如果需要，在这里丰富结果内容.
+</span></span><span class="line"><span class="cl">            enriched_result = {
+</span></span><span class="line"><span class="cl">                &#34;data&#34;: result
+</span></span><span class="line"><span class="cl">            }
+</span></span><span class="line"><span class="cl">            # 如果有丰富结果内容，可以从字典中提取丰富的实际结果，这里没有，已注释。
+</span></span><span class="line"><span class="cl">            # vector = enriched_result[&#34;data&#34;]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            result_id = f&#34;result_{task[&#39;task_id&#39;]}&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			# 任务执行后，会将任务、及其响应的结果、ID保存到results_storage（结果存储）中。
+</span></span><span class="line"><span class="cl">            results_storage.add(task, result, result_id)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            # Step 3: 调用任务创建代理task_creation_agent，使用OpenAI的API基于当前对象和之前任务             # 执行的结果创建新任务，有四个参数：目标、上一个任务的结果、任务描述和当前任务列表。返回新的             # 任务列表
+</span></span><span class="line"><span class="cl">            new_tasks = task_creation_agent(
+</span></span><span class="line"><span class="cl">                OBJECTIVE,
+</span></span><span class="line"><span class="cl">                enriched_result,
+</span></span><span class="line"><span class="cl">                task[&#34;task_name&#34;],
+</span></span><span class="line"><span class="cl">                tasks_storage.get_task_names(),
+</span></span><span class="line"><span class="cl">            )
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			#把新的任务添加到任务存储(tasks_storage)中保存下来
+</span></span><span class="line"><span class="cl">            print(&#39;Adding new tasks to task_storage&#39;)
+</span></span><span class="line"><span class="cl">            for new_task in new_tasks:
+</span></span><span class="line"><span class="cl">                new_task.update({&#34;task_id&#34;: tasks_storage.next_task_id()})
+</span></span><span class="line"><span class="cl">                print(str(new_task))
+</span></span><span class="line"><span class="cl">                tasks_storage.append(new_task)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			# JOIN_EXISTING_OBJECTIVE(加入已存在的目标)变量控制是否在生产新任务时重新优化排序，该值			 # 默认是false,也即需要重新优化排序.
+</span></span><span class="line"><span class="cl">            if not JOIN_EXISTING_OBJECTIVE:
+</span></span><span class="line"><span class="cl">            	#调用任务排序代理、重新排列任务列表优先级。向OpenAI的API发送提示，返回已重新排序的新任                 #务列表。
+</span></span><span class="line"><span class="cl">                prioritized_tasks = prioritization_agent()
+</span></span><span class="line"><span class="cl">                #将返回的新任务列表替换旧任务列表
+</span></span><span class="line"><span class="cl">                if prioritized_tasks:
+</span></span><span class="line"><span class="cl">                    tasks_storage.replace(prioritized_tasks)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            # 休眠一会儿
+</span></span><span class="line"><span class="cl">            time.sleep(5)
+</span></span><span class="line"><span class="cl">        else:
+</span></span><span class="line"><span class="cl">            print(&#39;Done.&#39;)
+</span></span><span class="line"><span class="cl">            loop = False
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">if __name__ == &#34;__main__&#34;:
+</span></span><span class="line"><span class="cl">    main()
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>以上的主流程已注释说明，主要包括三个代理执行器及两个存储器。</p>
+<p>代理执行器包括：</p>
+<ul>
+<li>任务执行代理（execution_agent）</li>
+<li>任务创建代理（task_creation_agent）</li>
+<li>排序代理（prioritization_agent）</li>
+</ul>
+<p>存储器包括：</p>
+<ul>
+<li>results_storage (结果存储器)</li>
+<li>tasks_storage （任务存储）</li>
+</ul>
+<p>下面分别介绍。</p>
+<h3 id="任务执行代理execution_agent">任务执行代理（execution_agent）
+</h3><p>首先，从任务存储（tasks_storage ）中拉取第一个未完成的任务。首次运行时，获取的是用户配置的初始任务和目标。调用执行代理（execution_agent）来执行任务，它利用OpenAI的API来完成任务。</p>
+<p>该代理的实现是 execution_agent() 函数，该函数采用两个参数：目标和任务。向OpenAI的API发送提示，提示包括 AI 系统任务、目标和任务本身的描述，然后返回字符串（string ）形式的响应结果。</p>
+<p>代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">def execution_agent(objective: str, task: str) -&gt; str:
+</span></span><span class="line"><span class="cl">    &#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">    根据给定的目标和先前的上下文执行任务.传入两个参数.
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    Args:
+</span></span><span class="line"><span class="cl">        objective (str): 执行任务的目的或目标
+</span></span><span class="line"><span class="cl">        task (str): 要执行的任务
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    Returns:
+</span></span><span class="line"><span class="cl">        str: AI为给定任务生成字符串格式的响应.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    &#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">	#获取目标的关联上下文信息，从results_storage中查询之前执行的任务及其响应结果信息。这是在执行任务完成     #后，将任务及其结果保存到results_storage。
+</span></span><span class="line"><span class="cl">	#results_storage的默认实现是使用chroma(向量数据库)。
+</span></span><span class="line"><span class="cl">    context = context_agent(query=objective, top_results_num=5)
+</span></span><span class="line"><span class="cl">    # print(&#34;\n****RELEVANT CONTEXT****\n&#34;)
+</span></span><span class="line"><span class="cl">    # print(context)
+</span></span><span class="line"><span class="cl">    # print(&#39;&#39;)
+</span></span><span class="line"><span class="cl">    #构建提示词,传入objective(目标)和context(关联上下文)、task(任务)组装提示词。
+</span></span><span class="line"><span class="cl">    prompt = f&#39;根据以下目标执行一项任务: {objective}.\n&#39;
+</span></span><span class="line"><span class="cl">    if context:
+</span></span><span class="line"><span class="cl">        prompt += &#39;考虑到这些之前完成的任务:&#39; + &#39;\n&#39;.join(context)
+</span></span><span class="line"><span class="cl">    prompt += f&#39;\nYour task: {task}\nResponse:&#39;
+</span></span><span class="line"><span class="cl">    return openai_call(prompt, max_tokens=2000)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>任务执行后，主程序会将任务、及其响应的结果保存到results_storage（结果存储）中。以便后续再执行任务时，从results_storage中检索相关的上下文信息。results_storage的默认实现是chroma(向量数据库)。</p>
+<h3 id="任务创建代理task_creation_agent">任务创建代理（task_creation_agent）
+</h3><p>任务执行后，接下来，系统会根据之前任务执行的结果，调用任务创建代理生成新任务列表（task_creation_agent）。使用OpenAI的API基于当前对象和之前任务执行的结果创建新任务。</p>
+<p>其实现是<code>task_creation_agent（）</code>函数，该函数有四个参数：目标、上一个任务的结果、任务描述和当前未完成的任务列表。它向OpenAI的API发送提示，并以字符串形式返回新任务列表。然后，该函数将新任务列表作为字典列表返回，其中每个字典都包含任务的名称。</p>
+<p>代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">def task_creation_agent(
+</span></span><span class="line"><span class="cl">        objective: str, result: Dict, task_description: str, task_list: List[str]
+</span></span><span class="line"><span class="cl">):
+</span></span><span class="line"><span class="cl">    #构建提示词,使用参数&#34;目标、上一个任务的结果、任务描述和当前未完成的任务列表&#34;组装提示词.
+</span></span><span class="line"><span class="cl">    prompt = f&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">您将使用执行代理的结果来创建具有以下目标的新任务: {objective}.
+</span></span><span class="line"><span class="cl">最后完成的任务结果: \n{result[&#34;data&#34;]}
+</span></span><span class="line"><span class="cl">这个结果是基于这个任务描述: {task_description}.\n&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    if task_list:
+</span></span><span class="line"><span class="cl">        prompt += f&#34;未完成的任务: {&#39;, &#39;.join(task_list)}\n&#34;
+</span></span><span class="line"><span class="cl">    prompt += &#34;根据结果，返回需要完成的任务列表以实现目标. &#34;
+</span></span><span class="line"><span class="cl">    if task_list:
+</span></span><span class="line"><span class="cl">        prompt += &#34;这些新任务不能与未完成的任务重叠. &#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    prompt += &#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">在响应中每行返回一个任务。结果必须是以下格式的编号列表: 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">#. First task
+</span></span><span class="line"><span class="cl">#. Second task
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">每个条目的编号后面必须跟一个句号。如果你的清单是空的，那就写
+</span></span><span class="line"><span class="cl">&#34;There are no tasks to add at this time.&#34;
+</span></span><span class="line"><span class="cl">除非您的列表为空，否则不要在编号列表之前包含任何标题，或者在编号列表之后使用任何其他输出.&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    print(f&#39;\n*****TASK CREATION AGENT PROMPT****\n{prompt}\n&#39;)
+</span></span><span class="line"><span class="cl">    #发送给openAI 模型
+</span></span><span class="line"><span class="cl">    response = openai_call(prompt, max_tokens=2000)
+</span></span><span class="line"><span class="cl">    print(f&#39;\n****TASK CREATION AGENT RESPONSE****\n{response}\n&#39;)
+</span></span><span class="line"><span class="cl">    #获取响应的新任务列表
+</span></span><span class="line"><span class="cl">    new_tasks = response.split(&#39;\n&#39;)
+</span></span><span class="line"><span class="cl">    new_tasks_list = []
+</span></span><span class="line"><span class="cl">    for task_string in new_tasks:
+</span></span><span class="line"><span class="cl">        task_parts = task_string.strip().split(&#34;.&#34;, 1)
+</span></span><span class="line"><span class="cl">        if len(task_parts) == 2:
+</span></span><span class="line"><span class="cl">            task_id = &#39;&#39;.join(s for s in task_parts[0] if s.isnumeric())
+</span></span><span class="line"><span class="cl">            task_name = re.sub(r&#39;[^\w\s_]+&#39;, &#39;&#39;, task_parts[1]).strip()
+</span></span><span class="line"><span class="cl">            if task_name.strip() and task_id.isnumeric():
+</span></span><span class="line"><span class="cl">                new_tasks_list.append(task_name)
+</span></span><span class="line"><span class="cl">            # print(&#39;New task created: &#39; + task_name)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    out = [{&#34;task_name&#34;: task_name} for task_name in new_tasks_list]
+</span></span><span class="line"><span class="cl">    return out
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>调用任务创建代理task_creation_agent，获得返回新的任务列表，然后，主程序会把新的任务添加到任务存储(tasks_storage)中保存下来。</p>
+<h3 id="任务排序代理prioritization_agent">任务排序代理（prioritization_agent）
+</h3><p>当调用任务创建代理（task_creation_agent），主程序把新的任务添加到任务存储(tasks_storage)中后，若JOIN_EXISTING_OBJECTIVE（加入已存在的目标， 默认为false）未设置成true，则调用排序代理。</p>
+<p>排序代理（prioritization_agent），用于重新排列任务列表优先级。其实现是<code>prioritization_agent()</code>函数，向OpenAI的API发送提示，返回已重新排序的新任务列表(以数字编号)。</p>
+<p>代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">def prioritization_agent():
+</span></span><span class="line"><span class="cl">    //获取当前存储的未完成任务列表
+</span></span><span class="line"><span class="cl">    task_names = tasks_storage.get_task_names()
+</span></span><span class="line"><span class="cl">    bullet_string = &#39;\n&#39;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    prompt = f&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">你需要对以下任务进行排序：: {bullet_string + bullet_string.join(task_names)}
+</span></span><span class="line"><span class="cl">考虑团队的最终目标: {OBJECTIVE}.
+</span></span><span class="line"><span class="cl">任务应该从最高优先级到最低优先级进行排序，其中高优先级的任务是那些作为先决条件或对实现目标更重要的任务。
+</span></span><span class="line"><span class="cl">不要删除任何任务。以下列格式返回排序任务的编号列表:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">#. First task
+</span></span><span class="line"><span class="cl">#. Second task
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">条目必须连续编号，从1开始。每个条目的编号后面必须跟一个句号。
+</span></span><span class="line"><span class="cl">在排名列表之前不包含任何标题，或者在列表之后使用任何其他输出.&#34;&#34;&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    print(f&#39;\n****TASK PRIORITIZATION AGENT PROMPT****\n{prompt}\n&#39;)
+</span></span><span class="line"><span class="cl">    response = openai_call(prompt, max_tokens=2000)
+</span></span><span class="line"><span class="cl">    print(f&#39;\n****TASK PRIORITIZATION AGENT RESPONSE****\n{response}\n&#39;)
+</span></span><span class="line"><span class="cl">    if not response:
+</span></span><span class="line"><span class="cl">        print(&#39;Received empty response from priotritization agent. Keeping task list unchanged.&#39;)
+</span></span><span class="line"><span class="cl">        return
+</span></span><span class="line"><span class="cl">    #获取响应的任务列表.
+</span></span><span class="line"><span class="cl">    new_tasks = response.split(&#34;\n&#34;) if &#34;\n&#34; in response else [response]
+</span></span><span class="line"><span class="cl">    new_tasks_list = []
+</span></span><span class="line"><span class="cl">    for task_string in new_tasks:
+</span></span><span class="line"><span class="cl">        task_parts = task_string.strip().split(&#34;.&#34;, 1)
+</span></span><span class="line"><span class="cl">        if len(task_parts) == 2:
+</span></span><span class="line"><span class="cl">            task_id = &#39;&#39;.join(s for s in task_parts[0] if s.isnumeric())
+</span></span><span class="line"><span class="cl">            task_name = re.sub(r&#39;[^\w\s_]+&#39;, &#39;&#39;, task_parts[1]).strip()
+</span></span><span class="line"><span class="cl">            if task_name.strip():
+</span></span><span class="line"><span class="cl">                new_tasks_list.append({&#34;task_id&#34;: task_id, &#34;task_name&#34;: task_name})
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    return new_tasks_list
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在调用排序代理（prioritization_agent）对任务进行排序后，主程序会将新排序的任务列表替换任务存储（tasks_storage）中的任务列表。代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">            if not JOIN_EXISTING_OBJECTIVE:
+</span></span><span class="line"><span class="cl">                prioritized_tasks = prioritization_agent()
+</span></span><span class="line"><span class="cl">                if prioritized_tasks:
+</span></span><span class="line"><span class="cl">                    tasks_storage.replace(prioritized_tasks)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>到此，完成一次流程，接下来，继续从任务存储中获取第一条未完成的任务，调用任务执行代理（execution_agent)执行任务，不断循环，直到完成所有任务才结束。</p>
+<h3 id="results_storage-结果存储器">results_storage (结果存储器)
+</h3><p>任务执行后，主程序会将任务、及其响应的结果保存到results_storage（结果存储器）中。以便后续再执行任务时，从results_storage中检索相关的上下文信息。results_storage的默认实现是chroma(向量数据库)。其它还有weaviate 和 pinecone 的实现。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">class DefaultResultsStorage:
+</span></span><span class="line"><span class="cl">    def __init__(self):
+</span></span><span class="line"><span class="cl">        logging.getLogger(&#39;chromadb&#39;).setLevel(logging.ERROR)
+</span></span><span class="line"><span class="cl">        # 创建Chroma集合
+</span></span><span class="line"><span class="cl">        chroma_persist_dir = &#34;chroma&#34;
+</span></span><span class="line"><span class="cl">        chroma_client = chromadb.PersistentClient(
+</span></span><span class="line"><span class="cl">            settings=chromadb.config.Settings(
+</span></span><span class="line"><span class="cl">                persist_directory=chroma_persist_dir,
+</span></span><span class="line"><span class="cl">            )
+</span></span><span class="line"><span class="cl">        )
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		#配置嵌入(Embedding)模型
+</span></span><span class="line"><span class="cl">        metric = &#34;cosine&#34;
+</span></span><span class="line"><span class="cl">        if LLM_MODEL.startswith(&#34;llama&#34;):
+</span></span><span class="line"><span class="cl">            embedding_function = LlamaEmbeddingFunction()
+</span></span><span class="line"><span class="cl">        else:
+</span></span><span class="line"><span class="cl">            embedding_function = OpenAIEmbeddingFunction(api_key=OPENAI_API_KEY)
+</span></span><span class="line"><span class="cl">        self.collection = chroma_client.get_or_create_collection(
+</span></span><span class="line"><span class="cl">            name=RESULTS_STORE_NAME,
+</span></span><span class="line"><span class="cl">            metadata={&#34;hnsw:space&#34;: metric},
+</span></span><span class="line"><span class="cl">            embedding_function=embedding_function,
+</span></span><span class="line"><span class="cl">        )
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	#添加任务及其响应结果到 collection中.
+</span></span><span class="line"><span class="cl">    def add(self, task: Dict, result: str, result_id: str):
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        # Break the function if LLM_MODEL starts with &#34;human&#34; (case-insensitive)
+</span></span><span class="line"><span class="cl">        if LLM_MODEL.startswith(&#34;human&#34;):
+</span></span><span class="line"><span class="cl">            return
+</span></span><span class="line"><span class="cl">        # Continue with the rest of the function
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        embeddings = llm_embed.embed(result) if LLM_MODEL.startswith(&#34;llama&#34;) else None
+</span></span><span class="line"><span class="cl">        if (
+</span></span><span class="line"><span class="cl">                len(self.collection.get(ids=[result_id], include=[])[&#34;ids&#34;]) &gt; 0
+</span></span><span class="line"><span class="cl">        ):  # Check if the result already exists
+</span></span><span class="line"><span class="cl">            self.collection.update(
+</span></span><span class="line"><span class="cl">                ids=result_id,
+</span></span><span class="line"><span class="cl">                embeddings=embeddings,
+</span></span><span class="line"><span class="cl">                documents=result,
+</span></span><span class="line"><span class="cl">                metadatas={&#34;task&#34;: task[&#34;task_name&#34;], &#34;result&#34;: result},
+</span></span><span class="line"><span class="cl">            )
+</span></span><span class="line"><span class="cl">        else:
+</span></span><span class="line"><span class="cl">            self.collection.add(
+</span></span><span class="line"><span class="cl">                ids=result_id,
+</span></span><span class="line"><span class="cl">                embeddings=embeddings,
+</span></span><span class="line"><span class="cl">                documents=result,
+</span></span><span class="line"><span class="cl">                metadatas={&#34;task&#34;: task[&#34;task_name&#34;], &#34;result&#34;: result},
+</span></span><span class="line"><span class="cl">            )
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    #检索相关信息
+</span></span><span class="line"><span class="cl">    def query(self, query: str, top_results_num: int) -&gt; List[dict]:
+</span></span><span class="line"><span class="cl">        count: int = self.collection.count()
+</span></span><span class="line"><span class="cl">        if count == 0:
+</span></span><span class="line"><span class="cl">            return []
+</span></span><span class="line"><span class="cl">        results = self.collection.query(
+</span></span><span class="line"><span class="cl">            query_texts=query,
+</span></span><span class="line"><span class="cl">            n_results=min(top_results_num, count),
+</span></span><span class="line"><span class="cl">            include=[&#34;metadatas&#34;]
+</span></span><span class="line"><span class="cl">        )
+</span></span><span class="line"><span class="cl">        return [item[&#34;task&#34;] for item in results[&#34;metadatas&#34;][0]]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="tasks_storage-任务存储">tasks_storage （任务存储）
+</h3><p>tasks_storage （任务存储）用于存储未完成的任务列表。</p>
+<ul>
+<li>在循环开始时，首先从任务存储中获取第一条未完成的任务，给任务执行代理（execution_agent）去执行。</li>
+<li>然后，在调用任务创建代理（task_creation_agent）获取新创建的任务列表时，会将这些任务添加到tasks_storage 中。</li>
+<li>最后，在调用排序代理（prioritization_agent）获取优化排序的新任务列表时，主程序会将该列表替换tasks_storage 中的旧任务列表。</li>
+</ul>
+<p>实现代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 任务存储，只有一个实例，数据保存在一个队列中。
+</span></span><span class="line"><span class="cl">class SingleTaskListStorage:
+</span></span><span class="line"><span class="cl">    def __init__(self):
+</span></span><span class="line"><span class="cl">        self.tasks = deque([])
+</span></span><span class="line"><span class="cl">        self.task_id_counter = 0
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    def append(self, task: Dict):
+</span></span><span class="line"><span class="cl">        self.tasks.append(task)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    def replace(self, tasks: List[Dict]):
+</span></span><span class="line"><span class="cl">        self.tasks = deque(tasks)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    def popleft(self):
+</span></span><span class="line"><span class="cl">        return self.tasks.popleft()
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    def is_empty(self):
+</span></span><span class="line"><span class="cl">        return False if self.tasks else True
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    def next_task_id(self):
+</span></span><span class="line"><span class="cl">        self.task_id_counter += 1
+</span></span><span class="line"><span class="cl">        return self.task_id_counter
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    def get_task_names(self):
+</span></span><span class="line"><span class="cl">        return [t[&#34;task_name&#34;] for t in self.tasks]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>以上5个组件是babyAGI的主要部分。其它还包括环境变量加载与配置（如：使用dotenv库加载.env文件中的环境变量）、导入模块与扩展插件（如：extensions.argparseext和extensions.human_mode，支持命令行参数解析和人类模式输入）支持等辅助代码，这里就不再列出了。</p>
+<h2 id="结语">结语
+</h2><p>​		总的来说，BabyAGI仍处于起步阶段，作为AI驱动的任务管理系统的一个实例。用户给它一个目标，它可以自动生成完成此目标所需要的任务清单。逐步完成任务清单中的每个任务，不断迭代，直到完成所有任务。如何结合外部工具如搜索引擎等，对应一些简单的目标，有可能会循环迭代完成，有比较大的帮助，或起辅助作用。但对应复杂的任务，其生成的任务清单就会越来越长，无法结束。</p>
+<p>项目相关代码及文件放在网盘中，地址：</p>
+<p>链接：https://pan.quark.cn/s/11ca682f0ec7
+提取码：KXJr</p>
+<h2 id="参考文档">参考文档
+</h2><p>官方文档 <a class="link" href="https://github.com/yoheinakajima/babyagi"  target="_blank" rel="noopener"
+    >https://github.com/yoheinakajima/babyagi</a></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/">
+        
+        <div class="article-image">
+            <img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fdbd1b23601318794f079b6a6d19a3ef13257f871.png" width="1920" height="1080" loading="lazy"
+                alt="Featured image of post 使用 LangChain 构建多智能体工作流">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #13511380 0%, #fefefeC0 100%);">
+            <h2 class="article-title">使用 LangChain 构建多智能体工作流</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/">
+        
+        <div class="article-image">
+            <img src="../../p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/images/image-1-17667340159537.png" width="2000" height="1425" loading="lazy"
+                alt="Featured image of post 主流开源 Rerank 模型解析与选型指南（2026 版）">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #659df780 0%, #e5f3ffC0 100%);">
+            <h2 class="article-title">主流开源 Rerank 模型解析与选型指南（2026 版）</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145321939.png" width="1909" height="945" loading="lazy"
+                alt="Featured image of post 深入解析AgentGPT：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #181c1e80 0%, #e9eceeC0 100%);">
+            <h2 class="article-title">深入解析AgentGPT：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240730120705816.png" width="1138" height="704" loading="lazy"
+                alt="Featured image of post 深入解析AutoGPT：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #4b4d5080 0%, #fafbfcC0 100%);">
+            <h2 class="article-title">深入解析AutoGPT：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/">
+        
+        <div class="article-image">
+            <img src="../../p/%E5%BC%80%E6%BA%90%E6%99%BA%E8%83%BD%E4%BD%93%E6%A1%86%E6%9E%B6plan-and-execute-%E5%8E%9F%E7%90%86%E6%9E%B6%E6%9E%84%E4%B8%8E%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0/images/image-20250826174630927.png" width="1110" height="689" loading="lazy"
+                alt="Featured image of post 开源智能体框架——Plan-and-execute 原理、架构与代码实现">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #43434380 0%, #fefefeC0 100%);">
+            <h2 class="article-title">开源智能体框架——Plan-and-execute 原理、架构与代码实现</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
