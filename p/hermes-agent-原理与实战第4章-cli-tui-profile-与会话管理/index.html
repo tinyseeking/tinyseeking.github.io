@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="理解 Hermes Agent 最高效的方式，是先看它的\"系统总图\"，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的\"心理模型\"，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。">
+<title>Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Hermes Agent 原理与实战——第4章 CLI &TUI & Profile 与会话管理">
+<meta property='og:description' content="理解 Hermes Agent 最高效的方式，是先看它的\"系统总图\"，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的\"心理模型\"，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='hermes agent' /><meta property='article:published_time' content='2026-08-26T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-08-26T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Hermes Agent 原理与实战——第4章 CLI &TUI & Profile 与会话管理">
+<meta name="twitter:description" content="理解 Hermes Agent 最高效的方式，是先看它的\"系统总图\"，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的\"心理模型\"，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。"><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#41-cli-与-tui">4.1 CLI 与 TUI</a></li>
+    <li><a href="#42-启动与界面布局">4.2 启动与界面布局</a>
+      <ol>
+        <li><a href="#421-运行-cli">4.2.1 运行 CLI</a>
+          <ol>
+            <li><a href="#1cli-界面布局"><strong>1、CLI 界面布局</strong></a></li>
+            <li><a href="#2状态栏详解">2、状态栏详解</a></li>
+          </ol>
+        </li>
+        <li><a href="#422-启动-tui">4.2.2 启动 TUI</a>
+          <ol>
+            <li><a href="#1tui-界面布局"><strong>1、Tui 界面布局</strong></a></li>
+            <li><a href="#2为什么选择-tui">2、为什么选择 TUI</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#43-关键键位">4.3 关键键位</a></li>
+    <li><a href="#44-斜杠命令体系">4.4 斜杠命令体系</a>
+      <ol>
+        <li><a href="#441-会话生命周期命令">4.4.1 会话生命周期命令</a></li>
+        <li><a href="#442-配置命令">4.4.2 配置命令</a></li>
+        <li><a href="#443-上下文token命令">4.4.3 <strong>上下文/Token命令</strong></a></li>
+        <li><a href="#444-文件改动安全命令"><strong>4.4.4 文件改动安全命令</strong></a></li>
+        <li><a href="#445-工具与技能命令"><strong>4.4.5 工具与技能命令</strong></a></li>
+        <li><a href="#446--自动化命令">4.4.6  自动化命令</a></li>
+        <li><a href="#447-信息命令">4.4.7 <strong>信息命令</strong></a></li>
+        <li><a href="#448-快捷命令">4.4.8 快捷命令</a></li>
+      </ol>
+    </li>
+    <li><a href="#45-skill-斜杠命令">4.5 Skill 斜杠命令</a></li>
+    <li><a href="#46-上下文引用-">4.6 上下文引用 <code>@</code></a></li>
+    <li><a href="#47-多行输入">4.7 多行输入</a></li>
+    <li><a href="#48-流式输出与打断重定向">4.8 流式输出与打断重定向</a>
+      <ol>
+        <li><a href="#481-工具进度显示">4.8.1 工具进度显示</a></li>
+        <li><a href="#482-打断机制">4.8.2 打断机制</a></li>
+        <li><a href="#483-繁忙输入模式">4.8.3 繁忙输入模式</a></li>
+      </ol>
+    </li>
+    <li><a href="#49-会话管理">4.9 会话管理</a>
+      <ol>
+        <li><a href="#491-session-核心概念与存储">4.9.1 Session 核心概念与存储</a></li>
+        <li><a href="#492-会话恢复">4.9.2 会话恢复</a></li>
+        <li><a href="#493-会话命名与谱系">4.9.3 会话命名与谱系</a></li>
+        <li><a href="#494-跨会话搜索">4.9.4 跨会话搜索</a></li>
+        <li><a href="#495-session-管理命令行工具">4.9.5 Session 管理命令行工具</a></li>
+      </ol>
+    </li>
+    <li><a href="#410-compression长会话压缩机制">4.10 Compression：长会话压缩机制</a></li>
+    <li><a href="#411-后台会话">4.11 后台会话</a>
+      <ol>
+        <li><a href="#1-工作原理">(1) 工作原理</a></li>
+        <li><a href="#2-结果通知">(2) 结果通知</a></li>
+        <li><a href="#3-典型使用场景">(3) 典型使用场景</a></li>
+      </ol>
+    </li>
+    <li><a href="#412-checkpoints-与-rollback">4.12 Checkpoints 与 Rollback</a>
+      <ol>
+        <li><a href="#1-启用检查点">(1) 启用检查点</a></li>
+        <li><a href="#2-触发条件">(2) 触发条件</a></li>
+        <li><a href="#3-核心命令">(3) 核心命令</a></li>
+      </ol>
+    </li>
+    <li><a href="#413-profilecli-中的多身份切换">4.13 Profile：CLI 中的多身份切换</a>
+      <ol>
+        <li><a href="#1-什么是-profile">(1) 什么是 Profile</a></li>
+        <li><a href="#2-创建-profile">(2) 创建 Profile</a></li>
+        <li><a href="#3-使用-profile">(3) 使用 Profile</a></li>
+        <li><a href="#4-工作原理">(4) 工作原理</a></li>
+        <li><a href="#5-profile-的运行时识别">(5) Profile 的运行时识别</a></li>
+        <li><a href="#6-profile-与-gateway">(6) Profile 与 Gateway</a></li>
+        <li><a href="#7-profile-的管理">(7) Profile 的管理</a></li>
+        <li><a href="#8-profile-与工作区沙箱的区别">(8) Profile 与工作区、沙箱的区别</a></li>
+      </ol>
+    </li>
+    <li><a href="#413-personality-与-soulmd">4.13 Personality 与 SOUL.md</a></li>
+    <li><a href="#414-skin--theme-定制">4.14 Skin / Theme 定制</a></li>
+    <li><a href="#415-跨设备-handoff">4.15 跨设备 Handoff</a></li>
+    <li><a href="#416-资深用法">4.16 资深用法</a>
+      <ol>
+        <li><a href="#1一次性-prompt-模式headless">1、一次性 Prompt 模式（Headless）</a></li>
+        <li><a href="#2headless-api-模式">2、Headless API 模式</a></li>
+      </ol>
+    </li>
+    <li><a href="#417-一份高效用-cli的清单">4.17 一份&quot;高效用 CLI&quot;的清单</a></li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/hermes-agent/" style="background-color: #2a9d8f; color: #fff;">
+                Hermes Agent 原理与实战
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/">Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            理解 Hermes Agent 最高效的方式，是先看它的&#34;系统总图&#34;，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的&#34;心理模型&#34;，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-08-26T00:00:00Z'>2026年8月26日星期三</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 26 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#41-cli-与-tui">4.1 CLI 与 TUI</a></li>
+    <li><a href="#42-启动与界面布局">4.2 启动与界面布局</a>
+      <ol>
+        <li><a href="#421-运行-cli">4.2.1 运行 CLI</a>
+          <ol>
+            <li><a href="#1cli-界面布局"><strong>1、CLI 界面布局</strong></a></li>
+            <li><a href="#2状态栏详解">2、状态栏详解</a></li>
+          </ol>
+        </li>
+        <li><a href="#422-启动-tui">4.2.2 启动 TUI</a>
+          <ol>
+            <li><a href="#1tui-界面布局"><strong>1、Tui 界面布局</strong></a></li>
+            <li><a href="#2为什么选择-tui">2、为什么选择 TUI</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#43-关键键位">4.3 关键键位</a></li>
+    <li><a href="#44-斜杠命令体系">4.4 斜杠命令体系</a>
+      <ol>
+        <li><a href="#441-会话生命周期命令">4.4.1 会话生命周期命令</a></li>
+        <li><a href="#442-配置命令">4.4.2 配置命令</a></li>
+        <li><a href="#443-上下文token命令">4.4.3 <strong>上下文/Token命令</strong></a></li>
+        <li><a href="#444-文件改动安全命令"><strong>4.4.4 文件改动安全命令</strong></a></li>
+        <li><a href="#445-工具与技能命令"><strong>4.4.5 工具与技能命令</strong></a></li>
+        <li><a href="#446--自动化命令">4.4.6  自动化命令</a></li>
+        <li><a href="#447-信息命令">4.4.7 <strong>信息命令</strong></a></li>
+        <li><a href="#448-快捷命令">4.4.8 快捷命令</a></li>
+      </ol>
+    </li>
+    <li><a href="#45-skill-斜杠命令">4.5 Skill 斜杠命令</a></li>
+    <li><a href="#46-上下文引用-">4.6 上下文引用 <code>@</code></a></li>
+    <li><a href="#47-多行输入">4.7 多行输入</a></li>
+    <li><a href="#48-流式输出与打断重定向">4.8 流式输出与打断重定向</a>
+      <ol>
+        <li><a href="#481-工具进度显示">4.8.1 工具进度显示</a></li>
+        <li><a href="#482-打断机制">4.8.2 打断机制</a></li>
+        <li><a href="#483-繁忙输入模式">4.8.3 繁忙输入模式</a></li>
+      </ol>
+    </li>
+    <li><a href="#49-会话管理">4.9 会话管理</a>
+      <ol>
+        <li><a href="#491-session-核心概念与存储">4.9.1 Session 核心概念与存储</a></li>
+        <li><a href="#492-会话恢复">4.9.2 会话恢复</a></li>
+        <li><a href="#493-会话命名与谱系">4.9.3 会话命名与谱系</a></li>
+        <li><a href="#494-跨会话搜索">4.9.4 跨会话搜索</a></li>
+        <li><a href="#495-session-管理命令行工具">4.9.5 Session 管理命令行工具</a></li>
+      </ol>
+    </li>
+    <li><a href="#410-compression长会话压缩机制">4.10 Compression：长会话压缩机制</a></li>
+    <li><a href="#411-后台会话">4.11 后台会话</a>
+      <ol>
+        <li><a href="#1-工作原理">(1) 工作原理</a></li>
+        <li><a href="#2-结果通知">(2) 结果通知</a></li>
+        <li><a href="#3-典型使用场景">(3) 典型使用场景</a></li>
+      </ol>
+    </li>
+    <li><a href="#412-checkpoints-与-rollback">4.12 Checkpoints 与 Rollback</a>
+      <ol>
+        <li><a href="#1-启用检查点">(1) 启用检查点</a></li>
+        <li><a href="#2-触发条件">(2) 触发条件</a></li>
+        <li><a href="#3-核心命令">(3) 核心命令</a></li>
+      </ol>
+    </li>
+    <li><a href="#413-profilecli-中的多身份切换">4.13 Profile：CLI 中的多身份切换</a>
+      <ol>
+        <li><a href="#1-什么是-profile">(1) 什么是 Profile</a></li>
+        <li><a href="#2-创建-profile">(2) 创建 Profile</a></li>
+        <li><a href="#3-使用-profile">(3) 使用 Profile</a></li>
+        <li><a href="#4-工作原理">(4) 工作原理</a></li>
+        <li><a href="#5-profile-的运行时识别">(5) Profile 的运行时识别</a></li>
+        <li><a href="#6-profile-与-gateway">(6) Profile 与 Gateway</a></li>
+        <li><a href="#7-profile-的管理">(7) Profile 的管理</a></li>
+        <li><a href="#8-profile-与工作区沙箱的区别">(8) Profile 与工作区、沙箱的区别</a></li>
+      </ol>
+    </li>
+    <li><a href="#413-personality-与-soulmd">4.13 Personality 与 SOUL.md</a></li>
+    <li><a href="#414-skin--theme-定制">4.14 Skin / Theme 定制</a></li>
+    <li><a href="#415-跨设备-handoff">4.15 跨设备 Handoff</a></li>
+    <li><a href="#416-资深用法">4.16 资深用法</a>
+      <ol>
+        <li><a href="#1一次性-prompt-模式headless">1、一次性 Prompt 模式（Headless）</a></li>
+        <li><a href="#2headless-api-模式">2、Headless API 模式</a></li>
+      </ol>
+    </li>
+    <li><a href="#417-一份高效用-cli的清单">4.17 一份&quot;高效用 CLI&quot;的清单</a></li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="hermes-agent-原理与实战第4章-cli-tui--profile-与会话管理">Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理
+</h1><blockquote>
+<p>CLI（Command Line Interface，命令行界面）及其增强形态 TUI（Terminal User Interface，终端用户界面）是 Hermes Agent 操作最常用的入口。不同于网页 GUI 的沉重与纯命令行的简陋，Hermes 的 TUI 运行在终端内部，以字符绘制的面板、状态栏、滚动区和菜单构成了一套半可视化操作界面——比 CLI 直观，比 GUI 轻量，它支持多行编辑、斜杠命令自动补全、对话历史记录、中断并重定向，以及流式工具输出，专为长期在终端中工作的人设计。</p>
+<p>本章系统讲解界面布局、键位、斜杠命令、会话与历史、checkpoint/rollback、跨设备 Handoff、Profile 切换、多行编辑、流式输出、打断与重定向等核心机制。掌握本章内容都将显著提升你与 Hermes Agent 的协作效率。</p>
+</blockquote>
+<h2 id="41-cli-与-tui">4.1 CLI 与 TUI
+</h2><p>Hermes 提供两种交互界面：</p>
+<ul>
+<li><strong>经典 CLI</strong>（<code>hermes chat</code>）：Hermes Agent 的 CLI 是一个完整的终端用户界面（TUI），而非 Web UI。它支持多行编辑、斜杠命令自动补全、对话历史、中断并重定向，以及流式工具输出。</li>
+<li><strong>TUI</strong>（<code>hermes --tui</code>）：TUI 是 Hermes 的现代前端——一个终端 UI（用户界面），与 经典 CLI共享同一 Python 运行时。相同的 agent、相同的会话、相同的斜杠命令；交互界面更简洁、响应更流畅。</li>
+</ul>
+<p>两者共享相同的底层逻辑，所有斜杠命令和键位在两者中行为一致。</p>
+<h2 id="42-启动与界面布局">4.2 启动与界面布局
+</h2><h3 id="421-运行-cli">4.2.1 运行 CLI
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 启动交互式 session（默认）</span>
+</span></span><span class="line"><span class="cl">hermes
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 单一查询模式（非交互）</span>
+</span></span><span class="line"><span class="cl">hermes chat -q <span class="s2">&#34;Hello&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 具有特定的model</span>
+</span></span><span class="line"><span class="cl">hermes chat --model <span class="s2">&#34;anthropic/claude-sonnet-4&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 具有特定的provider</span>
+</span></span><span class="line"><span class="cl">hermes chat --provider nous        <span class="c1"># 使用诺斯门户</span>
+</span></span><span class="line"><span class="cl">hermes chat --provider openrouter  <span class="c1"># 力OpenRouter</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 具有特定的toolsets</span>
+</span></span><span class="line"><span class="cl">hermes chat --toolsets <span class="s2">&#34;web,terminal,skills&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 恢复之前的sessions</span>
+</span></span><span class="line"><span class="cl">hermes --continue             <span class="c1"># 恢复最近的 CLI session (-c)</span>
+</span></span><span class="line"><span class="cl">hermes --resume &lt;session_id&gt;  <span class="c1"># 通过 ID (-r) 恢复特定的 session</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 详细模式（调试输出）</span>
+</span></span><span class="line"><span class="cl">hermes chat --verbose
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="1cli-界面布局"><strong>1、CLI 界面布局</strong>
+</h4><p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805233117891.png"
+	width="1440"
+	height="868"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805233117891_hu_67eaecfc8fdd6a30.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805233117891_hu_40627857753a61fd.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260805233117891"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="165"
+		data-flex-basis="398px"
+	
+><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805233342163.png"
+	width="1442"
+	height="389"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805233342163_hu_8dcd810eb298b0ee.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805233342163_hu_ef7faf2aea26c853.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260805233342163"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="370"
+		data-flex-basis="889px"
+	
+></p>
+<p>Hermes CLI 横幅显示当前模型、工作目录、终端后端、可用工具以及已安装的技能。一个持久的状态栏位于输入区域上方，实时更新。</p>
+<h4 id="2状态栏详解">2、状态栏详解
+</h4><p>状态栏位于输入区域上方，实时更新，其典型格式为：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">⚕ deepseek-v4-pro │ 12.4K/200K │ [██████░░░░] 6% │ $0.06 │ 15m
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>各元素的含义如下：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>元素</th>
+          <th>描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>模型名称</td>
+          <td>当前使用的模型（超过 26 个字符时自动截断）</td>
+      </tr>
+      <tr>
+          <td>Token 用量</td>
+          <td>已使用的上下文 Token 数 / 最大上下文窗口</td>
+      </tr>
+      <tr>
+          <td>上下文条</td>
+          <td>带颜色编码阈值的视觉填充指示器</td>
+      </tr>
+      <tr>
+          <td>🗜️ N</td>
+          <td><strong>上下文压缩次数</strong>——当前运行会话被自动压缩的次数。首次压缩触发后显示。</td>
+      </tr>
+      <tr>
+          <td>▶ N</td>
+          <td><strong>活跃后台任务数</strong>——当前会话中仍在运行的 <code>/background</code> prompt（提示词）数量。至少有一个任务进行中时显示。</td>
+      </tr>
+      <tr>
+          <td>成本估算</td>
+          <td>本会话的预估费用（未知或零定价模型显示为 <code>n/a</code>）</td>
+      </tr>
+      <tr>
+          <td>持续时间</td>
+          <td>本会话已运行的时间</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>状态栏会根据终端宽度自适应显示：当终端宽度大于等于 76 列时显示完整布局；52 至 75 列时切换为紧凑布局；低于 52 列时仅显示模型名称和持续时间。上下文条的颜色编码遵循以下规则：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>颜色</th>
+          <th>阈值</th>
+          <th>含义</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>绿色</td>
+          <td>&lt; 50%</td>
+          <td>空间充足，可放心继续对话</td>
+      </tr>
+      <tr>
+          <td>黄色</td>
+          <td>50% – 80%</td>
+          <td>上下文逐渐填满，建议关注</td>
+      </tr>
+      <tr>
+          <td>橙色</td>
+          <td>80% – 95%</td>
+          <td>接近上限，建议考虑压缩或开新会话</td>
+      </tr>
+      <tr>
+          <td>红色</td>
+          <td>&gt;= 95%</td>
+          <td>接近溢出，强烈建议使用 <code>/compress</code> 或 <code>/new</code></td>
+      </tr>
+  </tbody>
+</table></div>
+<p>使用 <code>/usage</code> 斜杠命令可以查看更详细的费用分解，包括输入 Token 与输出 Token 的分别计费情况。</p>
+<h3 id="422-启动-tui">4.2.2 启动 TUI
+</h3><p>TUI 是 Hermes 的现代前端——一个终端 UI（用户界面），与 Classic CLI 共享同一 Python 运行时。相同的 agent、相同的会话、相同的斜杠命令；交互界面更简洁、响应更流畅。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 启动 TUI
+</span></span><span class="line"><span class="cl">hermes --tui
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 恢复最近的 TUI 会话（若无则回退到最近的 classic 会话）
+</span></span><span class="line"><span class="cl">hermes --tui -c
+</span></span><span class="line"><span class="cl">hermes --tui --continue
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 通过 ID 或标题恢复指定会话
+</span></span><span class="line"><span class="cl">hermes --tui -r 20260409_000000_aa11bb
+</span></span><span class="line"><span class="cl">hermes --tui --resume &#34;my t0p session&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 直接运行源码——跳过预构建步骤（供 TUI 贡献者使用）
+</span></span><span class="line"><span class="cl">hermes --tui --dev
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>也可以通过环境变量启用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">HERMES_TUI</span><span class="o">=</span><span class="m">1</span>
+</span></span><span class="line"><span class="cl">hermes          <span class="c1"># 现在使用 TUI</span>
+</span></span><span class="line"><span class="cl">hermes chat     <span class="c1"># 同上</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="1tui-界面布局"><strong>1、Tui 界面布局</strong>
+</h4><p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805232649810.png"
+	width="1440"
+	height="868"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805232649810_hu_f781f9a0b8a1c16b.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/images/image-20260805232649810_hu_202edbd60a2dd909.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260805232649810"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="165"
+		data-flex-basis="398px"
+	
+></p>
+<p>Classic CLI 仍作为默认方式保留。CLI 界面中记录的所有内容——斜杠命令、快捷命令、skill 预加载、personality、多行输入、中断——在 TUI 中均完全一致。</p>
+<h4 id="2为什么选择-tui">2、为什么选择 TUI
+</h4><ul>
+<li><strong>即时首帧</strong> — banner 在应用加载完成前就已渲染，因此 Hermes 启动时终端不会出现卡顿感。</li>
+<li><strong>非阻塞输入</strong> — 会话就绪前即可输入并排队消息。agent 上线后立即发送第一条 prompt（提示词）。</li>
+<li><strong>丰富的浮层面板</strong> — 模型选择器、会话选择器、审批和澄清提示均以模态面板形式渲染，而非内联流程。</li>
+<li><strong>实时会话面板</strong> — 工具和 skill 在初始化过程中逐步填充。</li>
+<li><strong>鼠标友好的选择</strong> — 拖拽高亮时使用统一背景色，而非 SGR 反色。使用终端的常规复制手势即可复制。</li>
+<li><strong>备用屏幕渲染</strong> — 差量更新意味着流式传输时无闪烁，退出后无滚动历史残留。</li>
+<li><strong>编辑器增强</strong> — 长片段的内联折叠粘贴、<code>Cmd+V</code> / <code>Ctrl+V</code> 文本粘贴（带剪贴板图片回退）、括号粘贴安全保护，以及图片/文件路径附件规范化。</li>
+</ul>
+<h2 id="43-关键键位">4.3 关键键位
+</h2><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>按键</th>
+          <th>操作</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>Enter</code></td>
+          <td>发送消息</td>
+      </tr>
+      <tr>
+          <td><code>Alt+Enter</code>、<code>Ctrl+J</code> 或 <code>Shift+Enter</code></td>
+          <td>换行（多行输入）。<code>Shift+Enter</code> 需要终端能够将其与 <code>Enter</code> 区分——见下文。在 Windows Terminal 中，<code>Alt+Enter</code> 被终端捕获（切换全屏）；请改用 <code>Ctrl+Enter</code> 或 <code>Ctrl+J</code>。</td>
+      </tr>
+      <tr>
+          <td><code>Alt+V</code></td>
+          <td>在终端支持时从剪贴板粘贴图片</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl+V</code></td>
+          <td>粘贴文本，并尝试附加剪贴板中的图片</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl+B</code></td>
+          <td>启动/停止语音录入（需安装 <code>voice</code> extra）</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl+G</code></td>
+          <td>在 <code>$EDITOR</code>（vim/nvim/nano/VS Code 等）中打开当前输入缓冲区。保存并退出后，编辑后的文本将作为下一条 prompt 发送——适合编写长篇多段落 prompt。</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl+X Ctrl+E</code></td>
+          <td>外部编辑器的 Emacs 风格备用绑定（与 <code>Ctrl+G</code> 行为相同）。</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl+C</code></td>
+          <td><strong>打断</strong>当前正在生成的回答；2 秒内连续按两次则强制退出</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl+D</code></td>
+          <td>退出</td>
+      </tr>
+      <tr>
+          <td><code>Ctrl+Z</code></td>
+          <td>将 Hermes 挂起到后台（仅 Unix）。在 shell 中运行 <code>fg</code> 恢复。</td>
+      </tr>
+      <tr>
+          <td><code>Tab</code></td>
+          <td>接受自动建议或自动补全斜杠命令</td>
+      </tr>
+      <tr>
+          <td><code>↑/↓</code></td>
+          <td>浏览上一条/下一条输入历史</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><code>Ctrl+C</code> 是 Hermes 的灵魂键之一：你可以<strong>打断后立刻发新消息纠正方向</strong>，Agent 会优雅停止当前 turn、采纳你的新指示。</p>
+<h2 id="44-斜杠命令体系">4.4 斜杠命令体系
+</h2><p>输入 <code>/</code> 可查看自动补全下拉菜单。Hermes 支持大量内置 CLI 斜杠命令、动态技能命令以及用户自定义的快捷命令。</p>
+<h3 id="441-会话生命周期命令">4.4.1 会话生命周期命令
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>/new</code></td>
+          <td>开始新会话。可选的 <code>[name]</code> 设置初始会话标题——例如 <code>/new my-experiment</code> 打开一个已命名为 <code>my-experiment</code> 的新会话，便于之后用 <code>/resume</code> 或 <code>/sessions</code> 查找。</td>
+      </tr>
+      <tr>
+          <td><code>/reset</code></td>
+          <td>等价 <code>/new</code>，但更&quot;狠&quot;——同时清掉一些临时状态</td>
+      </tr>
+      <tr>
+          <td><code>/clear</code></td>
+          <td>清屏并开始新会话</td>
+      </tr>
+      <tr>
+          <td><code>/exit</code> 或 <code>/quit</code></td>
+          <td>退出</td>
+      </tr>
+      <tr>
+          <td><code>/history</code></td>
+          <td>显示对话历史</td>
+      </tr>
+      <tr>
+          <td><code>/save [name]</code></td>
+          <td>把当前会话打个标签，便于以后查找</td>
+      </tr>
+      <tr>
+          <td><code>/sessions</code></td>
+          <td>列出近期会话</td>
+      </tr>
+      <tr>
+          <td><code>/title [name]</code></td>
+          <td>设置或显示会话标题。</td>
+      </tr>
+      <tr>
+          <td><code>/resume [name]</code></td>
+          <td>恢复之前命名的会话。</td>
+      </tr>
+      <tr>
+          <td><code>/retry</code></td>
+          <td>重试最后一次助手回复</td>
+      </tr>
+      <tr>
+          <td><code>/undo</code></td>
+          <td>撤销最后一轮（user → assistant 一组）</td>
+      </tr>
+      <tr>
+          <td><code>/stop</code></td>
+          <td>终止所有正在运行的后台进程</td>
+      </tr>
+      <tr>
+          <td><code>/queue &lt;prompt&gt;</code>（别名：<code>/q</code>）</td>
+          <td>将 prompt（提示词）加入队列等待下一轮处理（不会中断当前 agent 响应）。</td>
+      </tr>
+      <tr>
+          <td><code>/steer &lt;prompt&gt;</code></td>
+          <td>在下一次工具调用之后向 agent 注入一条中途说明——不中断、不产生新的用户轮次。当前工具完成后，该文本会追加到最后一条工具结果的内容中，在不打断当前工具调用循环的情况下为 agent 提供新上下文。可用于在任务进行中调整方向（例如在 agent 运行测试时说&quot;专注于 auth 模块&quot;）。</td>
+      </tr>
+      <tr>
+          <td><code>/goal &lt;text&gt;</code></td>
+          <td>设置一个持续目标，Hermes 将跨轮次持续推进——这是对 Ralph loop 的实现。每轮结束后，辅助裁判模型会判断目标是否完成；若未完成，Hermes 自动继续。子命令：<code>/goal status</code>、<code>/goal pause</code>、<code>/goal resume</code>、<code>/goal clear</code>。预算默认为 20 轮（<code>goals.max_turns</code>）；</td>
+      </tr>
+      <tr>
+          <td><code>/subgoal &lt;text&gt;</code></td>
+          <td>在循环进行中向活动目标追加一个用户自定义条件。继续 prompt 会将所有子目标原文呈现给 agent，裁判也会将其纳入 DONE/CONTINUE 判断——因此只有原始目标<strong>和</strong>所有子目标都满足时，目标才会被标记为完成。子命令：<code>/subgoal</code>（列出）、<code>/subgoal remove &lt;N&gt;</code>、<code>/subgoal clear</code>。需要有活动的 <code>/goal</code>。</td>
+      </tr>
+      <tr>
+          <td><code>/status</code></td>
+          <td>显示会话信息——模型、提供商、profile、会话 ID、工作目录、标题、创建/更新时间戳、token 总量、agent 运行状态。</td>
+      </tr>
+      <tr>
+          <td><code>/agents</code>（别名：<code>/tasks</code>）</td>
+          <td>显示当前会话中的活动 agent 和运行中的任务。</td>
+      </tr>
+      <tr>
+          <td><code>/background &lt;prompt&gt;</code>（别名：<code>/bg</code>、<code>/btw</code>）</td>
+          <td>在独立的后台会话中运行 prompt。agent 独立处理你的 prompt——当前会话保持空闲可继续其他工作。任务完成后结果以面板形式显示。</td>
+      </tr>
+      <tr>
+          <td><code>/platforms</code></td>
+          <td>查看当前 Gateway 状态（哪些平台在线）</td>
+      </tr>
+      <tr>
+          <td><code>/handoff &lt;platform&gt;</code></td>
+          <td><strong>仅限 CLI。</strong> 将当前会话移交给消息平台（Telegram、Discord、Slack、WhatsApp、Signal、Matrix）。需要 gateway 正在运行且目标平台已配置 home 频道（从目标聊天中执行 <code>/sethome</code>）</td>
+      </tr>
+      <tr>
+          <td><code>/redraw</code></td>
+          <td>强制完整重绘 UI（在 tmux 调整大小、鼠标选择产生残影等导致终端错位后恢复）。</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="442-配置命令">4.4.2 配置命令
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>/config</code></td>
+          <td>显示当前配置</td>
+      </tr>
+      <tr>
+          <td><code>/model</code></td>
+          <td>交互式切模型</td>
+      </tr>
+      <tr>
+          <td><code>/model &lt;provider:model&gt;</code></td>
+          <td>直接切指定模型</td>
+      </tr>
+      <tr>
+          <td><code>/personality</code></td>
+          <td>设置预定义的 personality（人格）</td>
+      </tr>
+      <tr>
+          <td><code>/personality &lt;name&gt;</code></td>
+          <td>直接切</td>
+      </tr>
+      <tr>
+          <td><code>/skin</code></td>
+          <td>显示或更改显示皮肤/主题</td>
+      </tr>
+      <tr>
+          <td><code>/verbose</code></td>
+          <td>循环切换工具进度显示：off → new → all → verbose。</td>
+      </tr>
+      <tr>
+          <td><code>/reasoning</code></td>
+          <td>管理推理力度和显示（用法：/reasoning [level|show|hide]）</td>
+      </tr>
+      <tr>
+          <td>`/voice [on</td>
+          <td>off</td>
+      </tr>
+      <tr>
+          <td>`/busy [queue</td>
+          <td>steer</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="443-上下文token命令">4.4.3 <strong>上下文/Token命令</strong>
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>/usage</code></td>
+          <td>看本会话 token 用量、费用估算（输入/输出）、上下文窗口状态、会话时长，</td>
+      </tr>
+      <tr>
+          <td><code>/insights [--days N]</code></td>
+          <td>显示用量洞察和分析（最近 30 天）</td>
+      </tr>
+      <tr>
+          <td><code>/compress</code></td>
+          <td>手动压缩当前会话上下文。</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="444-文件改动安全命令"><strong>4.4.4 文件改动安全命令</strong>
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>/rollback</code></td>
+          <td>列出 checkpoint，回滚</td>
+      </tr>
+      <tr>
+          <td><code>/rollback &lt;N&gt;</code></td>
+          <td>回滚到指定序号的检查点</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>Hermes <strong>会在每次工具改文件之前自动 checkpoint</strong>，因此 <code>/rollback</code> 永远是你的安全网。</p>
+<h3 id="445-工具与技能命令"><strong>4.4.5 工具与技能命令</strong>
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>/tools</code></td>
+          <td>当前启用了哪些工具</td>
+      </tr>
+      <tr>
+          <td><code>/toolsets</code></td>
+          <td>列出可用工具集</td>
+      </tr>
+      <tr>
+          <td>`/memory [pending</td>
+          <td>approve</td>
+      </tr>
+      <tr>
+          <td><code>/curator</code></td>
+          <td>后台 skill 维护——<code>status</code>、<code>run</code>、<code>pin</code>、<code>archive</code></td>
+      </tr>
+      <tr>
+          <td><code>/skills</code></td>
+          <td>从注册表和官方可选 skill 目录搜索、浏览、检查、安装 skill。</td>
+      </tr>
+      <tr>
+          <td><code>/&lt;skill-name&gt; [args]</code></td>
+          <td>触发某个技能</td>
+      </tr>
+      <tr>
+          <td><code>/skill view &lt;name&gt;</code></td>
+          <td>查看某技能源</td>
+      </tr>
+      <tr>
+          <td><code>/skill enable &lt;name&gt;</code></td>
+          <td>启用指定技能</td>
+      </tr>
+      <tr>
+          <td><code>/skill disable &lt;name&gt;</code></td>
+          <td>禁用指定技能</td>
+      </tr>
+      <tr>
+          <td><code>/reload-mcp</code>（别名：<code>/reload_mcp</code>）</td>
+          <td>从 config.yaml 重新加载 MCP 服务器</td>
+      </tr>
+      <tr>
+          <td><code>/reload-skills</code>（别名：<code>/reload_skills</code>）</td>
+          <td>重新扫描 <code>~/.hermes/skills/</code> 以发现新安装或已删除的 skill</td>
+      </tr>
+      <tr>
+          <td><code>/reload</code></td>
+          <td>将 <code>.env</code> 变量重新加载到运行中的会话（无需重启即可获取新 API 密钥）</td>
+      </tr>
+      <tr>
+          <td><code>/plugins</code></td>
+          <td>列出已安装的插件及其状态</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="446--自动化命令">4.4.6  自动化命令
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>/cron</code></td>
+          <td>Cron 子菜单</td>
+      </tr>
+      <tr>
+          <td><code>/cron list</code></td>
+          <td>列出所有定时任务</td>
+      </tr>
+      <tr>
+          <td><code>/cron add &quot;0 9 * * *&quot; &quot;总结昨日日志&quot;</code></td>
+          <td>新增定时任务</td>
+      </tr>
+      <tr>
+          <td><code>/cron pause &lt;id&gt;</code></td>
+          <td>暂停指定定时任务</td>
+      </tr>
+      <tr>
+          <td><code>/cron resume &lt;id&gt;</code></td>
+          <td>恢复指定定时任务</td>
+      </tr>
+      <tr>
+          <td><code>/cron remove &lt;id&gt;</code></td>
+          <td>删除指定定时任务</td>
+      </tr>
+      <tr>
+          <td><code>/kanban</code></td>
+          <td>Kanban 子菜单</td>
+      </tr>
+      <tr>
+          <td><code>/todo</code></td>
+          <td>当前 Todo 列表</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="447-信息命令">4.4.7 <strong>信息命令</strong>
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>/help</code></td>
+          <td>显示帮助信息</td>
+      </tr>
+      <tr>
+          <td><code>/version</code></td>
+          <td>显示 Hermes Agent 版本、构建及环境信息。</td>
+      </tr>
+      <tr>
+          <td><code>/paste</code></td>
+          <td>附加剪贴板图片</td>
+      </tr>
+      <tr>
+          <td><code>/image &lt;path&gt;</code></td>
+          <td>为下一条 prompt 附加本地图片文件。</td>
+      </tr>
+      <tr>
+          <td><code>/profile</code></td>
+          <td>显示活动 profile 名称和主目录</td>
+      </tr>
+      <tr>
+          <td><code>/debug</code></td>
+          <td>上传调试报告（系统信息 + 日志）并获取可分享链接。消息平台中也可用。</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="448-快捷命令">4.4.8 快捷命令
+</h3><p>你可以定义自定义命令，这些命令无需调用 LLM 即可立即运行 shell 命令。在 CLI 和消息平台（Telegram、Discord 等）中均有效。在<code>config.yaml</code>中配置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># ~/.hermes/config.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">quick_commands</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">status</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">exec</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l">systemctl status hermes-agent</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">gpu</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l">exec</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l">nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv,noheader</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>然后在任意聊天中输入 <code>/status</code> 或 <code>/gpu</code>。</p>
+<h2 id="45-skill-斜杠命令">4.5 Skill 斜杠命令
+</h2><p><code>~/.hermes/skills/</code> 中每个已安装的 skill 都会自动注册为斜杠命令。skill 名称即为命令名：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/gif-search funny cats
+</span></span><span class="line"><span class="cl">/axolotl help me fine-tune Llama 3 on my dataset
+</span></span><span class="line"><span class="cl">/github-pr-workflow create a PR for the auth refactor
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 仅输入 skill 名称即可加载它，让 agent 询问你的需求：
+</span></span><span class="line"><span class="cl">/excalidraw
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="46-上下文引用-">4.6 上下文引用 <code>@</code>
+</h2><p>Hermes 支持在输入框中用 <code>@</code> 引入外部内容，这是避免&quot;模型看不到我提到的那个文件&quot;这一常见尴尬的核心机制。<code>@</code> 引用会被<strong>就地展开</strong>，将内容附在你当前消息之后一并交给模型处理。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">帮我看看 @./src/main.py 里 Server 类的初始化逻辑
+</span></span><span class="line"><span class="cl">对比 @git:HEAD~1 与 @git:HEAD 的差异
+</span></span><span class="line"><span class="cl">分析 @https://example.com/post 这篇博客的论点
+</span></span><span class="line"><span class="cl">解读 @./docs/spec.pdf
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>支持类型：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>类型</th>
+          <th>语法示例</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>文件</td>
+          <td><code>@./path/file.py</code></td>
+          <td>引入单个文件的内容</td>
+      </tr>
+      <tr>
+          <td>文件范围</td>
+          <td><code>@file:path/to/file.py:10-25</code></td>
+          <td>注入指定行范围（从 1 开始，含首尾）</td>
+      </tr>
+      <tr>
+          <td>目录</td>
+          <td><code>@./src/</code></td>
+          <td>递归引入目录下的所有文本文件</td>
+      </tr>
+      <tr>
+          <td>Git diff</td>
+          <td><code>@git:&lt;rev&gt;</code></td>
+          <td>引入指定提交的改动</td>
+      </tr>
+      <tr>
+          <td>Git 范围</td>
+          <td><code>@git:&lt;rev1&gt;..&lt;rev2&gt;</code></td>
+          <td>引入两个提交之间的差异</td>
+      </tr>
+      <tr>
+          <td>URL</td>
+          <td><code>@https://...</code></td>
+          <td>自动 fetch 网页内容并转为 Markdown</td>
+      </tr>
+      <tr>
+          <td>PDF</td>
+          <td><code>@./report.pdf</code></td>
+          <td>提取 PDF 中的文本内容</td>
+      </tr>
+      <tr>
+          <td>Office 文件</td>
+          <td><code>@./slides.pptx</code></td>
+          <td>提取演示文稿中的文本</td>
+      </tr>
+      <tr>
+          <td>剪贴板图片</td>
+          <td><code>@clipboard</code></td>
+          <td>粘贴剪贴板中的图片（多模态）</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><code>@</code> 引用的本质是一种&quot;上下文注入&quot;机制。它避免了用户手动复制粘贴文件内容的繁琐操作。对于大型项目，建议优先引用具体文件而非整个目录，以节省上下文窗口空间。</p>
+<h2 id="47-多行输入">4.7 多行输入
+</h2><p>有两种方式输入多行消息：</p>
+<ol>
+<li><strong><code>Alt+Enter</code>、 或 <code>Ctrl+J</code></strong> — 插入换行符。</li>
+<li><strong>反斜杠续行</strong> — 以 <code>\</code> 结尾表示继续下一行，下一行的内容会被合并到同一条消息中：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">❯ Write a function that:\
+</span></span><span class="line"><span class="cl">  1. Takes a list of numbers\
+</span></span><span class="line"><span class="cl">  2. Returns the sum
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>Shift+Enter 兼容性</strong></p>
+<p>大多数终端默认对 <code>Enter</code> 和 <code>Shift+Enter</code> 发送相同的字节序列，因此应用程序无法区分它们。Hermes 仅在终端通过【Kitty 键盘协议】或 xterm 的 <code>modifyOtherKeys</code> 模式发送不同序列时才能识别 <code>Shift+Enter</code>。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>终端</th>
+          <th>状态</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Kitty、foot、WezTerm、Ghostty</td>
+          <td>默认启用独立的 <code>Shift+Enter</code></td>
+      </tr>
+      <tr>
+          <td>iTerm2（近期版本）、Alacritty、VS Code terminal、Warp</td>
+          <td>在设置中启用 Kitty 协议后支持</td>
+      </tr>
+      <tr>
+          <td>Windows Terminal Preview 1.25+</td>
+          <td>在设置中启用 Kitty 协议后支持</td>
+      </tr>
+      <tr>
+          <td>macOS Terminal.app、Windows Terminal 稳定版</td>
+          <td>不支持——<code>Shift+Enter</code> 与 <code>Enter</code> 无法区分</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>当终端无法区分时，<code>Alt+Enter</code> 和 <code>Ctrl+J</code> 在大多终端中均可正常使用。但在 Windows Terminal 中，<code>Alt+Enter</code> 被终端捕获（切换全屏），请改用 <code>Ctrl+Enter</code>（传递为 <code>Ctrl+J</code>）或 <code>Ctrl+J</code> 来换行。</p>
+<h2 id="48-流式输出与打断重定向">4.8 流式输出与打断重定向
+</h2><h3 id="481-工具进度显示">4.8.1 工具进度显示
+</h3><p>CLI 在 Agent 工作时显示动态反馈，让用户随时了解当前状态：</p>
+<p><strong>思考动画</strong>（API 调用期间）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">  ◜ (｡•́︿•̀｡) pondering... (1.2s)
+</span></span><span class="line"><span class="cl">  ◠ (⊙_⊙) contemplating... (2.4s)
+</span></span><span class="line"><span class="cl">  ✧٩(ˊᗜˋ*)و✧ got it! (3.1s)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>工具执行信息流</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">  ┊ 💻 terminal `ls -la` (0.3s)
+</span></span><span class="line"><span class="cl">  ┊ 🔍 web_search &#34;Rust async runtime comparison&#34; (1.2s)
+</span></span><span class="line"><span class="cl">  ┊ 📄 web_extract &#34;https://docs.rs/tokio&#34; (2.1s)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>使用 <code>/verbose</code> 可循环切换显示模式：<code>off -&gt; new -&gt; all -&gt; verbose</code>。</p>
+<p><code>display.tool_preview_length</code> 配置项控制工具调用预览的最大字符数（默认 <code>0</code> 表示无限制）。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># ~/.hermes/config.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">display</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">tool_preview_length</span><span class="p">:</span><span class="w"> </span><span class="m">80</span><span class="w">   </span><span class="c"># 将工具预览截断为 80 个字符（0 = 无限制）</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这在终端较窄或工具参数包含很长文件路径时非常有用。</p>
+<h3 id="482-打断机制">4.8.2 打断机制
+</h3><p>你可以在任意时刻中断 agent：</p>
+<ul>
+<li><strong>输入新消息 + Enter</strong>，在 agent 工作时——这会中断当前操作并处理你的新指令。</li>
+<li><strong><code>Ctrl+C</code></strong>——中断当前操作（2 秒内双击强制退出）
+<ul>
+<li>正在进行的终端命令会立即被终止（SIGTERM，1 秒后 SIGKILL）。</li>
+<li>中断期间输入的多条消息会合并为一条 prompt。</li>
+</ul>
+</li>
+</ul>
+<h3 id="483-繁忙输入模式">4.8.3 繁忙输入模式
+</h3><p><code>display.busy_input_mode</code> 配置项精确控制 Agent 工作时按下 Enter 的行为：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>模式</th>
+          <th>行为</th>
+          <th>适用场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>&quot;interrupt&quot;</code>（默认）</td>
+          <td>你的消息中断当前操作并立即处理</td>
+          <td>需要快速纠正方向时</td>
+      </tr>
+      <tr>
+          <td><code>&quot;queue&quot;</code></td>
+          <td>你的消息被静默排队，在 Agent 完成后作为下一轮发送</td>
+          <td>准备后续问题但不想打断当前工作时</td>
+      </tr>
+      <tr>
+          <td><code>&quot;steer&quot;</code></td>
+          <td>你的消息通过 <code>/steer</code> 注入当前运行，在下一次工具调用后到达 Agent——不中断，不开启新轮次</td>
+          <td>在任务执行中途补充指令，如&quot;顺便也检查一下测试&quot;</td>
+      </tr>
+  </tbody>
+</table></div>
+<ul>
+<li><code>&quot;queue&quot;</code> 模式适合在您希望准备后续消息但又不希望意外取消正在进行的工作时非常有用。<code>&quot;steer&quot;</code> 模式适合在不中断的情况下中途重定向 agent——例如在它还在编辑代码时说&quot;顺便也检查一下测试&quot;。未知值会回退到 <code>&quot;interrupt&quot;</code>。</li>
+<li><code>&quot;steer&quot;</code> 有两个自动回退：如果 agent 尚未启动，或附有图片，消息会回退到 <code>&quot;queue&quot;</code> 行为，确保内容不丢失。</li>
+</ul>
+<p>配置方式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># ~/.hermes/config.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">display</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">busy_input_mode</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;steer&#34;</span><span class="w">   </span><span class="c"># 或 &#34;queue&#34; 或 &#34;interrupt&#34;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>也可以动态切换：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/busy queue
+</span></span><span class="line"><span class="cl">/busy steer
+</span></span><span class="line"><span class="cl">/busy interrupt
+</span></span><span class="line"><span class="cl">/busy status
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>首次在 Hermes 工作时按下 Enter，Hermes 会打印一行提示说明 <code>/busy</code> 选项，该提示只在每次安装后触发一次。</p>
+<h2 id="49-会话管理">4.9 会话管理
+</h2><h3 id="491-session-核心概念与存储">4.9.1 Session 核心概念与存储
+</h3><p>Session 是 Hermes 中对话管理的基本单位，支持恢复、搜索和完整的生命周期管理。每次对话——无论来自 CLI、Telegram、Discord、Slack 还是任何其他消息平台——都会以完整消息历史的形式存储。</p>
+<p>Session 数据存储在 SQLite 数据库 <code>~/.hermes/state.db</code> 中，该数据库包含：</p>
+<ul>
+<li>Session ID、来源平台、用户 ID</li>
+<li>Session 标题（唯一、人类可读的名称）</li>
+<li>模型名称和配置快照</li>
+<li>系统 prompt 快照</li>
+<li>完整消息历史（角色、内容、工具调用、工具结果）</li>
+<li>Token 计数（输入/输出）</li>
+<li>时间戳（started_at、ended_at）</li>
+<li>父 session ID（用于压缩触发的 session 分割）</li>
+</ul>
+<p>此外，SQLite 数据库使用 FTS5（Full-Text Search version 5）虚拟表对消息内容建立全文索引，使 <code>/recall</code> 和 <code>session_search</code> 工具能够毫秒级地搜索历史对话。</p>
+<h3 id="492-会话恢复">4.9.2 会话恢复
+</h3><p>退出 CLI 会话时（使用<code>/exit</code>），Hermes 会打印恢复命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">Resume this session with:
+</span></span><span class="line"><span class="cl">  hermes --resume 20260225_143052_a1b2c3
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Session:        20260225_143052_a1b2c3
+</span></span><span class="line"><span class="cl">Duration:       12m 34s
+</span></span><span class="line"><span class="cl">Messages:       28 (5 user, 18 tool calls)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>恢复选项非常丰富：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes --continue                          <span class="c1"># 恢复最近的 CLI 会话</span>
+</span></span><span class="line"><span class="cl">hermes -c                                  <span class="c1"># 简写形式</span>
+</span></span><span class="line"><span class="cl">hermes -c <span class="s2">&#34;my project&#34;</span>                     <span class="c1"># 恢复命名会话（谱系中最新的）</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">hermes --resume 20260225_143052_a1b2c3     <span class="c1"># 通过 ID 恢复指定会话</span>
+</span></span><span class="line"><span class="cl">hermes --resume <span class="s2">&#34;refactoring auth&#34;</span>         <span class="c1"># 通过标题恢复</span>
+</span></span><span class="line"><span class="cl">hermes -r 20260225_143052_a1b2c3           <span class="c1"># 简写形式</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>恢复会从 SQLite 中还原完整的对话历史。Agent 能看到所有之前的消息、工具调用和响应——就像你从未离开过一样。Session ID 格式为 <code>YYYYMMDD_HHMMSS_&lt;hex&gt;</code>。</p>
+<h3 id="493-会话命名与谱系">4.9.3 会话命名与谱系
+</h3><p>为 session 设置人类可读的标题，能极大提升后续查找和恢复的效率。</p>
+<p><strong>自动生成标题</strong>：Hermes 在第一次交换后自动为每个 session 生成简短的描述性标题（3–7 个词）。这在后台线程中使用快速辅助模型运行，不增加对话延迟。如果你已手动设置标题，则自动命名会跳过。</p>
+<p><strong>手动设置标题</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/title my research project
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在聊天中使用 <code>/title My Session Name</code> 为当前会话命名，或从命令行使用 <code>hermes sessions rename &lt;id&gt; &lt;title&gt;</code>。使用 <code>hermes sessions list</code> 浏览历史会话。</p>
+<p>标题规则：最多 100 个字符；不能与其他 session 重复；控制字符、零宽字符和 RTL 覆盖字符会被自动去除；支持 emoji、CJK 字符和带重音字符。</p>
+<p><strong>压缩时的自动谱系</strong>：当 session 的上下文被压缩（手动 <code>/compress</code> 或自动触发）时，Hermes 会创建一个新的续接 session。如果原 session 有标题，新 session 会自动获得带编号的标题：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">&#34;my project&#34; -&gt; &#34;my project #2&#34; -&gt; &#34;my project #3&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>按名称恢复时（<code>hermes -c &quot;my project&quot;</code>），系统会自动选取谱系中最新的 session。</p>
+<h3 id="494-跨会话搜索">4.9.4 跨会话搜索
+</h3><p>跨会话搜索的另一条路径是直接在对话中指挥 Agent：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">搜索我以前关于 PostgreSQL 索引性能的讨论，整理成一份 cheatsheet
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Agent 会调用 <code>session_search</code> 工具，命中结果后再调用 LLM 进行摘要整理。<code>session_search</code> 使用 SQLite 的 FTS5 引擎，支持三种调用形式：</p>
+<ol>
+<li><strong>发现模式</strong>（传入 <code>query</code>）：运行 FTS5 全文搜索，按 session 谱系去重，返回前 N 个 session 及其匹配上下文。</li>
+<li><strong>滚动模式</strong>（传入 <code>session_id</code> + <code>around_message_id</code>）：返回以锚点为中心的指定窗口消息，用于发现后浏览更多上下文。</li>
+<li><strong>浏览模式</strong>（无参数）：按时间顺序返回最近的 session 列表。</li>
+</ol>
+<p>FTS5 查询语法支持：简单关键词（默认 AND）、短语（<code>&quot;exact phrase&quot;</code>）、布尔运算（<code>docker OR kubernetes</code>、<code>python NOT java</code>）、前缀匹配（<code>deploy*</code>）。</p>
+<h3 id="495-session-管理命令行工具">4.9.5 Session 管理命令行工具
+</h3><p>Hermes 通过 <code>hermes sessions</code> 提供完整的 session 管理命令集：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 列出最近的 session（默认最近 20 个）</span>
+</span></span><span class="line"><span class="cl">hermes sessions list
+</span></span><span class="line"><span class="cl">hermes sessions list --source telegram      <span class="c1"># 按平台过滤</span>
+</span></span><span class="line"><span class="cl">hermes sessions list --limit <span class="m">50</span>             <span class="c1"># 显示更多</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 导出 session</span>
+</span></span><span class="line"><span class="cl">hermes sessions <span class="nb">export</span> backup.jsonl         <span class="c1"># 导出为 JSONL（默认）</span>
+</span></span><span class="line"><span class="cl">hermes sessions <span class="nb">export</span> --format html --session-id &lt;id&gt; transcript.html
+</span></span><span class="line"><span class="cl">hermes sessions <span class="nb">export</span> --format md --older-than <span class="m">90</span> --dry-run
+</span></span><span class="line"><span class="cl">hermes sessions <span class="nb">export</span> --format trace --upload   <span class="c1"># 上传到 HF Agent Trace Viewer</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 重命名与删除</span>
+</span></span><span class="line"><span class="cl">hermes sessions rename &lt;id&gt; <span class="s2">&#34;debugging auth flow&#34;</span>
+</span></span><span class="line"><span class="cl">hermes sessions delete &lt;id&gt;
+</span></span><span class="line"><span class="cl">hermes sessions delete &lt;id&gt; --yes           <span class="c1"># 跳过确认</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 清理旧 session</span>
+</span></span><span class="line"><span class="cl">hermes sessions prune                       <span class="c1"># 删除 90 天前的已结束 session</span>
+</span></span><span class="line"><span class="cl">hermes sessions prune --older-than <span class="m">30</span> --yes
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 统计信息</span>
+</span></span><span class="line"><span class="cl">hermes sessions stats
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>导出格式支持 <code>jsonl</code>（机器可读，适合备份）、<code>md</code>/<code>qmd</code>（人类可读归档）、<code>html</code>（独立页面，适合分享）、<code>trace</code>（Claude Code JSONL，适合 HF Agent Trace Viewer）。<code>--redact</code> 选项可在导出前清除 API key、token 和凭据，强烈建议用于任何打算分享的导出。</p>
+<h2 id="410-compression长会话压缩机制">4.10 Compression：长会话压缩机制
+</h2><p>会话越长，token 消耗越大，模型性能也可能随之下降。Hermes 采用了一套上下文压缩策略来管理长会话。</p>
+<p>Hermes 的上下文压缩是自动化的：</p>
+<ol>
+<li><strong>启动时</strong>：按<strong>冻结快照</strong>注入 identity + memory + skills index。</li>
+<li><strong>持续监控</strong>：实时监控上下文使用比例。</li>
+<li><strong>预警阈值</strong>：默认在上下文限制的 50% 时开始预警（状态栏变黄）。</li>
+<li><strong>强制阈值</strong>：默认在 80% 时触发强制压缩，把&quot;前面 N 条&quot;压成简洁摘要。</li>
+<li><strong>摘要生成</strong>：使用 <strong>Auxiliary Model</strong>（一个相对便宜的模型，如 <code>google/gemini-3-flash-preview</code>）生成摘要，避免烧旗舰模型额度。</li>
+<li><strong>事实保留</strong>：关键工具结果（如 patch 应用记录）会被保留为压缩前的&quot;事实条目&quot;，确保不丢失重要信息。</li>
+</ol>
+<p>你可以手动 <code>/compress</code> 提前压；可以用 <code>/usage</code> 看是否快到阈值；</p>
+<p>在 <code>config.yaml</code> 中调整阈值：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># 在 ~/.hermes/config.yaml 中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="m">0.50</span><span class="w">    </span><span class="c"># 默认在上下文限制的 50% 时压缩</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c"># 摘要模型在 auxiliary 下配置：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">auxiliary</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;google/gemini-3-flash-preview&#34;</span><span class="w">  </span><span class="c"># 指定摘要模型，留空则使用主模型</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>压缩触发时，中间轮次会被摘要，同时<strong>始终保留前 3 轮和后 20 轮</strong>——确保对话的开场目标和近期细节不丢失。被压缩的 session 会自动创建谱系续接（如 &ldquo;my project #2&rdquo;），支持按名称无缝恢复。</p>
+<h2 id="411-后台会话">4.11 后台会话
+</h2><p>在独立的后台会话中运行 prompt，同时继续使用 CLI 进行其他工作：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/background Analyze the logs in /var/log and summarize any errors from today
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Hermes 立即确认任务并将提示符还给你：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">🔄 Background task #1 started: &#34;Analyze the logs in /var/log and summarize...&#34;
+</span></span><span class="line"><span class="cl">   Task ID: bg_143022_a1b2c3
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="1-工作原理">(1) 工作原理
+</h3><p>每个 <code>/background</code> prompt 会在守护线程中生成一个<strong>完全独立的 agent 会话</strong>：</p>
+<ul>
+<li><strong>隔离对话</strong>：后台 agent 不了解当前会话的历史，只接收你提供的 prompt。</li>
+<li><strong>相同配置</strong>：后台 agent 继承当前会话的模型、提供商、工具集、推理设置和回退模型。</li>
+<li><strong>非阻塞</strong>：前台会话保持完全交互，你可以聊天、运行命令，甚至启动更多后台任务。</li>
+<li><strong>多任务</strong>：可同时运行多个后台任务，每个任务都有编号 ID。</li>
+</ul>
+<h3 id="2-结果通知">(2) 结果通知
+</h3><p>后台任务完成时，结果会以面板形式出现在终端中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">╭─ ⚕ Hermes (background #1) ──────────────────────────────────╮
+</span></span><span class="line"><span class="cl">│ Found 3 errors in syslog from today:                         │
+</span></span><span class="line"><span class="cl">│ 1. OOM killer invoked at 03:22 — killed process nginx        │
+</span></span><span class="line"><span class="cl">│ 2. Disk I/O error on /dev/sda1 at 07:15                      │
+</span></span><span class="line"><span class="cl">│ 3. Failed SSH login attempts from 192.168.1.50 at 14:30      │
+</span></span><span class="line"><span class="cl">╰──────────────────────────────────────────────────────────────╯
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果任务失败，你会看到错误通知。如果配置中启用了 <code>display.bell_on_complete</code>，任务完成时终端会响铃。</p>
+<blockquote>
+<p><strong>重要</strong>：后台会话不会出现在主对话历史中。它们是独立会话，拥有各自的任务 ID（如 <code>bg_143022_a1b2c3</code>）。</p>
+</blockquote>
+<h3 id="3-典型使用场景">(3) 典型使用场景
+</h3><ul>
+<li><strong>长时间研究</strong>：<code>&quot;/background research the latest developments in quantum error correction&quot;</code>，同时继续编写代码。</li>
+<li><strong>文件处理</strong>：<code>&quot;/background analyze all Python files in this repo and list any security issues&quot;</code>，同时继续对话。</li>
+<li><strong>并行调查</strong>：同时启动多个后台任务，从不同角度探索问题。</li>
+</ul>
+<h2 id="412-checkpoints-与-rollback">4.12 Checkpoints 与 Rollback
+</h2><p>Hermes Agent 可以在<strong>破坏性操作</strong>之前自动为你的项目创建快照，并通过单条命令恢复。</p>
+<h3 id="1-启用检查点">(1) 启用检查点
+</h3><p>在会话中通过参数启用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes chat --checkpoints
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>或在 <code>~/.hermes/config.yaml</code> 中全局启用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">checkpoints</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="2-触发条件">(2) 触发条件
+</h3><p>每当在<strong>破坏性操作</strong>之前自动创建，如：</p>
+<ul>
+<li><strong>文件工具</strong>：<code>write_file</code> 和 <code>patch</code></li>
+<li><strong>破坏性终端命令</strong>：<code>rm</code>、<code>rmdir</code>、<code>cp</code>、<code>mv</code>、<code>sed -i</code>、<code>truncate</code>、<code>dd</code>、<code>shred</code>、输出重定向（<code>&gt;</code>），以及 <code>git reset</code>/<code>clean</code>/<code>checkout</code></li>
+</ul>
+<p>Hermes 会自动：</p>
+<ol>
+<li>计算受影响目录；</li>
+<li>用 <code>git</code>-like 算法生成快照存到 <code>~/.hermes/checkpoints/</code>；</li>
+<li>标记 checkpoint id，附在工具结果上。</li>
+</ol>
+<h3 id="3-核心命令">(3) 核心命令
+</h3><p>之后你可以：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/rollback              # 回到最近一次自动 checkpoint
+</span></span><span class="line"><span class="cl">/rollback &lt;name&gt;       # 回到指定 checkpoint
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>也可以在普通对话中说：&ldquo;撤销刚才那次改动&rdquo;，Hermes 会自己理解并回滚。</p>
+<p>管理Checkpoints：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">hermes checkpoints            # 查看状态概览
+</span></span><span class="line"><span class="cl">hermes checkpoints prune      # 清理过期检查点
+</span></span><span class="line"><span class="cl">hermes checkpoints clear      # 清空全部检查点
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="413-profilecli-中的多身份切换">4.13 Profile：CLI 中的多身份切换
+</h2><h3 id="1-什么是-profile">(1) 什么是 Profile
+</h3><p>Profile 是 Hermes 中实现&quot;一台机器上运行多个独立 Agent&quot;的核心机制。每个 profile 拥有各自独立的配置、API 密钥、记忆、会话、技能和 gateway 状态。</p>
+<p>Profile 本质上是一个独立的 Hermes 主目录。每个 profile 拥有自己的：</p>
+<ul>
+<li><code>config.yaml</code> —— 模型、提供商、工具集及所有设置。</li>
+<li><code>.env</code> —— API 密钥、bot token。</li>
+<li><code>SOUL.md</code> —— 人格与指令。</li>
+<li>记忆（MEMORY.md、USER.md）。</li>
+<li>会话历史与 <code>state.db。</code></li>
+<li>技能集合。</li>
+<li>cron 任务和 gateway 状态。</li>
+</ul>
+<p>每个 profile 有独立的 <code>~/.hermes/profiles/&lt;name&gt;/</code>，相当于一份完整 <code>~/.hermes/</code>。同一时间一个 profile 只允许一个 CLI/Gateway 进程占用（通过 token lock 实现，避免数据库被并发改坏）。</p>
+<h3 id="2-创建-profile">(2) 创建 Profile
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 创建空白 profile</span>
+</span></span><span class="line"><span class="cl">hermes profile create mybot
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 克隆当前 profile 的配置（不含历史数据）</span>
+</span></span><span class="line"><span class="cl">hermes profile create work --clone
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 克隆所有内容（含技能、记忆、cron，但不含会话历史）</span>
+</span></span><span class="line"><span class="cl">hermes profile create backup --clone-all
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 从指定 profile 克隆</span>
+</span></span><span class="line"><span class="cl">hermes profile create work --clone-from coder
+</span></span><span class="line"><span class="cl">hermes profile create work-backup --clone-from coder --clone-all
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 为 Kanban 工作节点创建 profile（添加描述便于编排器路由）</span>
+</span></span><span class="line"><span class="cl">hermes profile create researcher --description <span class="s2">&#34;Reads source code and external docs, writes findings.&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>创建 profile 后，它会自动成为独立的命令。例如创建名为 <code>coder</code> 的 profile，你立即就拥有了 <code>coder chat</code>、<code>coder setup</code>、<code>coder gateway start</code> 等命令。</p>
+<h3 id="3-使用-profile">(3) 使用 Profile
+</h3><p><strong>命令别名</strong>：每个 profile 在 <code>~/.local/bin/&lt;name&gt;</code> 自动获得一个命令别名，支持所有 hermes 子命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">coder chat                    <span class="c1"># 与 coder agent 对话</span>
+</span></span><span class="line"><span class="cl">coder setup                  <span class="c1"># 配置 coder 的设置</span>
+</span></span><span class="line"><span class="cl">coder gateway start          <span class="c1"># 启动 coder 的 gateway</span>
+</span></span><span class="line"><span class="cl">coder doctor                <span class="c1"># 检查 coder 的健康状态</span>
+</span></span><span class="line"><span class="cl">coder skills list            <span class="c1"># 列出 coder 的技能</span>
+</span></span><span class="line"><span class="cl">coder config <span class="nb">set</span> model.default anthropic/claude-sonnet-4
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>你也可以通过<code>-p</code>参数显式指定 profile：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes -p coder chat
+</span></span><span class="line"><span class="cl">hermes --profile<span class="o">=</span>coder doctor
+</span></span><span class="line"><span class="cl">hermes chat -p coder -q <span class="s2">&#34;hello&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>切换默认值</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes profile use coder      <span class="c1"># 将 coder 设为默认 profile</span>
+</span></span><span class="line"><span class="cl">hermes chat                   <span class="c1"># 现在指向 coder</span>
+</span></span><span class="line"><span class="cl">hermes profile use default    <span class="c1"># 切换回默认</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="4-工作原理">(4) 工作原理
+</h3><p>profile 使用 <code>HERMES_HOME</code> 环境变量。运行 <code>coder chat</code> 时，包装脚本在启动 hermes 前将 <code>HERMES_HOME</code> 设置为 <code>~/.hermes/profiles/coder</code>。由于代码库中 119+ 个文件通过 <code>get_hermes_home()</code> 解析路径，Hermes 状态会自动限定在 profile 目录范围内——包括配置、会话、记忆、技能、状态数据库、gateway PID、日志和 cron 任务。</p>
+<p>这与终端工作目录是分开的。工具执行从 <code>terminal.cwd</code> 开始（或在 local 后端使用 <code>cwd: &quot;.&quot;</code> 时从启动目录开始），而非自动从 <code>HERMES_HOME</code> 开始。</p>
+<p>默认 profile 就是 <code>~/.hermes</code> 本身。无需迁移——现有安装的工作方式完全不变。</p>
+<h3 id="5-profile-的运行时识别">(5) Profile 的运行时识别
+</h3><p>CLI 始终通过多种方式显示当前活跃的 profile：</p>
+<ul>
+<li><strong>提示符</strong>：显示 <code>coder ❯</code> 而非默认的 <code>❯</code></li>
+<li><strong>启动横幅</strong>：启动时显示 <code>Profile: coder</code></li>
+<li><strong><code>hermes profile</code></strong>：显示当前 profile 名称、路径、模型、gateway 状态。</li>
+</ul>
+<h3 id="6-profile-与-gateway">(6) Profile 与 Gateway
+</h3><p>每个 profile 以独立进程运行各自的 gateway，使用各自的 bot token：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">coder gateway start           <span class="c1"># 启动 coder 的 gateway</span>
+</span></span><span class="line"><span class="cl">assistant gateway start       <span class="c1"># 启动 assistant 的 gateway（独立进程）</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>安全性方面，如果两个 profile 意外使用了相同的 bot token，第二个 gateway 将被阻止并显示明确的错误信息，指出冲突的 profile。这一&quot;token 锁&quot;机制支持 Telegram、Discord、Slack、WhatsApp 和 Signal。</p>
+<p>持久化服务同样按 profile 隔离：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">coder gateway install         <span class="c1"># 创建 hermes-gateway-coder systemd/launchd 服务</span>
+</span></span><span class="line"><span class="cl">assistant gateway install     <span class="c1"># 创建 hermes-gateway-assistant 服务</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="7-profile-的管理">(7) Profile 的管理
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes profile list           <span class="c1"># 显示所有 profile 及其状态</span>
+</span></span><span class="line"><span class="cl">hermes --profile work         <span class="c1"># 这次会话用 work profile</span>
+</span></span><span class="line"><span class="cl">hermes profile show coder     <span class="c1"># 显示某个 profile 的详细信息</span>
+</span></span><span class="line"><span class="cl">hermes profile rename coder dev-bot   <span class="c1"># 重命名（同步更新别名和服务）</span>
+</span></span><span class="line"><span class="cl">hermes profile <span class="nb">export</span> coder   <span class="c1"># 导出为 coder.tar.gz</span>
+</span></span><span class="line"><span class="cl">hermes profile import coder.tar.gz    <span class="c1"># 从归档文件导入</span>
+</span></span><span class="line"><span class="cl">hermes profile delete coder   <span class="c1"># 删除 profile（需输入名称确认）</span>
+</span></span><span class="line"><span class="cl">hermes profile delete coder --yes     <span class="c1"># 跳过确认</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>注意</strong>：你无法删除默认 profile（<code>~/.hermes</code>）。如需删除所有内容，请使用 <code>hermes uninstall</code>。</p>
+<h3 id="8-profile-与工作区沙箱的区别">(8) Profile 与工作区、沙箱的区别
+</h3><p>Profile 常与&quot;工作区&quot;或&quot;沙箱&quot;混淆，但它们是完全不同的概念：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>概念</th>
+          <th>作用范围</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Profile</strong></td>
+          <td>Hermes 状态目录</td>
+          <td>提供独立的 config、.env、SOUL.md、会话、记忆、日志、cron 和 gateway 状态</td>
+      </tr>
+      <tr>
+          <td><strong>工作区/工作目录</strong></td>
+          <td>终端命令执行位置</td>
+          <td>由 <code>terminal.cwd</code> 单独控制，是 shell 命令的起始目录</td>
+      </tr>
+      <tr>
+          <td><strong>沙箱</strong></td>
+          <td>文件系统访问限制</td>
+          <td>用于隔离文件系统访问，profile <strong>不</strong>提供沙箱隔离</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>在默认的 <code>local</code> 终端后端下，agent 仍拥有与你的用户账户相同的文件系统访问权限。如果你希望 profile 默认在特定项目文件夹中启动，请在该 profile 的 <code>config.yaml</code> 中设置绝对路径的 <code>terminal.cwd</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">terminal</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l">local</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">cwd</span><span class="p">:</span><span class="w"> </span><span class="l">/absolute/path/to/project</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="413-personality-与-soulmd">4.13 Personality 与 SOUL.md
+</h2><p>设置预设个性以改变 Agent 的语气：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/personality pirate
+</span></span><span class="line"><span class="cl">/personality kawaii
+</span></span><span class="line"><span class="cl">/personality concise
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>内置个性包括：<code>helpful</code>、<code>concise</code>、<code>technical</code>、<code>creative</code>、<code>teacher</code>、<code>kawaii</code>、<code>catgirl</code>、<code>pirate</code>、<code>shakespeare</code>、<code>surfer</code>、<code>noir</code>、<code>uwu</code>、<code>philosopher</code>、<code>hype</code>。</p>
+<p>你也可以在 <code>~/.hermes/config.yaml</code> 中定义自定义个性：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">personalities</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">helpful</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;You are a helpful, friendly AI assistant.&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">kawaii</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;You are a kawaii assistant! Use cute expressions...&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">pirate</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;Arrr! Ye be talkin&#39; to Captain Hermes...&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c"># 添加您自己的！</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>Personality 与 SOUL.md 对比：</strong></p>
+<ul>
+<li><code>SOUL.md</code> 是 Hermes 的&quot;主身份&quot;，第一槽位写入系统提示。<strong>只从 <code>$HERMES_HOME/SOUL.md</code> 加载</strong>，不会从当前工作目录读取——这保证了&quot;换项目不换人格&quot;。</li>
+<li><code>/personality &lt;preset&gt;</code> 是对 SOUL 的<strong>叠加层</strong>（session-level overlay），适合临时切换风格：&ldquo;严肃技术顾问&rdquo;、&ldquo;幽默助理&rdquo;、&ldquo;冷酷代码评审&quot;等。</li>
+</ul>
+<p>修改自己的 SOUL：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">nano ~/.hermes/SOUL.md
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>或在 TUI 里 <code>/soul</code>，会调系统编辑器。修改完保存即可，下次会话生效。</p>
+<p>要让 Hermes 有完全不同的人设（比如把它包装成&quot;客户支持助理 Lily&rdquo;），重写 <code>SOUL.md</code> 是最干净的做法。</p>
+<h2 id="414-skin--theme-定制">4.14 Skin / Theme 定制
+</h2><p><code>hermes_cli/skin_engine.py</code> 让你能换：banner 颜色、spinner 表情和动词、回答框标签、品牌字、工具活动前缀。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes skin list
+</span></span><span class="line"><span class="cl">hermes skin use cyberpunk
+</span></span><span class="line"><span class="cl">hermes skin reset
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>或在 <code>config.yaml</code> 中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">display</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">skin</span><span class="p">:</span><span class="w"> </span><span class="l">cyberpunk</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="415-跨设备-handoff">4.15 跨设备 Handoff
+</h2><p>在 CLI session 中使用 <code>/handoff &lt;platform&gt;</code> 可以将实时对话转移到消息平台的主频道。Agent 会从 CLI 停止的地方<strong>精确接续</strong>——相同的 session ID、完整对话记录、工具调用历史一并保留。</p>
+<p><strong>Handoff 执行流程</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 在 CLI session 内</span>
+</span></span><span class="line"><span class="cl">/handoff telegram
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>执行过程如下：</strong></p>
+<ol>
+<li>
+<p><strong>验证</strong>：CLI 验证目标平台已启用且已设置主频道（在目标聊天中运行一次 <code>/sethome</code> 即可配置）。未配置主频道时 CLI 会拒绝并提示 <code>/sethome</code>。</p>
+</li>
+<li>
+<p><strong>阻塞轮询</strong>：CLI 将 session 标记为待处理并阻塞轮询 gateway。如果 agent 正在处理当前轮次，操作会被拒绝——请等待当前响应完成后再执行 handoff。</p>
+</li>
+<li>
+<p><strong>Gateway 接管</strong>：Gateway 监视器认领切换请求，并向目标适配器请求新线程：</p>
+<ul>
+<li><strong>Telegram</strong>：开启新的论坛话题（如果在聊天中启用了Topics 模式则为私信话题，或论坛超级群组话题）。</li>
+<li><strong>Discord</strong>：在主文字频道下创建自动归档的线程。</li>
+<li><strong>Slack</strong>：发布一条种子消息并使用其 <code>ts</code> 作为线程锚点。</li>
+<li><strong>WhatsApp / Signal / Matrix / SMS</strong>：无原生线程，回退到直接使用主频道。</li>
+</ul>
+</li>
+<li>
+<p><strong>状态同步</strong>：Gateway 将目标键重新绑定到你现有的 CLI session ID，然后伪造一个合成用户轮次，让 agent 确认已在新位置工作。</p>
+</li>
+<li>
+<p><strong>CLI 退出</strong>：Gateway 确认成功后，CLI 打印 <code>/resume</code> 提示并干净退出：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">↻ Handoff complete. The session is now active on telegram.
+</span></span><span class="line"><span class="cl">  Resume it on this CLI later with: /resume my-session-title
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>平台继续</strong>：从此时起，对话在目标平台上继续。在新线程中回复即可——该频道中任何已授权用户共享同一 session。</p>
+</li>
+</ol>
+<p><strong>恢复到 CLI：</strong></p>
+<p>当你想回到桌面终端时，只需运行 <code>/resume &lt;title&gt;</code>（或在 shell 中运行 <code>hermes -r &quot;&lt;title&gt;&quot;</code>），即可从平台停止的地方继续对话。这种跨设备无缝切换的能力，使得 Hermes 成为真正&quot;随处可用&quot;的 Agent 伴侣。</p>
+<h2 id="416-资深用法">4.16 资深用法
+</h2><h3 id="1一次性-prompt-模式headless">1、一次性 Prompt 模式（Headless）
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes chat -q <span class="s2">&#34;总结一下 ~/code/myapp 这个项目的目录结构&#34;</span> --toolsets file,terminal
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>适合配合 shell 脚本，把 Hermes 当成强力 CLI 工具使用。stdin 会被自动当作附件注入：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat error.log <span class="p">|</span> hermes chat --toolsets file -q <span class="s2">&#34;诊断这段日志的根因&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="2headless-api-模式">2、Headless API 模式
+</h3><p><code>hermes api start --host 0.0.0.0 --port 8000</code> 可启动一个 OpenAI-Compatible 端点，把 Hermes 当成&quot;自托管 ChatGPT&quot;暴露给 Open WebUI、LobeChat 或 LibreChat：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">curl http://localhost:8000/v1/chat/completions <span class="se">\
+</span></span></span><span class="line"><span class="cl">  -H <span class="s1">&#39;Authorization: Bearer any-token&#39;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">  -d <span class="s1">&#39;{&#34;model&#34;:&#34;hermes&#34;,&#34;messages&#34;:[{&#34;role&#34;:&#34;user&#34;,&#34;content&#34;:&#34;hello&#34;}]}&#39;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="417-一份高效用-cli的清单">4.17 一份&quot;高效用 CLI&quot;的清单
+</h2><p>最后给你一份&quot;打字习惯&quot;清单，照着练一周，你就能成为 Hermes 的熟练用户：</p>
+<ol>
+<li><strong>默认开 TUI</strong>：永远把&quot;想要 Agent 干什么&quot;自然表达出来，不要纠结&quot;如何写 prompt&quot;。</li>
+<li><strong>不顺心就 <code>Ctrl+C</code> + 立即纠正方向</strong>：不需要等它说完，也不需要开新会话。打断后立即发新指令是最快的迭代方式。</li>
+<li><strong>改文件之后 ，不放心 <code>/rollback</code></strong>：养成在关键改动后确认变更的习惯。检查点永远是你的安全网。</li>
+<li><strong>会话长了 <code>/usage</code> 看一眼，必要时 <code>/compress</code></strong>：关注状态栏的颜色变化，在上下文变橙/红之前主动管理。</li>
+<li><strong>想让它沉淀经验，直接说&quot;把这一招记下来&quot;</strong>：Hermes 会自动写入 MEMORY.md，并在适当时机将其转化为技能。</li>
+<li><strong>切换关注的项目时 <code>cd</code> 进项目根，<code>@./</code> 引用自动让它读懂</strong>：利用 <code>@</code> 引用机制快速给 Agent 提供项目上下文。</li>
+<li><strong>每天结束让它写一段&quot;今日复盘&quot;</strong>：主动回写 MEMORY.md，构建个人知识库。</li>
+<li><strong>定期 <code>/skills</code> 浏览 Hub</strong>：下载、裁剪与你工作流相关的技能，持续扩展 Agent 的能力边界。</li>
+<li><strong>利用 <code>/background</code> 做并行任务</strong>：不要让 Agent 的长时间研究阻塞你的主线工作。</li>
+<li><strong>善用 <code>/handoff</code> 实现跨设备无缝切换</strong>：在电脑前开始，在手机上继续，再回到电脑前收尾。</li>
+</ol>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/hermes-agent/">Hermes Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第5章 模型供应商与配置</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第2章 安装、配置与首次对话</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第3章 整体架构与核心组件</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

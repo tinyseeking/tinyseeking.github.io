@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="本章从Model Provider 抽象入手，逐层深入三种 API 模式、Fallback 故障切换、Credential Pool 密钥轮询、Auxiliary Client 辅助模型、Provider Routing 的配置，帮助你构建一套高可用、低成本、易维护的多模型调度体系。">
+<title>Hermes Agent 原理与实战——第5章 模型供应商与配置</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Hermes Agent 原理与实战——第5章 模型供应商与配置">
+<meta property='og:description' content="本章从Model Provider 抽象入手，逐层深入三种 API 模式、Fallback 故障切换、Credential Pool 密钥轮询、Auxiliary Client 辅助模型、Provider Routing 的配置，帮助你构建一套高可用、低成本、易维护的多模型调度体系。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='hermes agent' /><meta property='article:published_time' content='2026-08-26T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-08-26T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Hermes Agent 原理与实战——第5章 模型供应商与配置">
+<meta name="twitter:description" content="本章从Model Provider 抽象入手，逐层深入三种 API 模式、Fallback 故障切换、Credential Pool 密钥轮询、Auxiliary Client 辅助模型、Provider Routing 的配置，帮助你构建一套高可用、低成本、易维护的多模型调度体系。"><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#51-model-provider-抽象模型统一接口">5.1 Model Provider 抽象：模型统一接口</a>
+      <ol>
+        <li><a href="#一三种-api-模式">一、三种 API 模式</a></li>
+        <li><a href="#二运行时解析的输出">二、运行时解析的输出</a></li>
+        <li><a href="#三运行时解析优先级">三、运行时解析优先级</a></li>
+      </ol>
+    </li>
+    <li><a href="#52-官方支持的模型供应商">5.2 官方支持的模型供应商</a></li>
+    <li><a href="#53-配置模型">5.3 配置模型</a>
+      <ol>
+        <li><a href="#531-配置主模型">5.3.1 配置主模型</a></li>
+        <li><a href="#532-辅助模型">5.3.2 辅助模型</a>
+          <ol>
+            <li><a href="#5321-辅助任务清单">5.3.2.1 辅助任务清单</a></li>
+            <li><a href="#5322-通用配置模式">5.3.2.2 通用配置模式</a></li>
+            <li><a href="#5322-配置辅助模型">5.3.2.2 配置辅助模型</a></li>
+          </ol>
+        </li>
+        <li><a href="#533-辅助任务回退链">5.3.3 辅助任务回退链</a></li>
+        <li><a href="#534-provider-routing精细化路由">5.3.4 Provider Routing：精细化路由</a></li>
+        <li><a href="#535-辅助任务中的-provider-routing">5.3.5 辅助任务中的 Provider Routing</a></li>
+      </ol>
+    </li>
+    <li><a href="#54-上下文压缩">5.4 上下文压缩</a></li>
+    <li><a href="#55-上下文引擎">5.5 上下文引擎</a></li>
+    <li><a href="#56-迭代预算">5.6 迭代预算</a></li>
+    <li><a href="#57-api-超时">5.7 API 超时</a></li>
+    <li><a href="#58-上下文压力警告">5.8 上下文压力警告</a></li>
+    <li><a href="#59-凭据池策略">5.9 凭据池策略</a></li>
+    <li><a href="#510-prompt-缓存">5.10 Prompt 缓存</a></li>
+    <li><a href="#511-自定义-openai-兼容端点">5.11 自定义 OpenAI 兼容端点</a></li>
+    <li><a href="#512-完整模型相关配置示例">5.12 完整模型相关配置示例</a></li>
+    <li><a href="#513-切换模型的-5-个高频技巧">5.13 切换模型的 5 个高频技巧</a></li>
+    <li><a href="#514-本章小结">5.14 本章小结</a></li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/hermes-agent/" style="background-color: #2a9d8f; color: #fff;">
+                Hermes Agent 原理与实战
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/">Hermes Agent 原理与实战——第5章 模型供应商与配置</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            本章从Model Provider 抽象入手，逐层深入三种 API 模式、Fallback 故障切换、Credential Pool 密钥轮询、Auxiliary Client 辅助模型、Provider Routing 的配置，帮助你构建一套高可用、低成本、易维护的多模型调度体系。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-08-26T00:00:00Z'>2026年8月26日星期三</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 18 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#51-model-provider-抽象模型统一接口">5.1 Model Provider 抽象：模型统一接口</a>
+      <ol>
+        <li><a href="#一三种-api-模式">一、三种 API 模式</a></li>
+        <li><a href="#二运行时解析的输出">二、运行时解析的输出</a></li>
+        <li><a href="#三运行时解析优先级">三、运行时解析优先级</a></li>
+      </ol>
+    </li>
+    <li><a href="#52-官方支持的模型供应商">5.2 官方支持的模型供应商</a></li>
+    <li><a href="#53-配置模型">5.3 配置模型</a>
+      <ol>
+        <li><a href="#531-配置主模型">5.3.1 配置主模型</a></li>
+        <li><a href="#532-辅助模型">5.3.2 辅助模型</a>
+          <ol>
+            <li><a href="#5321-辅助任务清单">5.3.2.1 辅助任务清单</a></li>
+            <li><a href="#5322-通用配置模式">5.3.2.2 通用配置模式</a></li>
+            <li><a href="#5322-配置辅助模型">5.3.2.2 配置辅助模型</a></li>
+          </ol>
+        </li>
+        <li><a href="#533-辅助任务回退链">5.3.3 辅助任务回退链</a></li>
+        <li><a href="#534-provider-routing精细化路由">5.3.4 Provider Routing：精细化路由</a></li>
+        <li><a href="#535-辅助任务中的-provider-routing">5.3.5 辅助任务中的 Provider Routing</a></li>
+      </ol>
+    </li>
+    <li><a href="#54-上下文压缩">5.4 上下文压缩</a></li>
+    <li><a href="#55-上下文引擎">5.5 上下文引擎</a></li>
+    <li><a href="#56-迭代预算">5.6 迭代预算</a></li>
+    <li><a href="#57-api-超时">5.7 API 超时</a></li>
+    <li><a href="#58-上下文压力警告">5.8 上下文压力警告</a></li>
+    <li><a href="#59-凭据池策略">5.9 凭据池策略</a></li>
+    <li><a href="#510-prompt-缓存">5.10 Prompt 缓存</a></li>
+    <li><a href="#511-自定义-openai-兼容端点">5.11 自定义 OpenAI 兼容端点</a></li>
+    <li><a href="#512-完整模型相关配置示例">5.12 完整模型相关配置示例</a></li>
+    <li><a href="#513-切换模型的-5-个高频技巧">5.13 切换模型的 5 个高频技巧</a></li>
+    <li><a href="#514-本章小结">5.14 本章小结</a></li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="hermes-agent-原理与实战第5章-模型供应商与配置">Hermes Agent 原理与实战——第5章 模型供应商与配置
+</h1><blockquote>
+<p>Hermes Agent 将&quot;模型&quot;做成了可热插拔的运行时组件。你可以用 <code>hermes model</code> 在 200 多个模型之间任意切换，也可以为不同任务配置不同的模型与不同的 fallback 链；同时凭据可以集中管理、复用密钥池。</p>
+<p>本章从Model Provider 抽象入手，逐层深入三种 API 模式、Fallback 故障切换、Credential Pool 密钥轮询、Auxiliary Client 辅助模型、Provider Routing 的配置，帮助你构建一套高可用、低成本、易维护的多模型调度体系。</p>
+</blockquote>
+<h2 id="51-model-provider-抽象模型统一接口">5.1 Model Provider 抽象：模型统一接口
+</h2><p>Hermes 在运行时提供了一层完整的 Provider（供应商）抽象。它将认证鉴权、端点发现、API 协议适配、模型元数据管理、故障回退以及辅助任务路由等能力全部封装在内。无论底层对接的是 OpenAI、Anthropic、本地 Ollama，还是企业内网的自托管 vLLM，Hermes 的上层均以统一接口与之下交互，完全屏蔽底层差异。</p>
+<h3 id="一三种-api-模式">一、三种 API 模式
+</h3><p>Hermes 内部统一支持三种 API 模式。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>API 模式</th>
+          <th>适用场景</th>
+          <th>客户端实现</th>
+          <th>典型供应商</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>chat_completions</code></td>
+          <td>绝大多数 OpenAI 兼容端点、事实标准</td>
+          <td><code>openai.OpenAI</code></td>
+          <td>OpenRouter、DeepSeek、GLM、Kimi、vLLM、Ollama 等 99% 的供应商</td>
+      </tr>
+      <tr>
+          <td><code>codex_responses</code></td>
+          <td>OpenAI Codex / Responses API</td>
+          <td><code>openai.OpenAI</code>（Responses 格式）</td>
+          <td>OpenAI Codex</td>
+      </tr>
+      <tr>
+          <td><code>anthropic_messages</code></td>
+          <td>Anthropic 原生 Messages API</td>
+          <td><code>anthropic.Anthropic</code>（带 adapter）</td>
+          <td>Anthropic、MiniMax Anthropic 兼容端点</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>模式解析顺序</strong>：</p>
+<ol>
+<li>显式 <code>api_mode</code> 参数指定（最高优先级）</li>
+<li>Provider 特定检测（如 <code>anthropic</code> → <code>anthropic_messages</code>）</li>
+<li>Base URL 启发式规则（如 <code>api.anthropic.com</code> → <code>anthropic_messages</code>）</li>
+<li>默认：<code>chat_completions</code></li>
+</ol>
+<p>模式决定了消息的格式化方式、工具调用的结构、响应的解析方式，以及缓存/流式传输的工作方式。三种模式在 API 调用前后均收敛到相同的内部消息格式（OpenAI 风格的 <code>role</code>/<code>content</code>/<code>tool_calls</code> dict）。</p>
+<h3 id="二运行时解析的输出">二、运行时解析的输出
+</h3><p>无论上游来源如何，解析器最终都输出一个统一结构的字典：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;provider&#34;</span><span class="p">:</span> <span class="s2">&#34;your-provider&#34;</span><span class="p">,</span>      <span class="c1"># Provider ID</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;api_mode&#34;</span><span class="p">:</span> <span class="s2">&#34;chat_completions&#34;</span><span class="p">,</span>   <span class="c1"># 线路协议</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;base_url&#34;</span><span class="p">:</span> <span class="s2">&#34;https://...&#34;</span><span class="p">,</span>        <span class="c1"># 推理端点</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;api_key&#34;</span><span class="p">:</span> <span class="s2">&#34;...&#34;</span><span class="p">,</span>                 <span class="c1"># 认证密钥</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;env|portal|auth-store|explicit&#34;</span><span class="p">,</span>  <span class="c1"># 来源标记</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># ...Provider 特定的元数据（过期/刷新信息等）</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这套输出被以下所有场景共享：<code>hermes chat</code> CLI、Gateway 消息处理、在全新会话中运行的 Cron 任务、ACP 编辑器会话、辅助模型任务。这意味着你只需配置一次，全链路生效。</p>
+<h3 id="三运行时解析优先级">三、运行时解析优先级
+</h3><p>当 Hermes 需要确定&quot;当前用哪个 Provider、哪个模型、哪种 API 模式&quot;时，运行时解析器按以下严格顺序决策（优先级从高到低）：</p>
+<ol>
+<li><strong>显式 CLI/运行时请求</strong> —— 例如 <code>hermes chat --model anthropic/claude-opus-4。</code></li>
+<li><strong><code>~/.hermes/config.yaml</code> 中的模型/Provider 配置</strong> —— 用户持久化保存的选择。</li>
+<li><strong>环境变量</strong> —— <code>OPENROUTER_API_KEY</code>、<code>ANTHROPIC_API_KEY</code> 等。</li>
+<li><strong>Provider 特定的默认值或自动解析</strong> —— 内置安全兜底。</li>
+</ol>
+<p>这个顺序非常重要：已保存的 <code>config.yaml</code> 被视为正常运行的真实来源，可以防止过时的 shell 导出变量悄悄覆盖用户在 <code>hermes model</code> 中最后选择的端点。</p>
+<h2 id="52-官方支持的模型供应商">5.2 官方支持的模型供应商
+</h2><p>截至当前版本，Hermes 内置支持以下 Provider。它不仅覆盖了主流国际供应商，还<strong>原生覆盖了中国区主流供应商</strong>，这对中文开发者极为友好。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>Provider</th>
+          <th>说明</th>
+          <th>配置入口</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Nous Portal</strong></td>
+          <td>Nous Research 自家订阅服务，零配置</td>
+          <td>通过 <code>hermes model</code> 进行 OAuth 登录</td>
+      </tr>
+      <tr>
+          <td><strong>OpenAI Codex</strong></td>
+          <td>ChatGPT 账号体系，Codex/Responses 模型</td>
+          <td>通过 <code>hermes model</code> 进行设备码认证</td>
+      </tr>
+      <tr>
+          <td><strong>Anthropic</strong></td>
+          <td>Claude 全系；Max 订阅可走 OAuth</td>
+          <td>OAuth 或 <code>ANTHROPIC_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>OpenRouter</strong></td>
+          <td>统一路由 200+ 模型</td>
+          <td><code>OPENROUTER_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Z.AI / GLM</strong></td>
+          <td>智谱 GLM</td>
+          <td><code>GLM_API_KEY</code> / <code>ZAI_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Kimi / Moonshot</strong></td>
+          <td>Moonshot 国际版</td>
+          <td><code>KIMI_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Kimi / Moonshot China</strong></td>
+          <td>Moonshot 中国区端点</td>
+          <td><code>KIMI_CN_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Arcee AI</strong></td>
+          <td>Trinity 系列</td>
+          <td><code>ARCEEAI_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>GMI Cloud</strong></td>
+          <td>多模型直 API</td>
+          <td><code>GMI_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>MiniMax (OAuth)</strong></td>
+          <td>通过浏览器 OAuth 使用 MiniMax-M2.7，无需 API key</td>
+          <td><code>hermes model</code> → MiniMax (OAuth)</td>
+      </tr>
+      <tr>
+          <td><strong>MiniMax</strong></td>
+          <td>MiniMax 国际</td>
+          <td><code>MINIMAX_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>MiniMax China</strong></td>
+          <td>MiniMax 中国区</td>
+          <td><code>MINIMAX_CN_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Alibaba Cloud / DashScope</strong></td>
+          <td>Qwen 全系</td>
+          <td><code>DASHSCOPE_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Hugging Face</strong></td>
+          <td>通过统一路由器使用 20+ 开源模型（Qwen、DeepSeek、Kimi 等）</td>
+          <td><code>HF_TOKEN</code></td>
+      </tr>
+      <tr>
+          <td><strong>AWS Bedrock</strong></td>
+          <td>通过原生 Converse API 使用 Claude、Nova、Llama、DeepSeek</td>
+          <td>IAM 角色或 <code>aws configure</code></td>
+      </tr>
+      <tr>
+          <td><strong>Kilo Code</strong></td>
+          <td>KiloCode 模型</td>
+          <td><code>KILOCODE_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>OpenCode Zen</strong></td>
+          <td>按量付费精选模型</td>
+          <td><code>OPENCODE_ZEN_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>OpenCode Go</strong></td>
+          <td>月度订阅开放模型</td>
+          <td><code>OPENCODE_GO_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>DeepSeek</strong></td>
+          <td>直接访问 DeepSeek API</td>
+          <td><code>DEEPSEEK_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>NVIDIA NIM</strong></td>
+          <td>Nemotron / 自托管 NIM</td>
+          <td><code>NVIDIA_API_KEY</code>（可选 <code>NVIDIA_BASE_URL</code>）</td>
+      </tr>
+      <tr>
+          <td><strong>GitHub Copilot</strong></td>
+          <td>Copilot 订阅（GPT-5.x、Claude、Gemini 等）</td>
+          <td>通过 <code>hermes model</code> 进行 OAuth，或设置 <code>COPILOT_GITHUB_TOKEN</code> / <code>GH_TOKEN</code></td>
+      </tr>
+      <tr>
+          <td><strong>GitHub Copilot ACP</strong></td>
+          <td>Copilot ACP 后端（本地 <code>copilot</code> CLI）</td>
+          <td><code>hermes model</code>（要先 <code>copilot login</code>）</td>
+      </tr>
+      <tr>
+          <td><strong>Vercel AI Gateway</strong></td>
+          <td>Vercel AI Gateway 路由</td>
+          <td><code>AI_GATEWAY_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Azure AI Foundry</strong></td>
+          <td>Azure 模型部署</td>
+          <td>Azure 凭据</td>
+      </tr>
+      <tr>
+          <td><strong>xAI / Grok</strong></td>
+          <td>xAI Grok 系列</td>
+          <td><code>XAI_API_KEY</code> 或 xAI OAuth</td>
+      </tr>
+      <tr>
+          <td><strong>StepFun</strong></td>
+          <td>阶跃星辰</td>
+          <td><code>STEPFUN_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Qwen OAuth</strong></td>
+          <td>通义千问 Portal OAuth</td>
+          <td><code>hermes model</code> → Qwen OAuth</td>
+      </tr>
+      <tr>
+          <td><strong>Xiaomi</strong></td>
+          <td>小米大模型</td>
+          <td><code>XIAOMI_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Ollama Cloud</strong></td>
+          <td>Ollama 云服务</td>
+          <td><code>OLLAMA_CLOUD_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Tencent TokenHub</strong></td>
+          <td>腾讯模型平台</td>
+          <td><code>TENCENT_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Custom Endpoint</strong></td>
+          <td>vLLM、SGLang、Ollama、LMStudio 等 OpenAI 兼容端点</td>
+          <td>设置 base URL + API key</td>
+      </tr>
+  </tbody>
+</table></div>
+<blockquote>
+<p><strong>关键约束</strong>：Hermes 要求模型<strong>上下文窗口 ≥ 64K tokens</strong>。上下文窗口较小的模型无法为多步骤工具调用工作流维持足够的工作内存，启动时将被拒绝。绝大多数主流模型轻松满足，如果你运行本地模型，请将其上下文大小设置为至少 64K（例如 llama.cpp 使用 <code>--ctx-size 65536</code>，Ollama 使用 <code>-c 65536</code>）。</p>
+</blockquote>
+<h2 id="53-配置模型">5.3 配置模型
+</h2><p>Hermes 把模型分为**主模型（Main Model）<strong>和</strong>辅助模型（Auxiliary Model）**两个角色：</p>
+<ul>
+<li><strong>主模型</strong> ： agent 的思考核心。每条用户消息、每个工具调用循环、每次流式响应都经由该模型处理。</li>
+<li><strong>辅助模型</strong> ： agent 卸载给较小模型的边缘任务。包括上下文压缩、视觉（图像分析）、网页摘要、审批评分、MCP 工具路由、会话标题生成和技能搜索。每项任务有独立槽位，可单独覆盖。</li>
+</ul>
+<h3 id="531-配置主模型">5.3.1 配置主模型
+</h3><p>共 4 种配置方式：</p>
+<p><strong>1. 交互式切换（推荐）</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes model
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Hermes 会列出所有可用 Provider，引导你选择提供商、完成 API Key 输入或 OAuth 授权。选模型时自动过滤掉上下文不足 64K 的型号，避免误选无法运行的模型。选择结果写入 <code>~/.hermes/config.yaml</code> 的 <code>model.provider</code> 和 <code>model.model</code> 字段。</p>
+<p><strong>2. 命令行直接设置</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes config <span class="nb">set</span> model anthropic/claude-opus-4.6
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>直接写入 <code>~/.hermes/config.yaml</code>，对所有后续会话生效。</p>
+<p><strong>3. 会话内临时切换</strong></p>
+<p>在任意 hermes chat 会话内：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/model gpt-5.4 --provider openrouter             # 仅当前会话
+</span></span><span class="line"><span class="cl">/model gpt-5.4 --provider openrouter --global    # 同时持久化到 config.yaml
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>仅在当前 CLI 或 Gateway 会话中生效，适合临时实验。配合 <code>/retry</code> 可快速对比不同供应商对同一问题的响应差异。</p>
+<p><strong>4. 手动编辑配置文件</strong></p>
+<p>直接修改 <code>~/.hermes/config.yaml</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># ~/.hermes/config.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">model</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l">openrouter</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l">anthropic/claude-opus-4.7</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">base_url</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w">        </span><span class="c"># 切换 Provider 时自动清空</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">api_mode</span><span class="p">:</span><span class="w"> </span><span class="l">chat_completions</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="532-辅助模型">5.3.2 辅助模型
+</h3><p>Hermes 使用<strong>辅助模型</strong>处理图像分析、网页摘要、浏览器截图分析、会话标题生成和上下文压缩等附带任务。默认配置（<code>auxiliary.*.provider: &quot;auto&quot;</code>）下，Hermes 将每个辅助任务路由到<strong>主聊天模型</strong> ，您无需配置任何内容即可开始。</p>
+<blockquote>
+<p>⚠️ <strong>注意</strong>：若主模型为高成本推理模型，辅助任务会显著增加费用。如需固定使用便宜且快速的模型处理附带任务，需显式设置 <code>auxiliary.*.provider</code> 和 <code>auxiliary.*.model</code>（例如，通过 OpenRouter 调用 Gemini Flash 处理视觉和网页提取）。</p>
+</blockquote>
+<h4 id="5321-辅助任务清单">5.3.2.1 辅助任务清单
+</h4><p>Hermes 支持为以下辅助任务独立配置模型：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>辅助任务</th>
+          <th>说明</th>
+          <th>默认超时</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>vision</code></td>
+          <td>图像分析、浏览器截图理解</td>
+          <td>120s</td>
+      </tr>
+      <tr>
+          <td><code>web_extract</code></td>
+          <td>网页摘要、浏览器页面文本提取</td>
+          <td>360s</td>
+      </tr>
+      <tr>
+          <td><code>compression</code></td>
+          <td>上下文压缩摘要</td>
+          <td>120s</td>
+      </tr>
+      <tr>
+          <td><code>approval</code></td>
+          <td>危险命令审批分类器</td>
+          <td>30s</td>
+      </tr>
+      <tr>
+          <td><code>skills_hub</code></td>
+          <td>技能中心匹配与搜索</td>
+          <td>30s</td>
+      </tr>
+      <tr>
+          <td><code>mcp</code></td>
+          <td>MCP 工具调度</td>
+          <td>30s</td>
+      </tr>
+      <tr>
+          <td><code>triage_specifier</code></td>
+          <td>Kanban 分类规格说明器</td>
+          <td>120s</td>
+      </tr>
+      <tr>
+          <td><code>title_generation</code></td>
+          <td>会话标题生成</td>
+          <td>—</td>
+      </tr>
+      <tr>
+          <td><code>profile_describer</code></td>
+          <td>用户画像描述</td>
+          <td>—</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>每个辅助任务默认为 <code>auto</code>，即 Hermes 对该任务使用主模型。当某个边缘任务需要更便宜或更快的模型时，可单独覆盖该槽位。</p>
+<h4 id="5322-通用配置模式">5.3.2.2 通用配置模式
+</h4><p>Hermes 中的每个模型槽位 —— 辅助任务、压缩、回退 —— 使用相同的三个键：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>键</th>
+          <th>作用</th>
+          <th>默认值</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>provider</code></td>
+          <td>用于认证和路由的 provider</td>
+          <td><code>&quot;auto&quot;</code></td>
+      </tr>
+      <tr>
+          <td><code>model</code></td>
+          <td>请求的模型</td>
+          <td>provider 的默认值</td>
+      </tr>
+      <tr>
+          <td><code>base_url</code></td>
+          <td>自定义 OpenAI 兼容端点（覆盖 provider）</td>
+          <td>未设置</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>当设置 <code>base_url</code> 时，Hermes 忽略 provider 并直接调用该端点（使用 <code>api_key</code> 或 <code>OPENAI_API_KEY</code> 进行认证）。当仅设置 <code>provider</code> 时，Hermes 使用该 provider 的内置认证和基础 URL。</p>
+<p>辅助任务的可用 providers：<code>auto</code>、<code>main</code>，以及provider 注册表中的任何 provider —— <code>openrouter</code>、<code>nous</code>、<code>openai-codex</code>、<code>copilot</code>、<code>copilot-acp</code>、<code>anthropic</code>、<code>gemini</code>、<code>qwen-oauth</code>、<code>zai</code>、<code>kimi-coding</code>、<code>kimi-coding-cn</code>、<code>minimax</code>、<code>minimax-cn</code>、<code>minimax-oauth</code>、<code>deepseek</code>、<code>nvidia</code>、<code>xai</code>、<code>xai-oauth</code>、<code>ollama-cloud</code>、<code>alibaba</code>、<code>bedrock</code>、<code>huggingface</code>、<code>arcee</code>、<code>xiaomi</code>、<code>kilocode</code>、<code>opencode-zen</code>、<code>opencode-go</code>、<code>azure-foundry</code> —— 或您 <code>custom_providers</code> 列表中任何命名的自定义 provider（例如 <code>provider: &quot;beans&quot;</code>）。</p>
+<h4 id="5322-配置辅助模型">5.3.2.2 配置辅助模型
+</h4><h5 id="一命令行交互式">一、命令行交互式
+</h5><p>无需手动编辑 YAML，运行 <code>hermes model</code> 并从菜单中选择**&ldquo;配置辅助模型&rdquo;**。即可获得交互式的每任务选择器：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">$ hermes model
+</span></span><span class="line"><span class="cl">→ Configure auxiliary models
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">[ ] vision               currently: auto / main model
+</span></span><span class="line"><span class="cl">[ ] web_extract          currently: auto / main model
+</span></span><span class="line"><span class="cl">[ ] title_generation     currently: openrouter / google/gemini-3-flash-preview
+</span></span><span class="line"><span class="cl">[ ] compression          currently: auto / main model
+</span></span><span class="line"><span class="cl">[ ] approval             currently: auto / main model
+</span></span><span class="line"><span class="cl">[ ] triage_specifier     currently: auto / main model
+</span></span><span class="line"><span class="cl">[ ] kanban_decomposer    currently: auto / main model
+</span></span><span class="line"><span class="cl">[ ] profile_describer    currently: auto / main model
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>选择任务 → 选择 Provider（OAuth 流程会自动打开浏览器；API Key Provider 会提示输入）→ 选择模型。更改会自动持久化到 <code>config.yaml</code> 的 <code>auxiliary.&lt;task&gt;.*</code> 路径下，与主模型选择器相同的机制。</p>
+<h5 id="二手动编辑配置文件">二、手动编辑配置文件
+</h5><p>直接写入 <code>~/.hermes/config.yaml</code>，完整辅助配置参考：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="c1"># ~/.hermes/config.yaml
+</span></span></span><span class="line"><span class="cl"><span class="n">auxiliary</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 图像分析（vision_analyze 工具 + 浏览器截图）
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">vision</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">           </span><span class="c1"># &#34;auto&#34;、&#34;openrouter&#34;、&#34;nous&#34;、&#34;codex&#34;、&#34;main&#34; 等
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">                  </span><span class="c1"># 例如 &#34;openai/gpt-4o&#34;、&#34;google/gemini-2.5-flash&#34;
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">               </span><span class="c1"># 自定义 OpenAI 兼容端点（覆盖 provider）
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">                </span><span class="c1"># base_url 的 API 密钥（回退到 OPENAI_API_KEY）
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="w">               </span><span class="c1"># 秒 —— LLM API 调用超时；视觉负载需要宽裕的超时
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">download_timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w">       </span><span class="c1"># 秒 —— 图像 HTTP 下载；慢速连接请增加
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 网页摘要 + 浏览器页面文本提取
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">web_extract</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">                  </span><span class="c1"># 例如 &#34;google/gemini-2.5-flash&#34;
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">360</span><span class="w">               </span><span class="c1"># 秒（6 分钟）—— 每次尝试的 LLM 摘要
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 危险命令审批分类器
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">approval</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w">                </span><span class="c1"># 秒
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 上下文压缩超时（与 compression.* 配置分开）
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="w">               </span><span class="c1"># 秒 —— 压缩摘要长对话，需要更多时间
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1"># fallback_chain:           # 可选 —— 发生速率限制/连接故障时尝试的 provider
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#   - provider: nous
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#     model: deepseek/deepseek-chat
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#   - provider: openrouter
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#     model: google/gemini-2.5-flash
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#     base_url: &#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#     api_key: &#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 技能中心 —— 技能匹配和搜索
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">skills_hub</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># MCP 工具调度
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">mcp</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># Kanban 分类规格说明器 —— `hermes kanban specify &lt;id&gt;`（或
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 仪表板上 Triage 列卡片的 ✨ Specify 按钮）使用此
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 槽位将单行描述扩展为具体规格并将
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 任务提升到 `todo`。便宜快速的模型在这里效果很好；规格扩展
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 很短，不需要推理深度。
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">triage_specifier</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>**提示：**每个辅助任务都有可配置的 <code>timeout</code>（秒）。默认值：vision 120s、web_extract 360s、approval 30s、compression 120s。如果您为辅助任务使用慢速本地模型，请增加这些值。Vision 还有单独的 <code>download_timeout</code>（默认 30s）用于 HTTP 图像下载 —— 对于慢速连接或自托管图像服务器，请增加此值。</p>
+</blockquote>
+<h3 id="533-辅助任务回退链">5.3.3 辅助任务回退链
+</h3><p>每个辅助任务都可以独立配置 <code>fallback_chain</code>，当主要辅助 Provider 因限流、网络故障或付费限制失败时自动切换：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">auxiliary</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l">openrouter</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">openai/gpt-4o-mini</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">fallback_chain</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l">nous</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">deepseek/deepseek-chat</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l">openrouter</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">google/gemini-2.5-flash</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>切换逻辑：跳过与已失败 Provider 相同的条目，依次尝试剩余条目，直到成功或链耗尽。如果所有回退都失败，Hermes 会回退到主 Agent 模型作为最终安全网。</p>
+<h3 id="534-provider-routing精细化路由">5.3.4 Provider Routing：精细化路由
+</h3><p>OpenRouter 提供了 Provider Routing 能力，Hermes 将其一等公民化，让你可以控制请求到底走哪一家底层供应商。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">provider_routing</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">prefer</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="l">anthropic</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="l">openai</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">avoid</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span>- <span class="l">replicate</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">sort</span><span class="p">:</span><span class="w"> </span><span class="l">throughput    </span><span class="w"> </span><span class="c"># throughput / latency / price</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>这一节最常见的用法：</p>
+<ul>
+<li>想省钱：<code>sort: price</code>；</li>
+<li>想快：<code>sort: latency</code>；</li>
+<li>不想被某地区供应商路由：<code>avoid: [...]</code>。</li>
+<li>只信任特定供应商  <code>prefer: [anthropic, openai]</code></li>
+</ul>
+<h3 id="535-辅助任务中的-provider-routing">5.3.5 辅助任务中的 Provider Routing
+</h3><p>当辅助任务解析到 OpenRouter 时，主 Agent 的 <code>provider_routing</code> 和 <code>openrouter.min_coding_score</code> <strong>不会自动传播</strong>——按设计，每个辅助任务是独立的。如需为特定辅助任务设置路由偏好，通过 <code>extra_body</code> 按任务配置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">auxiliary</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l">openrouter</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">openrouter/pareto-code</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">extra_body</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="l">anthropic, google]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">sort</span><span class="p">:</span><span class="w"> </span><span class="l">throughput</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">plugins</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span>- <span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l">pareto-router</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">min_coding_score</span><span class="p">:</span><span class="w"> </span><span class="m">0.5</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>形状与 OpenRouter 在聊天请求体中接受的内容一致。Hermes 原样转发整个 <code>extra_body</code>。</p>
+<h2 id="54-上下文压缩">5.4 上下文压缩
+</h2><p>当对话长度接近模型上下文上限时，Hermes 会自动压缩历史消息。压缩由独立的 LLM 调用完成，你可以指定任意 provider 或端点来处理。</p>
+<p>所有压缩相关配置均在 <code>config.yaml</code> 中管理，不支持环境变量。</p>
+<p>完整参考配置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># ~/.hermes/config.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">                                     </span><span class="c"># 开启/关闭压缩</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="m">0.50</span><span class="w">                                   </span><span class="c"># 在上下文限制的此百分比时压缩</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">target_ratio</span><span class="p">:</span><span class="w"> </span><span class="m">0.20</span><span class="w">                                </span><span class="c"># 保留为最近尾部的阈值分数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">protect_last_n</span><span class="p">:</span><span class="w"> </span><span class="m">20</span><span class="w">                                </span><span class="c"># 保持未压缩的最少最近消息数</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">hygiene_hard_message_limit</span><span class="p">:</span><span class="w"> </span><span class="m">5000</span><span class="w">                  </span><span class="c"># Gateway 安全阀 —— 见下文</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c"># 摘要模型/provider 在 auxiliary: 下配置：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">auxiliary</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">                                       </span><span class="c"># 空 = 使用主聊天模型。覆盖为例如 &#34;google/gemini-3-flash-preview&#34; 以获得更便宜/更快的压缩。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">                                </span><span class="c"># Provider：&#34;auto&#34;、&#34;openrouter&#34;、&#34;nous&#34;、&#34;codex&#34;、&#34;main&#34; 等</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">base_url</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">                                  </span><span class="c"># 自定义 OpenAI 兼容端点（覆盖 provider）</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="55-上下文引擎">5.5 上下文引擎
+</h2><p>上下文引擎控制在接近模型 token 限制时如何管理对话。内置的 <code>compressor</code> 引擎使用有损摘要。插件引擎可以用替代策略替换它。</p>
+<ul>
+<li><strong>内置引擎</strong>：<code>compressor</code>，采用有损摘要策略。</li>
+<li><strong>插件引擎</strong>：由第三方插件提供替代策略（如无损上下文管理）。</li>
+</ul>
+<p><strong>配置方式：</strong></p>
+<p>使用内置压缩（默认）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">context</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;compressor&#34;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>使用插件引擎（如 LCM 无损上下文管理）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">context</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;lcm&#34;</span><span class="w">    </span><span class="c"># 必须与插件注册名称完全一致</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>⚠️ <strong>重要</strong>：插件引擎<strong>不会自动激活</strong>。即使已安装插件，也必须将 <code>context.engine</code> 显式设置为插件名称才能启用。可用引擎可以通过 <code>hermes plugins</code> → Provider Plugins → Context Engine 浏览和选择。</p>
+</blockquote>
+<h2 id="56-迭代预算">5.6 迭代预算
+</h2><p>当 agent 在处理具有许多工具调用的复杂任务时，它可能会耗尽其迭代预算（默认：90 轮）。Hermes <strong>不会</strong>在任务中途注入压力警告 —— 早期版本会在预算达到 70%/90% 时警告模型，这会导致模型过早放弃复杂任务，该机制已于 2026 年 4 月移除。</p>
+<p>取而代之的是，当预算真正耗尽（90/90）时，Hermes 注入一条消息要求模型收尾，并允许一次<strong>宽限调用</strong>以便其给出最终响应。如果该宽限调用仍未产生文本，则会要求 agent 总结已完成的工作。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">agent</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">max_turns</span><span class="p">:</span><span class="w"> </span><span class="m">90</span><span class="w">                </span><span class="c"># 每次对话轮次的最大迭代次数（默认：90）</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">api_max_retries</span><span class="p">:</span><span class="w"> </span><span class="m">3</span><span class="w">           </span><span class="c"># 回退启动前每个 provider 的重试次数（默认：3）</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>当迭代预算完全耗尽时，CLI 向用户显示通知：<code>⚠ Iteration budget reached (90/90) — response may be incomplete</code>。</p>
+<p><code>agent.api_max_retries</code> 控制 Hermes 在回退 provider 切换启动<strong>之前</strong>对瞬时错误（速率限制、连接断开、5xx）重试 provider API 调用的次数。默认为 <code>3</code> —— 总共四次尝试。如果配置了[回退 providers]并希望更快地故障转移，请将其降至 <code>0</code>，这样主 provider 上的第一个瞬时错误会立即切换到回退，而不是对不稳定的端点进行重试。</p>
+<h2 id="57-api-超时">5.7 API 超时
+</h2><p>Hermes 对流式和非流式调用分别管理超时。针对本地 Provider（如 Ollama、vLLM、LM Studio），系统会自动放宽部分限制，避免大上下文预填充时的误杀。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">超时类型</th>
+          <th style="text-align: left">默认值</th>
+          <th style="text-align: left">环境变量 / 配置路径</th>
+          <th style="text-align: left">本地 Provider 行为</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">Socket 读取</td>
+          <td style="text-align: left">120s</td>
+          <td style="text-align: left"><code>HERMES_STREAM_READ_TIMEOUT</code></td>
+          <td style="text-align: left">自动提升至 1800s</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">流式无响应检测</td>
+          <td style="text-align: left">180s</td>
+          <td style="text-align: left"><code>HERMES_STREAM_STALE_TIMEOUT</code></td>
+          <td style="text-align: left">自动禁用</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">非流式无响应检测</td>
+          <td style="text-align: left">300s</td>
+          <td style="text-align: left"><code>HERMES_API_CALL_STALE_TIMEOUT</code> <code>providers.&lt;id&gt;.stale_timeout_seconds</code></td>
+          <td style="text-align: left">保持默认时自动禁用</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">非流式 API 调用</td>
+          <td style="text-align: left">1800s</td>
+          <td style="text-align: left"><code>HERMES_API_TIMEOUT</code> <code>providers.&lt;id&gt;.request_timeout_seconds</code></td>
+          <td style="text-align: left">不变</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>各项说明：</p>
+<ul>
+<li><strong>Socket 读取超时</strong>：控制等待 Provider 下一个数据块的最大间隔。本地 LLM 在大上下文预填充时可能数分钟无输出，因此检测到本地端点时自动放宽至 30 分钟。<strong>显式设置</strong> <code>HERMES_STREAM_READ_TIMEOUT</code> 时，无论是否本地端点，一律使用设定值。</li>
+<li><strong>流式无响应检测（Stale Stream）</strong>：用于终止只发送 SSE keep-alive ping、但长期无实际内容的连接。本地 Provider 在预填充期间通常不发送 keep-alive，因此该检测自动禁用。</li>
+<li><strong>非流式无响应检测（Stale Non-stream）</strong>：终止长时间没有响应的非流式调用。默认情况下，Hermes 在本地端点上禁用此功能，以避免长时间预填充期间的误报。如果您显式设置 <code>providers.&lt;id&gt;.stale_timeout_seconds</code>、<code>providers.&lt;id&gt;.models.&lt;model&gt;.stale_timeout_seconds</code> 或 <code>HERMES_API_CALL_STALE_TIMEOUT</code>，即使在本地端点也会生效。</li>
+</ul>
+<h2 id="58-上下文压力警告">5.8 上下文压力警告
+</h2><p>独立于迭代预算之外，上下文压力用于监测对话长度接近<strong>压缩阈值</strong>的程度——即触发上下文压缩、对旧消息进行摘要的临界点。这让用户和 agent 都能及时感知对话膨胀状态。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>进度</th>
+          <th>级别</th>
+          <th>发生的事情</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>≥ 60%</strong> 到阈值</td>
+          <td>信息</td>
+          <td>CLI 显示青色进度条；gateway 发送信息通知</td>
+      </tr>
+      <tr>
+          <td><strong>≥ 85%</strong> 到阈值</td>
+          <td>警告</td>
+          <td>CLI 显示粗体黄色进度条；gateway 警告压缩即将发生</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>在 CLI 中，上下文压力在工具输出流中显示为进度条：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">  ◐ context ████████████░░░░░░░░ 62% to compaction  48k threshold (50%) · approaching compaction
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在消息平台上，发送纯文本通知：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">◐ Context: ████████████░░░░░░░░ 62% to compaction (threshold: 50% of window).
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果自动压缩被禁用，警告会告诉您上下文可能被截断。</p>
+<p>上下文压力完全自动运行，<strong>无需配置</strong>。它仅作为面向用户的可视化提示，不修改消息流，也不会向模型上下文注入任何内容。</p>
+<h2 id="59-凭据池策略">5.9 凭据池策略
+</h2><p>当团队多人共享同一份 API Key 配额，或单 Key 触发频率限制时，Credential Pool（凭据池）可以让多个密钥按策略轮询使用，显著提升可用性。</p>
+<p>策略存储在 <code>config.yaml</code> 中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="c"># ~/.hermes/config.yaml</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">credential_pool_strategies</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">openrouter</span><span class="p">:</span><span class="w"> </span><span class="l">round_robin   </span><span class="w"> </span><span class="c"># 均匀循环使用密钥</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">anthropic</span><span class="p">:</span><span class="w"> </span><span class="l">least_used     </span><span class="w"> </span><span class="c"># 始终选择使用最少的密钥</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>策略</th>
+          <th>行为</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>fill_first</code>（默认）</td>
+          <td>持续使用第一个健康密钥直至耗尽，然后切换到下一个</td>
+      </tr>
+      <tr>
+          <td><code>round_robin</code></td>
+          <td>均匀循环遍历所有密钥，每次选择后轮换</td>
+      </tr>
+      <tr>
+          <td><code>least_used</code></td>
+          <td>始终选择请求次数最少的密钥</td>
+      </tr>
+      <tr>
+          <td><code>random</code></td>
+          <td>在健康密钥中随机选择</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>凭据池存储在 <code>~/.hermes/auth.json</code> 的 <code>credential_pool</code> 键下（而非 <code>config.yaml</code>）：：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;credential_pool&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;openrouter&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">      <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;abc123&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;label&#34;</span><span class="p">:</span> <span class="s2">&#34;OPENROUTER_API_KEY&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;auth_type&#34;</span><span class="p">:</span> <span class="s2">&#34;api_key&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;priority&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;env:OPENROUTER_API_KEY&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;access_token&#34;</span><span class="p">:</span> <span class="s2">&#34;sk-or-v1-...&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;last_status&#34;</span><span class="p">:</span> <span class="s2">&#34;ok&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;request_count&#34;</span><span class="p">:</span> <span class="mi">142</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="510-prompt-缓存">5.10 Prompt 缓存
+</h2><p>Hermes 在支持的 Provider 上<strong>自动启用</strong>跨会话 Prompt 缓存，无需任何配置。</p>
+<p>对于原生 Anthropic、OpenRouter 和 Nous Portal 上的 Claude，Hermes 会在系统提示词和技能块上插入 <code>cache_control</code> 断点，TTL 设为 <strong>1 小时</strong>：</p>
+<ul>
+<li><strong>首次发送</strong>（一小时内）：按完整输入费率计费。</li>
+<li><strong>后续发送</strong>（同一小时内）：按折扣缓存读取费率计费，从缓存中直接提取.</li>
+</ul>
+<p>这意味着系统提示词、已加载的技能内容以及长上下文的早期部分，在首个小时内可被同一用户的所有 <code>hermes</code> 会话及分叉子 agent 复用。</p>
+<p><strong>不同Provider 差异：</strong></p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">Provider</th>
+          <th style="text-align: left">TTL</th>
+          <th style="text-align: left">说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">Anthropic（原生）</td>
+          <td style="text-align: left">1h</td>
+          <td style="text-align: left">标准行为</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">OpenRouter</td>
+          <td style="text-align: left">1h</td>
+          <td style="text-align: left">标准行为</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">Nous Portal</td>
+          <td style="text-align: left">1h</td>
+          <td style="text-align: left">标准行为</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">Qwen Cloud（DashScope）</td>
+          <td style="text-align: left">5min</td>
+          <td style="text-align: left">Qwen Cloud（阿里DashScope）上游将缓存 TTL 限制为 5 分钟，因此 Hermes 在那里使用 5 分钟断点 TTL。</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">AWS Bedrock / Azure Foundry</td>
+          <td style="text-align: left">Provider 默认值</td>
+          <td style="text-align: left">回退至平台自带缓存策略</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">xAI Grok</td>
+          <td style="text-align: left">会话级</td>
+          <td style="text-align: left">使用对话 ID 固定机制，详见 <a class="link" href="https://hermes-agent.nousresearch.com/docs/zh-Hans/integrations/providers#xai-grok--responses-api--prompt-caching"  target="_blank" rel="noopener"
+    >xAI 文档</a></td>
+      </tr>
+  </tbody>
+</table></div>
+<p>Prompt 缓存<strong>始终开启</strong>，不设关闭开关。即使在单轮对话中也能降低成本——系统提示词通常占输入 token 的相当比例，缓存后可显著节省费用。</p>
+<h2 id="511-自定义-openai-兼容端点">5.11 自定义 OpenAI 兼容端点
+</h2><p>最常见的就是接 vLLM / SGLang / Ollama / LMStudio。</p>
+<p>命令行交互式配置：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes model
+</span></span><span class="line"><span class="cl"><span class="c1"># 选 &#34;Custom Endpoint&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Base URL: http://192.168.1.2:11434/v1</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># API Key: ollama</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Model: qwen3-coder:latest</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>写入 <code>config.yaml</code> 后大致是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l">custom/qwen3-coder:latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">custom_endpoints</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">default</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">base_url</span><span class="p">:</span><span class="w"> </span><span class="l">http://192.168.1.2:11434/v1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">api_key_env</span><span class="p">:</span><span class="w"> </span><span class="l">OLLAMA_API_KEY</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">api_mode</span><span class="p">:</span><span class="w"> </span><span class="l">chat_completions</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">context_length</span><span class="p">:</span><span class="w"> </span><span class="m">131072</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>提示：本地模型上下文一定要 ≥ 64K，否则 Hermes 启动时直接报错。Ollama 用 <code>-c 65536</code>，vLLM 启动时加 <code>--max-model-len 131072</code>。</p>
+</blockquote>
+<h2 id="512-完整模型相关配置示例">5.12 完整模型相关配置示例
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-mysql" data-lang="mysql"><span class="line"><span class="cl"><span class="c1"># ~/.hermes/config.yaml
+</span></span></span><span class="line"><span class="cl"><span class="n">model</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="k">default</span><span class="p">:</span><span class="w"> </span><span class="n">deepseek</span><span class="o">-</span><span class="n">v4</span><span class="o">-</span><span class="n">pro</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="n">deepseek</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="p">.</span><span class="n">deepseek</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">v1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">agent</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">max_turns</span><span class="p">:</span><span class="w"> </span><span class="mi">150</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">verbose</span><span class="p">:</span><span class="w"> </span><span class="no">false</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">reasoning_effort</span><span class="p">:</span><span class="w"> </span><span class="n">medium</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">api_max_retries</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">enabled</span><span class="p">:</span><span class="w"> </span><span class="no">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">threshold</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">target_ratio</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">protect_last_n</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">max_attempts</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">protect_first_n</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">codex_gpt55_autoraise</span><span class="p">:</span><span class="w"> </span><span class="no">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">codex_app_server_auto</span><span class="p">:</span><span class="w"> </span><span class="n">native</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">idle_compact_after_seconds</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="n">prompt_caching</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">cache_ttl</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="n">m</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="c1"># 辅助模型配置
+</span></span></span><span class="line"><span class="cl"><span class="n">auxiliary</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 图像分析（vision_analyze 工具 + 浏览器截图）
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">vision</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">           </span><span class="c1"># &#34;auto&#34;、&#34;openrouter&#34;、&#34;nous&#34;、&#34;codex&#34;、&#34;main&#34; 等
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">                  </span><span class="c1"># 例如 &#34;openai/gpt-4o&#34;、&#34;google/gemini-2.5-flash&#34;
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">               </span><span class="c1"># 自定义 OpenAI 兼容端点（覆盖 provider）
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">                </span><span class="c1"># base_url 的 API 密钥（回退到 OPENAI_API_KEY）
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="w">               </span><span class="c1"># 秒 —— LLM API 调用超时；视觉负载需要宽裕的超时
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">download_timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w">       </span><span class="c1"># 秒 —— 图像 HTTP 下载；慢速连接请增加
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 网页摘要 + 浏览器页面文本提取
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">web_extract</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">                  </span><span class="c1"># 例如 &#34;google/gemini-2.5-flash&#34;
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">360</span><span class="w">               </span><span class="c1"># 秒（6 分钟）—— 每次尝试的 LLM 摘要
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 危险命令审批分类器
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">approval</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w">                </span><span class="c1"># 秒
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 上下文压缩超时（与 compression.* 配置分开）
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">compression</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="w">               </span><span class="c1"># 秒 —— 压缩摘要长对话，需要更多时间
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1"># fallback_chain:           # 可选 —— 发生速率限制/连接故障时尝试的 provider
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#   - provider: nous
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#     model: deepseek/deepseek-chat
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#   - provider: openrouter
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#     model: google/gemini-2.5-flash
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#     base_url: &#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">#     api_key: &#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 技能中心 —— 技能匹配和搜索
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">skills_hub</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># MCP 工具调度
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">mcp</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># Kanban 分类规格说明器 —— `hermes kanban specify &lt;id&gt;`（或
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 仪表板上 Triage 列卡片的 ✨ Specify 按钮）使用此
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 槽位将单行描述扩展为具体规格并将
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 任务提升到 `todo`。便宜快速的模型在这里效果很好；规格扩展
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="c1"># 很短，不需要推理深度。
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="n">triage_specifier</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">provider</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;auto&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">model</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">base_url</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">api_key</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">timeout</span><span class="p">:</span><span class="w"> </span><span class="mi">120</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>.env</code> 里同时放：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-env" data-lang="env"><span class="line"><span class="cl"><span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span>sk-ant-...
+</span></span><span class="line"><span class="cl"><span class="nv">OPENROUTER_API_KEY</span><span class="o">=</span>sk-or-...
+</span></span><span class="line"><span class="cl"><span class="nv">DEEPSEEK_API_KEY</span><span class="o">=</span>sk-...
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="513-切换模型的-5-个高频技巧">5.13 切换模型的 5 个高频技巧
+</h2><ol>
+<li><strong>想试某个新模型一次</strong>：<code>/model openrouter/x-ai/grok-4</code>，不用关 TUI，试完再 <code>/model</code> 切回来。</li>
+<li><strong>想快速比较两家</strong>：对同一问题先用 Provider A 回答，输入 <code>/retry</code> 后再 <code>/model</code> 切到 Provider B，再 <code>/retry</code>，直接对比。</li>
+<li><strong>临时全开 reasoning 模式</strong>：用支持 thinking 的模型并输入 <code>/reasoning</code> 打开。</li>
+<li><strong>跨会话固定但单会话覆盖</strong>：<code>config.yaml</code> 设默认；<code>/model</code> 临时覆盖当前会话。</li>
+<li><strong>想看 Provider 实际用了哪一家</strong>：<code>/usage</code> 输出会展示当次实际命中的 provider/model 与 fallback 历史。</li>
+</ol>
+<h2 id="514-本章小结">5.14 本章小结
+</h2><p>Hermes 在&quot;模型层&quot;提供了远超普通 Agent 框架的工程能力：</p>
+<ul>
+<li><strong>三种 API 模式 + 自动检测</strong>，让同一份 Agent 代码无感跑遍 Anthropic / OpenAI / Codex / OpenAI-Compatible 全生态；</li>
+<li><strong>Provider Registry + 运行时解析器</strong>，将凭据、端点、协议、模型元数据全部集中管理，CLI / Gateway / Cron / ACP / 辅助任务全链路共享；</li>
+<li><strong>主 / 辅模型分离（Auxiliary Client）</strong>，把昂贵的旗舰模型留给真正需要的对话，便宜的模型承担视觉、摘要、压缩等后台搬砖任务；</li>
+<li><strong>Fallback + Provider Routing + Credential Pool</strong>，把&quot;模型挂了&quot;变成自愈过程，把&quot;单 Key 限流&quot;变成轮询负载均衡；</li>
+<li><strong>OAuth 与自定义端点</strong>，让你既可以零配置上车 Nous Portal，也可以挂自己机房的 vLLM；</li>
+<li><strong><code>/model</code> 即时切换、<code>/usage</code> 即时审计</strong>，工程师手感舒适，生产环境可控。</li>
+</ul>
+<p>掌握本章内容后，你已经具备为团队设计一套高可用、低成本、易维护的多模型调度体系的能力。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/hermes-agent/">Hermes Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第2章 安装、配置与首次对话</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第3章 整体架构与核心组件</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

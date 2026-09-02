@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="本章将引导你从零搭建一套可投入实际使用的 Hermes Agent 运行环境。依次完成程序安装、选择模型 provider（服务提供商）配置、验证对话正常运行，同时介绍常见故障排查思路。">
+<title>Hermes Agent 原理与实战——第2章 安装、配置与首次对话</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Hermes Agent 原理与实战——第2章 安装、配置与首次对话">
+<meta property='og:description' content="本章将引导你从零搭建一套可投入实际使用的 Hermes Agent 运行环境。依次完成程序安装、选择模型 provider（服务提供商）配置、验证对话正常运行，同时介绍常见故障排查思路。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='hermes agent' /><meta property='article:published_time' content='2026-08-16T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-08-16T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Hermes Agent 原理与实战——第2章 安装、配置与首次对话">
+<meta name="twitter:description" content="本章将引导你从零搭建一套可投入实际使用的 Hermes Agent 运行环境。依次完成程序安装、选择模型 provider（服务提供商）配置、验证对话正常运行，同时介绍常见故障排查思路。"><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#1-安装-hermes-agent-方案">1. 安装 Hermes Agent 方案</a></li>
+    <li><a href="#2-命令行cli版本">2. 命令行（CLI）版本</a>
+      <ol>
+        <li><a href="#21-安装命令行cli版本">2.1 安装命令行（CLI）版本</a>
+          <ol>
+            <li><a href="#一linux--macos-wsl2--android-termux--用户">一、Linux / macOS/ WSL2 / Android (Termux)  用户</a></li>
+            <li><a href="#二windows-用户"><strong>二、Windows 用户</strong></a></li>
+          </ol>
+        </li>
+        <li><a href="#22-首次启动与-setup-向导">2.2 首次启动与 setup 向导</a></li>
+        <li><a href="#23-选择模型provider">2.3 选择模型Provider</a></li>
+        <li><a href="#24-验证安装">2.4 验证安装</a></li>
+        <li><a href="#25-运行第一次对话">2.5 运行第一次对话</a></li>
+        <li><a href="#26-尝试核心功能">2.6 尝试核心功能</a>
+          <ol>
+            <li><a href="#使用终端"><strong>使用终端</strong></a></li>
+            <li><a href="#斜杠命令">斜杠命令</a></li>
+          </ol>
+        </li>
+        <li><a href="#27-数据目录布局hermes">2.7 数据目录布局：<code>~/.hermes/</code></a></li>
+        <li><a href="#28-profile一台机器运行多个身份">2.8 Profile：一台机器运行多个身份</a></li>
+        <li><a href="#29-配置的存储方式">2.9 配置的存储方式</a></li>
+        <li><a href="#210-升级hermes-update">2.10 升级：<code>hermes update</code></a></li>
+        <li><a href="#211-排错hermes-doctor">2.11 排错：<code>hermes doctor</code></a></li>
+        <li><a href="#212-从-openclaw-迁移">2.12 从 OpenClaw 迁移</a></li>
+        <li><a href="#213-卸载与重置">2.13 卸载与重置</a></li>
+        <li><a href="#214-一次完整的新机器开局演练">2.14 一次完整的新机器开局演练</a></li>
+      </ol>
+    </li>
+    <li><a href="#3-官方-hermes-desktop-桌面版">3. 官方 Hermes Desktop 桌面版</a>
+      <ol>
+        <li><a href="#31-安装官方-hermes-desktop-桌面版">3.1 安装官方 Hermes Desktop 桌面版</a></li>
+        <li><a href="#32-配置模型provider">3.2 配置模型provider</a></li>
+        <li><a href="#33-运行第一次对话">3.3 运行第一次对话</a></li>
+      </ol>
+    </li>
+    <li><a href="#4-中文社区桌面版hermes-cn-desktop">4. 中文社区桌面版（Hermes-CN-Desktop）</a>
+      <ol>
+        <li><a href="#41-安装中文社区桌面版hermes-cn-desktop">4.1 安装中文社区桌面版（Hermes-CN-Desktop）</a></li>
+        <li><a href="#42-配置模型provider">4.2 配置模型provider</a></li>
+        <li><a href="#43-运行第一次对话">4.3 运行第一次对话</a></li>
+      </ol>
+    </li>
+    <li><a href="#5-常见报错速查">5. 常见报错速查</a>
+      <ol>
+        <li><a href="#快速参考">快速参考</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/hermes-agent/" style="background-color: #2a9d8f; color: #fff;">
+                Hermes Agent 原理与实战
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/">Hermes Agent 原理与实战——第2章 安装、配置与首次对话</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            本章将引导你从零搭建一套可投入实际使用的 Hermes Agent 运行环境。依次完成程序安装、选择模型 provider（服务提供商）配置、验证对话正常运行，同时介绍常见故障排查思路。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-08-16T00:00:00Z'>2026年8月16日星期日</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 17 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#1-安装-hermes-agent-方案">1. 安装 Hermes Agent 方案</a></li>
+    <li><a href="#2-命令行cli版本">2. 命令行（CLI）版本</a>
+      <ol>
+        <li><a href="#21-安装命令行cli版本">2.1 安装命令行（CLI）版本</a>
+          <ol>
+            <li><a href="#一linux--macos-wsl2--android-termux--用户">一、Linux / macOS/ WSL2 / Android (Termux)  用户</a></li>
+            <li><a href="#二windows-用户"><strong>二、Windows 用户</strong></a></li>
+          </ol>
+        </li>
+        <li><a href="#22-首次启动与-setup-向导">2.2 首次启动与 setup 向导</a></li>
+        <li><a href="#23-选择模型provider">2.3 选择模型Provider</a></li>
+        <li><a href="#24-验证安装">2.4 验证安装</a></li>
+        <li><a href="#25-运行第一次对话">2.5 运行第一次对话</a></li>
+        <li><a href="#26-尝试核心功能">2.6 尝试核心功能</a>
+          <ol>
+            <li><a href="#使用终端"><strong>使用终端</strong></a></li>
+            <li><a href="#斜杠命令">斜杠命令</a></li>
+          </ol>
+        </li>
+        <li><a href="#27-数据目录布局hermes">2.7 数据目录布局：<code>~/.hermes/</code></a></li>
+        <li><a href="#28-profile一台机器运行多个身份">2.8 Profile：一台机器运行多个身份</a></li>
+        <li><a href="#29-配置的存储方式">2.9 配置的存储方式</a></li>
+        <li><a href="#210-升级hermes-update">2.10 升级：<code>hermes update</code></a></li>
+        <li><a href="#211-排错hermes-doctor">2.11 排错：<code>hermes doctor</code></a></li>
+        <li><a href="#212-从-openclaw-迁移">2.12 从 OpenClaw 迁移</a></li>
+        <li><a href="#213-卸载与重置">2.13 卸载与重置</a></li>
+        <li><a href="#214-一次完整的新机器开局演练">2.14 一次完整的新机器开局演练</a></li>
+      </ol>
+    </li>
+    <li><a href="#3-官方-hermes-desktop-桌面版">3. 官方 Hermes Desktop 桌面版</a>
+      <ol>
+        <li><a href="#31-安装官方-hermes-desktop-桌面版">3.1 安装官方 Hermes Desktop 桌面版</a></li>
+        <li><a href="#32-配置模型provider">3.2 配置模型provider</a></li>
+        <li><a href="#33-运行第一次对话">3.3 运行第一次对话</a></li>
+      </ol>
+    </li>
+    <li><a href="#4-中文社区桌面版hermes-cn-desktop">4. 中文社区桌面版（Hermes-CN-Desktop）</a>
+      <ol>
+        <li><a href="#41-安装中文社区桌面版hermes-cn-desktop">4.1 安装中文社区桌面版（Hermes-CN-Desktop）</a></li>
+        <li><a href="#42-配置模型provider">4.2 配置模型provider</a></li>
+        <li><a href="#43-运行第一次对话">4.3 运行第一次对话</a></li>
+      </ol>
+    </li>
+    <li><a href="#5-常见报错速查">5. 常见报错速查</a>
+      <ol>
+        <li><a href="#快速参考">快速参考</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="hermes-agent-原理与实战第2章-安装配置与首次对话">Hermes Agent 原理与实战——第2章 安装、配置与首次对话
+</h1><blockquote>
+<p>本章将引导你从零搭建一套可投入实际使用的 Hermes Agent 运行环境。依次完成程序安装、选择模型 provider（服务提供商）配置、验证对话正常运行，同时介绍常见故障排查思路。</p>
+<p><strong>实操经验准则</strong>：若 Hermes 无法完成一轮完整对话，暂时不要添加更多功能。优先保证基础对话正常跑通，再逐步叠加网关（Gateway）、技能（Skills）、定时任务（Cron）、语音模块、路由分发等附加能力。</p>
+</blockquote>
+<h2 id="1-安装-hermes-agent-方案">1. 安装 Hermes Agent 方案
+</h2><p>当前 Hermes Agent 提供三类部署方案，按需选择：</p>
+<ul>
+<li><strong>命令行（CLI）版本</strong>：适合追求轻量化部署、或是需要将 Hermes 集成至自有工作流的用户。通过终端直接安装，配置灵活、资源占用更低。</li>
+<li><strong>官方 Hermes Desktop 桌面版</strong>：原生图形化客户端，采用 Electron 开发。本质为 CLI 封装的可视化外壳，不拓展内核底层能力，功能边界与命令行版本完全一致；安装时同时部署 Hermes CLI 环境，客户端仅作为可视化操作入口；整体使用上性能偏差，体积偏大。</li>
+<li>**中文社区桌面版（Hermes-CN-Desktop）：**国内开源社区维护的二次发行版。基于开源代码 Fork 深度本土化改造，并非 Nous Research 官方分支；针对国内用户优化交互体验、适配本土模型接口，新增多项易用性增强特性。</li>
+</ul>
+<p>下面对这三种安装方式进行介绍。</p>
+<h2 id="2-命令行cli版本">2. 命令行（CLI）版本
+</h2><h3 id="21-安装命令行cli版本">2.1 安装命令行（CLI）版本
+</h3><h4 id="一linux--macos-wsl2--android-termux--用户">一、Linux / macOS/ WSL2 / Android (Termux)  用户
+</h4><p>官方原版安装（跟踪 main 分支）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Linux / macOS / WSL2 / Android (Termux)</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 适合国际/ GitHub直连用户</span>
+</span></span><span class="line"><span class="cl">curl -fsSL https://hermes-agent.nousresearch.com/install.sh <span class="p">|</span> bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>国内镜像安装（速度最快）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 国内用户优先使用（解决GitHub下载慢问题）
+</span></span><span class="line"><span class="cl">curl -fsSL https://res1.hermesagent.org.cn/install.sh | bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>安装脚本会在 <code>~/.hermes/hermes-agent</code> 创建一个受管理的隔离环境（独立的 uv 托管解释器和 venv），这是唯一受支持的安装方式 —— 包括开发用途。请勿使用 <code>pip install hermes-agent</code>。</p>
+<blockquote>
+<p>安装程序自动处理一切：包括安装所有依赖（Python、Node.js、ripgrep、ffmpeg）、仓库克隆、虚拟环境、全局 <code>hermes</code> 命令配置。</p>
+<p>执行以下操作：</p>
+<ol>
+<li>检测 / 装好 <code>uv</code>；</li>
+<li>用 <code>uv</code> 创建 Python 3.11 虚拟环境；</li>
+<li>装好 <code>ripgrep</code>、<code>ffmpeg</code>、<code>Node.js</code>；</li>
+<li>把仓库克隆到 <code>~/.hermes/hermes-agent/</code>；</li>
+<li>在 <code>~/.hermes/hermes-agent/</code> 下执行 <code>uv pip install -e &quot;.[all]&quot;</code>；</li>
+<li>把 <code>hermes</code> 软链到 <code>~/.local/bin/hermes</code>。</li>
+</ol>
+</blockquote>
+<p>安装完成后，重新加载 shell：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Linux / macOS / WSL2 / Android (Termux) 方式安装</span>
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> ~/.bashrc   <span class="c1"># 或 source ~/.zshrc</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="二windows-用户"><strong>二、Windows 用户</strong>
+</h4><p><strong>1、基于 WSL2 安装（window下推荐）：</strong></p>
+<p>请先安装 <a class="link" href="https://learn.microsoft.com/en-us/windows/wsl/install"  target="_blank" rel="noopener"
+    >WSL2</a> 或查看<a class="link" href="https://zhuanlan.zhihu.com/p/466001838"  target="_blank" rel="noopener"
+    >Windows 10/11 安装 WSL2 指南</a>，然后在 WSL2 终端中运行同上述 Linux / macOS命令。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 以下二选一：
+</span></span><span class="line"><span class="cl"># 适合国际/ GitHub直连用户
+</span></span><span class="line"><span class="cl">curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 国内用户优先使用（解决GitHub下载慢问题）
+</span></span><span class="line"><span class="cl">curl -fsSL https://res1.hermesagent.org.cn/install.sh | bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p><strong>window下推荐 WSL2 原因：Hermes Agent 原生面向 Linux 环境设计，WSL2 提供了最接近生产部署环境的兼容性，避免 Windows 下的适配问题和&quot;环境不一致&quot;隐患。</strong></p>
+</blockquote>
+<p>安装完成后，重新加载 shell：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Linux / macOS / WSL2 / Android (Termux) 方式安装</span>
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> ~/.bashrc   <span class="c1"># 或 source ~/.zshrc</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>2、基于Windows 原生 PowerShell 安装：</strong></p>
+<p>打开 PowerShell 并运行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">iex </span><span class="p">(</span><span class="nb">irm </span><span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="nb">hermes-agent</span><span class="p">.</span><span class="py">nousresearch</span><span class="p">.</span><span class="n">com</span><span class="p">/</span><span class="n">install</span><span class="p">.</span><span class="n">ps1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c"># 国内用户优先使用（解决GitHub下载慢问题）</span>
+</span></span><span class="line"><span class="cl"><span class="nb">irm </span><span class="n">https</span><span class="err">:</span><span class="p">//</span><span class="n">res1</span><span class="p">.</span><span class="py">hermesagent</span><span class="p">.</span><span class="py">org</span><span class="p">.</span><span class="n">cn</span><span class="p">/</span><span class="n">install</span><span class="p">.</span><span class="py">ps1</span> <span class="p">|</span> <span class="nb">iex
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>安装程序处理<strong>一切</strong>：<code>uv</code>、Python 3.11、Node.js 22、<code>ripgrep</code>、<code>ffmpeg</code>，<strong>以及一个便携式 Git Bash</strong>（PortableGit——一个自包含的 Git-for-Windows 发行版，附带 <code>bash.exe</code> 和 Hermes 用于 shell 命令的完整 POSIX 工具链；在 32 位 Windows 上安装程序会回退到 MinGit，后者缺少 bash，终端工具和 agent 浏览器功能将被禁用）。它将仓库克隆到 <code>%LOCALAPPDATA%\hermes\hermes-agent</code>，创建虚拟环境，并将 <code>hermes</code> 添加到<strong>用户 PATH</strong>。安装完成后请重启终端（或打开新的 PowerShell 窗口）以使 PATH 生效。</p>
+</blockquote>
+<h3 id="22-首次启动与-setup-向导">2.2 首次启动与 setup 向导
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes setup
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>setup</code> 是个完整的交互式向导，按顺序引导你：</p>
+<ol>
+<li><strong>从 OpenClaw 迁移</strong>（若检测到 <code>~/.openclaw</code>），可跳过；</li>
+<li><strong>选模型 Provider</strong> —— 可选 Nous Portal、OpenRouter、Anthropic、OpenAI、Z.AI/GLM、Kimi、MiniMax、DeepSeek、HuggingFace、自定义端点等；</li>
+<li><strong>填 API Key</strong>（或走 OAuth，比如 Nous Portal、Anthropic Max、Codex、GitHub Copilot、MiniMax OAuth）；</li>
+<li><strong>选默认 personality</strong>（可后续 <code>/personality</code> 切换）；</li>
+<li><strong>配置 toolset</strong>（默认按平台预设启用一组合理工具）；</li>
+<li><strong>可选</strong>：要不要现在就配 Gateway（Telegram/Discord 等）。</li>
+</ol>
+<p>如需稍后重新配置单项设置，使用以下专用命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes model          <span class="c1"># 选择 LLM 提供商和模型</span>
+</span></span><span class="line"><span class="cl">hermes tools          <span class="c1"># 配置启用的工具</span>
+</span></span><span class="line"><span class="cl">hermes gateway setup  <span class="c1"># 配置消息平台</span>
+</span></span><span class="line"><span class="cl">hermes config <span class="nb">set</span>     <span class="c1"># 设置单个配置项</span>
+</span></span><span class="line"><span class="cl">hermes doctor         <span class="c1"># 诊断问题</span>
+</span></span><span class="line"><span class="cl">hermes setup          <span class="c1"># 或运行完整的设置向导一次性配置所有内容</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="23-选择模型provider">2.3 选择模型Provider
+</h3><p>这是最重要的配置步骤。使用 <code>hermes model</code> 以交互方式完成选择：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes model
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>最简路径：Nous Portal</p>
+<p>Nous Portal 是 Hermes Agent 官方配套的统一订阅服务平台，由上游开发团队 Nous Research 运营。<strong>单次订阅即可访问 300 + 主流大模型</strong>，同时内置 Tool Gateway工具网关。</p>
+<p>Tool Gateway 整合网页搜索、网页内容提取、图像生成、TTS 语音合成、云端浏览器自动化能力；启用后<strong>无需单独申请 Firecrawl、FAL、BrowserUse 等第三方服务的 API Key</strong>，所有工具调用统一通过 Nous 订阅结算。</p>
+<p>一键初始化命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes setup --portal
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>该指令会自动唤起浏览器 OAuth 登录、将 Nous 设置为默认模型 Provider，并开启 Tool 网关，完成后可直接启动对话。</p>
+</blockquote>
+<p>Hermes 原生内置 20 余家主流模型服务商直连适配：OpenAI、Anthropic、Google Gemini、DeepSeek、智谱 GLM、Kimi (Moonshot)、MiniMax、xAI Grok、通义千问、Ollama、NVIDIA NIM 等。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710172101405.png"
+	width="1376"
+	height="720"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710172101405_hu_89b803b33234b115.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710172101405_hu_318244bf27ac1ad7.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260710172101405"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="191"
+		data-flex-basis="458px"
+	
+></p>
+<p>推荐默认选项：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>Provider</th>
+          <th>说明</th>
+          <th>配置方式</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Nous Portal</strong></td>
+          <td>订阅制，零配置</td>
+          <td>通过 <code>hermes model</code> 进行 OAuth 登录</td>
+      </tr>
+      <tr>
+          <td><strong>OpenAI Codex</strong></td>
+          <td>ChatGPT OAuth，使用 Codex 模型</td>
+          <td>通过 <code>hermes model</code> 进行设备码认证</td>
+      </tr>
+      <tr>
+          <td><strong>Anthropic</strong></td>
+          <td>直接使用 Claude 模型——Max 计划 + 额外用量积分（OAuth），或按 token 付费的 API key</td>
+          <td><code>hermes model</code> → OAuth 登录（需要 Max + 额外积分），或 Anthropic API key</td>
+      </tr>
+      <tr>
+          <td><strong>OpenRouter</strong></td>
+          <td>跨多个 provider 的多模型路由</td>
+          <td>输入 API key</td>
+      </tr>
+      <tr>
+          <td><strong>Z.AI</strong></td>
+          <td>GLM / Zhipu 托管模型</td>
+          <td>设置 <code>GLM_API_KEY</code> / <code>ZAI_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Kimi / Moonshot</strong></td>
+          <td>Moonshot 托管的编程和对话模型</td>
+          <td>设置 <code>KIMI_API_KEY</code>（或 Kimi-Coding 专用的 <code>KIMI_CODING_API_KEY</code>）</td>
+      </tr>
+      <tr>
+          <td><strong>Kimi / Moonshot China</strong></td>
+          <td>中国区 Moonshot endpoint</td>
+          <td>设置 <code>KIMI_CN_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Arcee AI</strong></td>
+          <td>Trinity 模型</td>
+          <td>设置 <code>ARCEEAI_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>GMI Cloud</strong></td>
+          <td>多模型直连 API</td>
+          <td>设置 <code>GMI_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>MiniMax (OAuth)</strong></td>
+          <td>通过浏览器 OAuth 使用 MiniMax-M2.7，无需 API key</td>
+          <td><code>hermes model</code> → MiniMax (OAuth)</td>
+      </tr>
+      <tr>
+          <td><strong>MiniMax</strong></td>
+          <td>国际版 MiniMax endpoint</td>
+          <td>设置 <code>MINIMAX_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>MiniMax China</strong></td>
+          <td>中国区 MiniMax endpoint</td>
+          <td>设置 <code>MINIMAX_CN_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Alibaba Cloud</strong></td>
+          <td>通过 DashScope 使用 Qwen 模型</td>
+          <td>设置 <code>DASHSCOPE_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>Hugging Face</strong></td>
+          <td>通过统一路由器使用 20+ 开源模型（Qwen、DeepSeek、Kimi 等）</td>
+          <td>设置 <code>HF_TOKEN</code></td>
+      </tr>
+      <tr>
+          <td><strong>AWS Bedrock</strong></td>
+          <td>通过原生 Converse API 使用 Claude、Nova、Llama、DeepSeek</td>
+          <td>IAM 角色或 <code>aws configure</code>（<a class="link" href="https://hermes-agent.nousresearch.com/docs/zh-Hans/guides/aws-bedrock"  target="_blank" rel="noopener"
+    >指南</a>）</td>
+      </tr>
+      <tr>
+          <td><strong>Kilo Code</strong></td>
+          <td>KiloCode 托管模型</td>
+          <td>设置 <code>KILOCODE_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>OpenCode Zen</strong></td>
+          <td>按需付费访问精选模型</td>
+          <td>设置 <code>OPENCODE_ZEN_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>OpenCode Go</strong></td>
+          <td>$10/月订阅，访问开源模型</td>
+          <td>设置 <code>OPENCODE_GO_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>DeepSeek</strong></td>
+          <td>直接访问 DeepSeek API</td>
+          <td>设置 <code>DEEPSEEK_API_KEY</code></td>
+      </tr>
+      <tr>
+          <td><strong>NVIDIA NIM</strong></td>
+          <td>通过 build.nvidia.com 或本地 NIM 使用 Nemotron 模型</td>
+          <td>设置 <code>NVIDIA_API_KEY</code>（可选：<code>NVIDIA_BASE_URL</code>）</td>
+      </tr>
+      <tr>
+          <td><strong>GitHub Copilot</strong></td>
+          <td>GitHub Copilot 订阅（GPT-5.x、Claude、Gemini 等）</td>
+          <td>通过 <code>hermes model</code> 进行 OAuth，或设置 <code>COPILOT_GITHUB_TOKEN</code> / <code>GH_TOKEN</code></td>
+      </tr>
+      <tr>
+          <td><strong>GitHub Copilot ACP</strong></td>
+          <td>Copilot ACP agent 后端（在本地启动 <code>copilot</code> CLI）</td>
+          <td><code>hermes model</code>（需要 <code>copilot</code> CLI + <code>copilot login</code>）</td>
+      </tr>
+      <tr>
+          <td><strong>Custom Endpoint</strong></td>
+          <td>VLLM、SGLang、Ollama 或任何兼容 OpenAI 的 API</td>
+          <td>设置 base URL + API key</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>对于大多数初次使用的用户：选择一个 provider，并设置API_KEY、API_BASE_URL（可选）即可。</p>
+<blockquote>
+<p>这里示例是选择Deepseek 的模型<code>deepseek-v4-pro</code>，输入API key，从https://platform.deepseek.com/ 获取。</p>
+</blockquote>
+<p>Hermes Agent 要求模型至少具备 <strong>64,000 个 token</strong> 的上下文窗口。上下文窗口较小的模型无法为多步骤工具调用工作流维持足够的工作内存，启动时将被拒绝。大多数托管模型（Claude、GPT、Gemini、Qwen、DeepSeek）均轻松满足此要求。如果你运行本地模型，请将其上下文大小设置为至少 64K（例如 llama.cpp 使用 <code>--ctx-size 65536</code>，Ollama 使用 <code>-c 65536</code>）。</p>
+<blockquote>
+<p>提示：可以随时通过 <code>hermes model</code> 切换 provider——没有锁定。</p>
+</blockquote>
+<p><strong>使用本地运行模型服务（Ollama）</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装 Ollama</span>
+</span></span><span class="line"><span class="cl">curl -fsSL https://ollama.ai/install.sh <span class="p">|</span> sh
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 拉取模型（如：Hermes 3 8B（Q4_K_M 量化），约 4.7GB，16GB 内存可跑）</span>
+</span></span><span class="line"><span class="cl">ollama pull hermes3:8b
+</span></span><span class="line"><span class="cl">ollama serve    <span class="c1"># 启动服务</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 配置 Hermes 使用本地 Ollama：</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 1、在 `hermes model` 中选择`custom`设置 base URL为 http://localhost:11434/v1</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 2、或编辑 ~/.hermes/.env，添加：</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># OLLAMA_BASE_URL=http://localhost:11434/v1</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="24-验证安装">2.4 验证安装
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes --version      <span class="c1"># 查看版本</span>
+</span></span><span class="line"><span class="cl">hermes doctor         <span class="c1"># 诊断环境（检查 12 项）</span>
+</span></span><span class="line"><span class="cl">hermes status         <span class="c1"># 查看当前配置</span>
+</span></span><span class="line"><span class="cl">hermes dump           <span class="c1"># 导出诊断信息（求助时用）</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="25-运行第一次对话">2.5 运行第一次对话
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1">#开启聊天</span>
+</span></span><span class="line"><span class="cl">hermes            <span class="c1"># 经典 CLI</span>
+</span></span><span class="line"><span class="cl">hermes --tui      <span class="c1"># 现代 TUI（推荐)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>你会看到一个欢迎横幅，显示你的模型、可用工具和 skills：</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710173853002.png"
+	width="1376"
+	height="720"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710173853002_hu_75428ed4395c0821.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710173853002_hu_d49e6e9ecb73275f.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260710173853002"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="191"
+		data-flex-basis="458px"
+	
+></p>
+<p>测试下响应，输入内容：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">介绍下自己
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710172758050.png"
+	width="1376"
+	height="720"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710172758050_hu_b0675691cf0a5fb5.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260710172758050_hu_4811a076cd093e06.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260710172758050"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="191"
+		data-flex-basis="458px"
+	
+></p>
+<h3 id="26-尝试核心功能">2.6 尝试核心功能
+</h3><h4 id="使用终端"><strong>使用终端</strong>
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">❯ 列一下当前目录有哪些文件，并总结下
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Agent 会代你执行终端命令并显示结果。</p>
+<h4 id="斜杠命令">斜杠命令
+</h4><p>输入 <code>/</code> 查看所有命令的自动补全下拉列表：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>功能</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>/help</code></td>
+          <td>显示所有可用命令</td>
+      </tr>
+      <tr>
+          <td><code>/tools</code></td>
+          <td>列出可用工具</td>
+      </tr>
+      <tr>
+          <td><code>/model</code></td>
+          <td>交互式切换模型</td>
+      </tr>
+      <tr>
+          <td><code>/personality pirate</code></td>
+          <td>尝试一个有趣的人格</td>
+      </tr>
+      <tr>
+          <td><code>/save</code></td>
+          <td>保存对话</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="27-数据目录布局hermes">2.7 数据目录布局：<code>~/.hermes/</code>
+</h3><p>所有用户级数据都在 <code>$HERMES_HOME</code>（默认 <code>~/.hermes/</code>）下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">~/.hermes/
+</span></span><span class="line"><span class="cl">├── config.yaml             # 非机密配置
+</span></span><span class="line"><span class="cl">├── .env                    # 机密：API Key、Token、OAuth refresh token 等
+</span></span><span class="line"><span class="cl">├── SOUL.md                 # 人格/身份文件
+</span></span><span class="line"><span class="cl">├── memories/
+</span></span><span class="line"><span class="cl">│   ├── MEMORY.md           # 环境/约定记忆，约 800 token
+</span></span><span class="line"><span class="cl">│   └── USER.md             # 用户画像，约 500 token
+</span></span><span class="line"><span class="cl">├── skills/                 # 技能根目录
+</span></span><span class="line"><span class="cl">│   ├── plan/               # 内置：规划技能
+</span></span><span class="line"><span class="cl">│   ├── github-pr-workflow/ # 内置：GH PR 流
+</span></span><span class="line"><span class="cl">│   └── openclaw-imports/   # 从 OpenClaw 迁移过来的
+</span></span><span class="line"><span class="cl">├── hooks/                  # 网关 hooks（HOOK.yaml + handler.py）
+</span></span><span class="line"><span class="cl">├── plans/                  # /plan 技能输出位置
+</span></span><span class="line"><span class="cl">├── hermes.db               # SQLite：会话、任务、cron、轨迹
+</span></span><span class="line"><span class="cl">├── kanban.db               # SQLite：Kanban 任务
+</span></span><span class="line"><span class="cl">├── checkpoints/            # 文件改动 checkpoint 快照
+</span></span><span class="line"><span class="cl">├── plugins/                # 用户安装的插件
+</span></span><span class="line"><span class="cl">├── profiles/               # Profile 隔离目录（多份身份/配置）
+</span></span><span class="line"><span class="cl">├── logs/                   # 运行日志
+</span></span><span class="line"><span class="cl">└── hermes-agent/           # 源码（如果是用户级安装）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>理解这套布局，后续做备份、迁移、Profile 切换都会得心应手。</p>
+<h3 id="28-profile一台机器运行多个身份">2.8 Profile：一台机器运行多个身份
+</h3><p>如果你希望在同一台机器上区分&quot;工作 Hermes&quot;和&quot;个人 Hermes&quot;，或者区分&quot;中国区 Kimi&quot;和&quot;国际 Anthropic&quot;，Profile 机制正是为此设计。</p>
+<p>profile 是一个独立的 Hermes 主目录。每个 profile 拥有自己的目录，其中包含各自的 <code>config.yaml</code>、<code>.env</code>、<code>SOUL.md</code>、记忆、会话、技能、cron 任务和状态数据库。profile 让你可以为不同用途运行独立的 agent——编程助手、个人机器人、研究 agent——而不会混淆 Hermes 状态。</p>
+<p><strong>一、Profile 完全隔离范围</strong></p>
+<p>每个 Profile 在 <code>~/.hermes/profiles/&lt;name&gt;/</code> 下拥有完全独立的数据集合：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>隔离项</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>config.yaml</code> 与 <code>.env</code></td>
+          <td>可配置完全不同的 Provider、模型、API Key</td>
+      </tr>
+      <tr>
+          <td><code>memories/</code></td>
+          <td>记忆不混乱——工作和个人互不干扰</td>
+      </tr>
+      <tr>
+          <td><code>skills/</code> 和 <code>plugins/</code></td>
+          <td>独立的技能和插件体系</td>
+      </tr>
+      <tr>
+          <td>会话记录（<code>hermes.db</code>）</td>
+          <td>不同 Profile 的会话历史完全隔离</td>
+      </tr>
+      <tr>
+          <td>Cron 定时任务</td>
+          <td>工作和个人可设置不同自动化任务</td>
+      </tr>
+      <tr>
+          <td>Kanban 任务板</td>
+          <td>独立的任务管理</td>
+      </tr>
+      <tr>
+          <td>进程锁</td>
+          <td>不同 Profile 可同时运行，互不冲突</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>这意味着你可以为工作 Profile 配置 Anthropic Claude 模型和严谨的工具集，为个人 Profile 配置 OpenRouter 上的轻量模型和自由风格人格——两者在同一台机器上完全隔离、独立运行。</p>
+<p><strong>二、Profile 基本操作</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes profile list              <span class="c1"># 列出所有 Profile</span>
+</span></span><span class="line"><span class="cl">hermes profile create work       <span class="c1"># 创建名为 &#34;work&#34; 的新 Profile</span>
+</span></span><span class="line"><span class="cl">hermes profile use work          <span class="c1"># 切换到 work profile，后续命令均在其下</span>
+</span></span><span class="line"><span class="cl">hermes profile use default       <span class="c1"># 切回默认 Profile</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>也可以通过环境变量临时切换（仅在当次启动生效）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">HERMES_PROFILE</span><span class="o">=</span>work hermes       <span class="c1"># 仅本次启动使用 work profile</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="29-配置的存储方式">2.9 配置的存储方式
+</h3><p>Hermes 将配置分为&quot;机密&quot;和&quot;普通配置&quot;两层，两者分开存储，分别写入 <code>~/.hermes/.env</code> 和 <code>~/.hermes/config.yaml</code> 两个独立文件。</p>
+<ul>
+<li><code>~/.hermes/.env</code>（<strong>机密</strong>）：所有密钥、Token 等敏感凭证，以 <code>KEY=VALUE</code> 格式存储，每行一条。</li>
+<li><code>~/.hermes/config.yaml</code>（<strong>非机密</strong>）：常规业务配置、非密钥配置，如：模型、toolset、UI 主题、cron、Gateway 等结构化配置。</li>
+</ul>
+<p>通过 CLI 设置值是最简便的方式，执行命令时，Hermes 会自动识别配置属性，将参数写入对应的配置文件，避免人工操作失误：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">hermes config set model anthropic/claude-opus-4.6
+</span></span><span class="line"><span class="cl">hermes config set terminal.backend docker
+</span></span><span class="line"><span class="cl">hermes config set OPENROUTER_API_KEY sk-or-..
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>~/.hermes/config.yaml</code> 使用 YAML 格式，承载所有非机密的配置项。以下是核心配置块的常见配置示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="c1"># ==================== 模型与 Provider ====================</span>
+</span></span><span class="line"><span class="cl"><span class="n">model</span><span class="p">:</span> <span class="n">anthropic</span><span class="o">/</span><span class="n">claude</span><span class="o">-</span><span class="n">opus</span><span class="o">-</span><span class="mf">4.6</span>       <span class="c1"># 主对话模型标识</span>
+</span></span><span class="line"><span class="cl"><span class="n">provider</span><span class="p">:</span> <span class="n">anthropic</span>                     <span class="c1"># Provider 标识</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 回退模型链（主模型不可用时的备选）</span>
+</span></span><span class="line"><span class="cl"><span class="n">fallback_models</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="o">-</span> <span class="n">openrouter</span><span class="o">/</span><span class="n">anthropic</span><span class="o">/</span><span class="n">claude</span><span class="o">-</span><span class="mf">3.5</span><span class="o">-</span><span class="n">sonnet</span>
+</span></span><span class="line"><span class="cl">  <span class="o">-</span> <span class="n">openrouter</span><span class="o">/</span><span class="n">openai</span><span class="o">/</span><span class="n">gpt</span><span class="o">-</span><span class="mi">5</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ==================== 终端后端 ====================</span>
+</span></span><span class="line"><span class="cl"><span class="n">terminal</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">backend</span><span class="p">:</span> <span class="n">docker</span>                       <span class="c1"># local | docker | ssh | modal | daytona | singularity</span>
+</span></span><span class="line"><span class="cl">  <span class="n">cwd</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>                              <span class="c1"># Gateway/cron 工作目录（CLI 使用启动目录）</span>
+</span></span><span class="line"><span class="cl">  <span class="n">timeout</span><span class="p">:</span> <span class="mi">180</span>                          <span class="c1"># 每条命令超时（秒）</span>
+</span></span><span class="line"><span class="cl">  <span class="n">env_passthrough</span><span class="p">:</span> <span class="p">[]</span>                   <span class="c1"># 转发到沙箱执行的环境变量名</span>
+</span></span><span class="line"><span class="cl">  <span class="n">docker</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">image</span><span class="p">:</span> <span class="n">ghcr</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">nousresearch</span><span class="o">/</span><span class="n">hermes</span><span class="o">-</span><span class="n">sandbox</span><span class="p">:</span><span class="n">latest</span>
+</span></span><span class="line"><span class="cl">    <span class="n">read_only</span><span class="p">:</span> <span class="bp">true</span>
+</span></span><span class="line"><span class="cl">    <span class="n">docker_run_as_host_user</span><span class="p">:</span> <span class="bp">false</span>      <span class="c1"># 以宿主机用户身份运行容器</span>
+</span></span><span class="line"><span class="cl">    <span class="n">docker_mount_cwd_to_workspace</span><span class="p">:</span> <span class="bp">false</span> <span class="c1"># 挂载当前目录到 /workspace</span>
+</span></span><span class="line"><span class="cl">    <span class="n">docker_forward_env</span><span class="p">:</span>                 <span class="c1"># 转发到容器的环境变量</span>
+</span></span><span class="line"><span class="cl">      <span class="o">-</span> <span class="n">GITHUB_TOKEN</span>
+</span></span><span class="line"><span class="cl">    <span class="n">docker_volumes</span><span class="p">:</span>                     <span class="c1"># 宿主机目录挂载</span>
+</span></span><span class="line"><span class="cl">      <span class="o">-</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">projects</span><span class="p">:</span><span class="o">/</span><span class="n">workspace</span><span class="o">/</span><span class="n">projects</span>
+</span></span><span class="line"><span class="cl">      <span class="o">-</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">data</span><span class="p">:</span><span class="o">/</span><span class="n">data</span><span class="p">:</span><span class="n">ro</span>        <span class="c1"># :ro 表示只读</span>
+</span></span><span class="line"><span class="cl">  <span class="n">persistent_shell</span><span class="p">:</span> <span class="bp">true</span>                <span class="c1"># 保持长期运行的 shell 会话</span>
+</span></span><span class="line"><span class="cl">  <span class="n">file_sync_max_mb</span><span class="p">:</span> <span class="mi">100</span>                 <span class="c1"># 远程同步文件大小上限（MB）</span>
+</span></span><span class="line"><span class="cl">  <span class="n">file_sync_enabled</span><span class="p">:</span> <span class="bp">true</span>               <span class="c1"># 会话结束时同步远程文件</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ==================== 工具集配置 ====================</span>
+</span></span><span class="line"><span class="cl"><span class="n">toolsets</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">hermes</span><span class="o">-</span><span class="n">cli</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">web</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">terminal</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">file</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">browser</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">vision</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">skills</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">memory</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">session_search</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">todo</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">clarify</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">code_execution</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">delegation</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">cronjob</span>
+</span></span><span class="line"><span class="cl">  <span class="n">hermes</span><span class="o">-</span><span class="n">telegram</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">web</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">search</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">terminal</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">file</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">vision</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">skills</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">memory</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">todo</span>
+</span></span><span class="line"><span class="cl">    <span class="o">-</span> <span class="n">send_message</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>配置优先级</strong></p>
+<p>当同一配置项存在于多个来源时，按以下优先级（从高到低）解析：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>优先级</th>
+          <th>来源</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1（最高）</td>
+          <td>CLI 参数</td>
+          <td>例如 <code>hermes chat --model anthropic/claude-sonnet-4</code>（每次调用的临时覆盖）</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td><code>~/.hermes/config.yaml</code></td>
+          <td>所有非敏感设置的主配置文件</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td><code>~/.hermes/.env</code></td>
+          <td>环境变量的备用位置；敏感信息<strong>必须</strong>存放于此</td>
+      </tr>
+      <tr>
+          <td>4（最低）</td>
+          <td>内置默认值</td>
+          <td>当以上均未配置时使用的硬编码安全默认值</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>通用规则：敏感信息（API 密钥、Bot Token、密码）应存放在 <code>.env</code> 中。其余所有内容（模型、终端后端、压缩设置、记忆限制、工具集）应存放在 <code>config.yaml</code> 中。当两者同时设置时，<code>config.yaml</code> 对非敏感设置具有更高优先级。</p>
+<h3 id="210-升级hermes-update">2.10 升级：<code>hermes update</code>
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes update          <span class="c1"># 拉 main 并 uv pip install -e .[all]</span>
+</span></span><span class="line"><span class="cl">hermes update --check  <span class="c1"># 仅检查</span>
+</span></span><span class="line"><span class="cl">hermes update --branch foo  <span class="c1"># 切换分支</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>升级后建议：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes config check
+</span></span><span class="line"><span class="cl">hermes config migrate
+</span></span><span class="line"><span class="cl">hermes doctor
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>迁移会把老 schema 的 <code>config.yaml</code> 升级到新版本（保留你的所有自定义）。</p>
+<h3 id="211-排错hermes-doctor">2.11 排错：<code>hermes doctor</code>
+</h3><p><code>hermes doctor</code> 会逐项检查：</p>
+<ul>
+<li>Python / Node 版本；</li>
+<li><code>uv</code>、<code>ripgrep</code>、<code>ffmpeg</code> 是否在 PATH；</li>
+<li><code>~/.hermes/.env</code> / <code>config.yaml</code> 是否可读、字段是否合法；</li>
+<li>当前 Provider 的 Key 是否能成功 ping 接口；</li>
+<li>模型上下文长度是否 ≥ 64K；</li>
+<li>终端后端是否可用（docker daemon、ssh 通连、modal token 等）；</li>
+<li>Gateway 平台依赖是否齐全（如 <code>discord.py[voice]</code> for Discord VC）。</li>
+</ul>
+<p>输出会逐条标红/标黄，并给出修复建议。如果你在 issues 里求助，附上 <code>hermes doctor</code> 的输出会大幅提升被回答的速度。</p>
+<h3 id="212-从-openclaw-迁移">2.12 从 OpenClaw 迁移
+</h3><p>如果你之前在用 OpenClaw：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes claw migrate              <span class="c1"># 交互式迁移（full 预设）</span>
+</span></span><span class="line"><span class="cl">hermes claw migrate --dry-run    <span class="c1"># 只预览要迁哪些</span>
+</span></span><span class="line"><span class="cl">hermes claw migrate --preset user-data   <span class="c1"># 不带 secret</span>
+</span></span><span class="line"><span class="cl">hermes claw migrate --overwrite  <span class="c1"># 覆盖已存在</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>会迁移：<code>SOUL.md</code>、<code>MEMORY.md</code>、<code>USER.md</code>、用户技能（→ <code>~/.hermes/skills/openclaw-imports/</code>）、命令白名单、IM 平台配置、TTS 资产、<code>AGENTS.md</code>、白名单内的 API Key。</p>
+<h3 id="213-卸载与重置">2.13 卸载与重置
+</h3><p>完全卸载：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rm -rf ~/.hermes
+</span></span><span class="line"><span class="cl">rm -f ~/.local/bin/hermes
+</span></span><span class="line"><span class="cl"><span class="c1"># Root 安装：sudo rm -rf /usr/local/lib/hermes-agent /usr/local/bin/hermes</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>只重置配置而保留代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mv ~/.hermes/config.yaml ~/.hermes/config.yaml.bak
+</span></span><span class="line"><span class="cl">mv ~/.hermes/.env        ~/.hermes/.env.bak
+</span></span><span class="line"><span class="cl">hermes setup
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="214-一次完整的新机器开局演练">2.14 一次完整的新机器开局演练
+</h3><p>把上面的内容串起来，一次完整开局大约长这样：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 1) 安装</span>
+</span></span><span class="line"><span class="cl">curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh <span class="p">|</span> bash
+</span></span><span class="line"><span class="cl"><span class="c1"># 国内用户优先使用安装命令（解决GitHub下载慢问题，替换上面一行）</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># curl -fsSL https://res1.hermesagent.org.cn/install.sh | bash</span>
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> ~/.bashrc
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 2) 初始化（选 模型provider，填 Key）</span>
+</span></span><span class="line"><span class="cl">hermes setup
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 3) 先试一下能不能聊</span>
+</span></span><span class="line"><span class="cl">hermes
+</span></span><span class="line"><span class="cl">&gt; 介绍下？
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 4) 试一下 Agent 调工具</span>
+</span></span><span class="line"><span class="cl">&gt; 列一下当前目录有哪些文件，并总结下
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 5) 让它学一点关于你的事</span>
+</span></span><span class="line"><span class="cl">&gt; 我在 Ubuntu 22.04 上工作，喜欢简洁回答，项目都放在 ~/code/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 6) 让它给自己写第一条记忆</span>
+</span></span><span class="line"><span class="cl">&gt; 把上面这些信息记到记忆里
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 7) 看看它写了啥</span>
+</span></span><span class="line"><span class="cl">cat ~/.hermes/memories/MEMORY.md
+</span></span><span class="line"><span class="cl">cat ~/.hermes/memories/USER.md
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 8) 升级、体检</span>
+</span></span><span class="line"><span class="cl">hermes update
+</span></span><span class="line"><span class="cl">hermes doctor
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>到这里你已经完成了&quot;零基础上手&quot;。</p>
+<h2 id="3-官方-hermes-desktop-桌面版">3. 官方 Hermes Desktop 桌面版
+</h2><p><strong>Hermes Desktop</strong> 是 Nous Research 官方推出的 Hermes Agent 原生图形桌面客户端，提供一站式可视化操作台：<strong>聊天交互、配置管理、智能体监控、任务调度、网关管理全部图形化操作，兼顾新手与开发者</strong>。与 Hermes CLI 共用同一套智能体内核、统一数据目录 <code>~/.hermes</code>。桌面端与命令行完全互通，配置、对话会话、持久记忆、技能、API 密钥双向实时同步；会话支持跨界面接续，你可以在桌面发起对话，切换到终端 CLI 继续执行任务。</p>
+<h3 id="31-安装官方-hermes-desktop-桌面版">3.1 安装官方 Hermes Desktop 桌面版
+</h3><p>安装官方 Hermes Desktop 桌面版，请从官网<a class="link" href="https://hermes-agent.nousresearch.com/"  target="_blank" rel="noopener"
+    > Hermes Desktop 安装器</a> 选择对应的系统版本下载并运行，会同时安装命令行与桌面应用。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803172213362.png"
+	width="1874"
+	height="921"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803172213362_hu_b2a7eb48d5e3bfd9.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803172213362_hu_c8a73dd1d3036945.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803172213362"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="203"
+		data-flex-basis="488px"
+	
+></p>
+<p>安装程序运行后，显示界面如下：</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803154705836.png"
+	width="1322"
+	height="976"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803154705836_hu_dd83efa0f7271538.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803154705836_hu_c3ef4e6b30bd53b.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803154705836"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="135"
+		data-flex-basis="325px"
+	
+></p>
+<p>点击<code>Launch Hermes</code> 按钮即可进入主界面。</p>
+<h3 id="32-配置模型provider">3.2 配置模型provider
+</h3><p>在聊天界面右上角，点击齿轮图标，进入配置界面：</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160512319.png"
+	width="1830"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160512319_hu_a09a47b0e46bd323.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160512319_hu_77d6dcd272d0c151.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803160512319"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="179"
+		data-flex-basis="430px"
+	
+></p>
+<p>首先配置model 提供商，点击左侧的<code>Model</code>选型，点击<code>set up provider</code>。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160548633.png"
+	width="1830"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160548633_hu_36670ca5705f6d18.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160548633_hu_2a61a42216d150b0.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803160548633"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="179"
+		data-flex-basis="430px"
+	
+></p>
+<p>在弹出的界面中，如果没有找到需要的模型提供商，点击右下脚<code>I have an API key</code> 按钮。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160608266.png"
+	width="1830"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160608266_hu_6c5fe37e2aef903e.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160608266_hu_8abce19794f8493e.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803160608266"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="179"
+		data-flex-basis="430px"
+	
+></p>
+<p>选择对应的模型提供商，输入API key即可。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160622520.png"
+	width="1830"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160622520_hu_b5fba72e176c6280.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803160622520_hu_43439d17c434dee4.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803160622520"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="179"
+		data-flex-basis="430px"
+	
+></p>
+<h3 id="33-运行第一次对话">3.3 运行第一次对话
+</h3><p>回答聊天主界面，在窗口下方对话输入框右侧，可以选择聊天的模型。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803173022891.png"
+	width="1830"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803173022891_hu_8864b6d417f4cc25.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803173022891_hu_2d05659f98d78e59.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803173022891"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="179"
+		data-flex-basis="430px"
+	
+></p>
+<p>输入如：<code>介绍下</code>，能正常回复内容，则说明模型配置正确。</p>
+<h2 id="4-中文社区桌面版hermes-cn-desktop">4. 中文社区桌面版（Hermes-CN-Desktop）
+</h2><p><strong>Hermes Agent CN Desktop（Hermes Agent 中文社区桌面版）</strong> 是 Hermes Agent 中文社区推出的桌面客户端，原生支持 Windows 与 macOS 系统。项目基于 <a class="link" href="https://v2.tauri.app/"  target="_blank" rel="noopener"
+    >Tauri v2</a>、Rust、React 和 TypeScript 构建，包含 <a class="link" href="https://github.com/Eynzof/Hermes-CN-Core"  target="_blank" rel="noopener"
+    >Hermes-CN-Core</a> 中文社区修改版的 Hermes Agent 内核。</p>
+<blockquote>
+<p>该项目并非 Nous Research 官方分支，针对国内用户优化交互体验、适配本土模型接口，新增多项易用性增强特性。</p>
+</blockquote>
+<p><strong>亮点：</strong></p>
+<ul>
+<li><strong>一键安装，使用门槛极低</strong>：针对 Windows 和 macOS 用户适配，下载安装后配置 API Key 或本地模型端点即可使用。</li>
+<li><strong>轻量，跨平台</strong>：Tauri 使用系统 WebView，不需要随应用打包 Chromium，安装包体积小，支持 Windows 及 macOS。</li>
+<li><strong>内置独立 Hermes Agent 内核</strong>：桌面端支持安装、更新、签名校验、健康检查和回滚本地 Hermes Agent 内核。</li>
+<li><strong>面向 Agent 的完整 UI</strong>：支持聊天、流式输出、附件、MCP 工具、Skills、Memory、Profiles、定时任务、LaTeX/Mermaid 渲染和运行时健康面板。</li>
+<li><strong>中文模型与平台生态</strong>：覆盖主流云端模型服务商和 Ollama、vLLM、LM Studio、llama.cpp 等本地部署方案，并提供飞书等平台接入配置；</li>
+<li><strong>生产级传输桥</strong>：生产模式下通过 Rust command 代理 REST 与上传；Gateway 使用官方 <code>/api/ws</code>，打包态必要时通过 Rust WS 中继绕过 WebView 限制，并集中处理鉴权。</li>
+<li><strong>YOLO 模式开关</strong>：「设置 → 常规」底部独立的「高风险操作」区提供开关，开启需二次确认，自动批准危险命令（对应后端 <code>HERMES_YOLO_MODE</code>），切换后自动重启内核生效，详见 <a class="link" href="https://github.com/Eynzof/Hermes-CN-Desktop/blob/main/docs/yolo-mode.md"  target="_blank" rel="noopener"
+    >docs/yolo-mode.md</a>。</li>
+</ul>
+<h3 id="41-安装中文社区桌面版hermes-cn-desktop">4.1 安装中文社区桌面版（Hermes-CN-Desktop）
+</h3><p><strong>1. 下载安装包</strong></p>
+<p>访问桌面版官网 <a class="link" href="https://desktop.hermesagent.org.cn/#download/"  target="_blank" rel="noopener"
+    >desktop.hermesagent.org.cn</a> 或 <a class="link" href="https://github.com/Eynzof/Hermes-CN-Desktop/releases"  target="_blank" rel="noopener"
+    >GitHub Releases</a> 下载对应平台的安装包。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803183832020.png"
+	width="1902"
+	height="996"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803183832020_hu_730cc0b060ad1616.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803183832020_hu_590745560d821670.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803183832020"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="190"
+		data-flex-basis="458px"
+	
+></p>
+<p>根据你的操作系统选择：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">平台</th>
+          <th style="text-align: left">安装包类型</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>Windows</strong> x64</td>
+          <td style="text-align: left"><code>Hermes.Agent.CN.Desktop_xx-setup.exe</code>（安装版）或 Portable 压缩包</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>macOS</strong> Apple Silicon</td>
+          <td style="text-align: left"><code>Hermes.Agent.CN.Desktop_xx_aarch64.dmg</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>macOS</strong> Intel</td>
+          <td style="text-align: left"><code>Hermes.Agent.CN.Desktop_xx_x64.dmg</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Linux</strong> x64</td>
+          <td style="text-align: left"><code>.deb</code> 安装包 或 <code>.AppImage</code> 免安装版</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>2. 安装</strong></p>
+<ul>
+<li><strong>Windows</strong>：双击 <code>.exe</code> 安装程序，按向导完成安装。</li>
+<li><strong>macOS</strong>：打开 <code>.dmg</code>，将应用拖拽到 <strong>应用程序</strong> 文件夹。</li>
+<li><strong>Linux</strong>：<code>.deb</code> 包使用 <code>dpkg -i</code> 安装；<code>.AppImage</code> 直接赋予执行权限后运行。</li>
+</ul>
+<p><strong>3. 首次启动初始化</strong></p>
+<p>安装完成后启动 Hermes，客户端会自动完成以下初始化步骤：</p>
+<ul>
+<li>检测系统环境</li>
+<li>下载/初始化 Hermes-CN-Core 内核</li>
+<li>安装 Python 依赖与 Skills</li>
+<li>配置运行环境</li>
+</ul>
+<blockquote>
+<p>💡 <strong>耗时提示</strong>：全新环境首次安装可能需要 <strong>5~15 分钟</strong>（需下载 Python 运行时、ffmpeg、技能模块等）。</p>
+</blockquote>
+<h3 id="42-配置模型provider">4.2 配置模型provider
+</h3><p>安装完成后，首次启动显示界面如下：</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803183947399.png"
+	width="1862"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803183947399_hu_22af83cd6219799e.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803183947399_hu_b160e73d007cd64d.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803183947399"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="182"
+		data-flex-basis="438px"
+	
+></p>
+<p>需要配置至少一个 模型Provider 才能开始对话。Hermes-CN-Desktop 原生适配国内主流模型服务商及本地部署方案。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185655778.png"
+	width="1920"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185655778_hu_30c265d3b4cdd2f0.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185655778_hu_d5c5c85e211164d0.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803185655778"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="188"
+		data-flex-basis="451px"
+	
+></p>
+<p>在<code>配置</code>页面，选择模型提供商（这里是deepseek）—&gt;填写API key —&gt;选择（或填写）模型ID—&gt;保存配置，并测试连接—&gt;连接成功后，设为当前模型即可。</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803184435257.png"
+	width="1862"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803184435257_hu_3e59db61976018.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803184435257_hu_4e907cb6d6cba1bb.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803184435257"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="182"
+		data-flex-basis="438px"
+	
+></p>
+<h3 id="43-运行第一次对话">4.3 运行第一次对话
+</h3><p>配置完成后，回到工作台主界面，点击 <strong>新建对话</strong> 或直接在输入框中输入内容。</p>
+<p>使用一个具体且易于验证的 prompt 来测试：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">请检查当前的目录结构，总结当前文件夹的内容，
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果一切正常，你应该看到：</p>
+<ul>
+<li>Hermes 能够无错误地回复你的消息</li>
+<li>需要时能够调用工具（如读取文件、执行终端命令、网页搜索）</li>
+<li>对话可以正常进行多轮交互。</li>
+</ul>
+<p>显示界面如下 ：</p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185511512.png"
+	width="1914"
+	height="1007"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185511512_hu_68718d8336957f8e.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185511512_hu_7ce41d63ec1c9dac.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803185511512"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="190"
+		data-flex-basis="456px"
+	
+></p>
+<p><img src="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185534653.png"
+	width="1920"
+	height="1020"
+	srcset="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185534653_hu_8e0e66ab17853f66.png 480w, ../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/images/image-20260803185534653_hu_265af497be840c74.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260803185534653"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="188"
+		data-flex-basis="451px"
+	
+></p>
+<h2 id="5-常见报错速查">5. 常见报错速查
+</h2><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>报错</th>
+          <th>原因</th>
+          <th>修复</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>hermes: command not found</code></td>
+          <td>shell 没 reload 或 PATH 没含 <code>~/.local/bin</code></td>
+          <td><code>source ~/.bashrc</code>；<code>echo $PATH | tr : '\n'</code> 检查</td>
+      </tr>
+      <tr>
+          <td><code>API key not set</code></td>
+          <td>没设 Key</td>
+          <td><code>hermes model</code> 或 <code>hermes config set OPENROUTER_API_KEY ...</code></td>
+      </tr>
+      <tr>
+          <td><code>Model context window too small (xx &lt; 65536)</code></td>
+          <td>选了上下文不足 64K 的模型</td>
+          <td>换大模型；本地模型加 <code>--ctx-size 65536</code></td>
+      </tr>
+      <tr>
+          <td><code>Cannot connect to docker daemon</code></td>
+          <td>terminal.backend 是 docker 但 docker 没起</td>
+          <td>装/启 Docker；或改回 <code>local</code></td>
+      </tr>
+      <tr>
+          <td><code>ssh: handshake timeout</code></td>
+          <td>terminal.backend 是 ssh 但目标不通</td>
+          <td>用 <code>ssh user@host</code> 先验证</td>
+      </tr>
+      <tr>
+          <td><code>Tool 'web_search' requires API key</code></td>
+          <td>没配某个工具的密钥</td>
+          <td><code>hermes tools</code> 选别的 web 后端，或配 Key</td>
+      </tr>
+      <tr>
+          <td><code>Provider responded with 429</code></td>
+          <td>限流</td>
+          <td>加 credential pool、加 fallback、降并发</td>
+      </tr>
+      <tr>
+          <td><code>Missing config after update</code></td>
+          <td>老 schema</td>
+          <td><code>hermes config check &amp;&amp; hermes config migrate</code></td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="快速参考">快速参考
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>命令</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>hermes</code></td>
+          <td>开始聊天</td>
+      </tr>
+      <tr>
+          <td><code>hermes model</code></td>
+          <td>选择 LLM provider 和模型</td>
+      </tr>
+      <tr>
+          <td><code>hermes tools</code></td>
+          <td>配置每个平台启用的工具</td>
+      </tr>
+      <tr>
+          <td><code>hermes setup</code></td>
+          <td>完整配置向导（一次性配置所有内容）</td>
+      </tr>
+      <tr>
+          <td><code>hermes doctor</code></td>
+          <td>诊断问题</td>
+      </tr>
+      <tr>
+          <td><code>hermes update</code></td>
+          <td>更新到最新版本</td>
+      </tr>
+      <tr>
+          <td><code>hermes gateway</code></td>
+          <td>启动消息 gateway</td>
+      </tr>
+      <tr>
+          <td><code>hermes --continue</code></td>
+          <td>恢复上次会话</td>
+      </tr>
+  </tbody>
+</table></div>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/hermes-agent/">Hermes Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第5章 模型供应商与配置</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第3章 整体架构与核心组件</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="采用最新 AI 技术的企业正转向**多智能体系统**：一组自主化、特定任务的智能体，通过调度器协同工作，模拟跨职能人类团队处理复杂任务的方式">
+<title>Microsoft 设计多智能体系统</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Microsoft 设计多智能体系统">
+<meta property='og:description' content="采用最新 AI 技术的企业正转向**多智能体系统**：一组自主化、特定任务的智能体，通过调度器协同工作，模拟跨职能人类团队处理复杂任务的方式">
+<meta property='og:url' content='https://tinyseeking.github.io/p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='AI Agent' /><meta property='article:published_time' content='2026-03-06T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-03-06T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="Microsoft 设计多智能体系统">
+<meta name="twitter:description" content="采用最新 AI 技术的企业正转向**多智能体系统**：一组自主化、特定任务的智能体，通过调度器协同工作，模拟跨职能人类团队处理复杂任务的方式"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#1-引言">1. 引言</a></li>
+    <li><a href="#2-问题阐述">2. 问题阐述</a></li>
+    <li><a href="#3-解决方案">3. 解决方案</a>
+      <ol>
+        <li><a href="#31-组件拆解">3.1 组件拆解</a></li>
+        <li><a href="#调度器orchestrator-语义内核">调度器（Orchestrator ,语义内核）</a></li>
+        <li><a href="#分类器自然语言理解-nlu小语言模型-slm大语言模型-llm">分类器（自然语言理解 NLU、小语言模型 SLM、大语言模型 LLM）</a></li>
+        <li><a href="#agent-registry-智能体注册中心">Agent Registry 智能体注册中心</a></li>
+        <li><a href="#监督智能体supervisor-agent-可选视扩展性需求">监督智能体（Supervisor Agent ,可选，视扩展性需求）</a></li>
+        <li><a href="#智能体-1-2-3-4带模型上下文协议-mcp-客户端">智能体 #1, #2, #3, #4（带模型上下文协议 MCP 客户端）</a></li>
+        <li><a href="#对话历史">对话历史</a></li>
+        <li><a href="#智能体状态">智能体状态</a></li>
+        <li><a href="#注册中心存储">注册中心存储</a></li>
+        <li><a href="#集成层与-mcp-服务器">集成层与 MCP 服务器</a></li>
+      </ol>
+    </li>
+    <li><a href="#32-核心优势">3.2 核心优势</a></li>
+    <li><a href="#4-多智能体系统实施">4. 多智能体系统实施</a>
+      <ol>
+        <li><a href="#41--架构模式">4.1  架构模式</a></li>
+        <li><a href="#模块化单体">模块化单体</a></li>
+        <li><a href="#微服务">微服务</a></li>
+        <li><a href="#系统评估与治理">系统评估与治理</a></li>
+        <li><a href="#智能体注册中心与调度">智能体注册中心与调度</a></li>
+        <li><a href="#运营韧性">运营韧性</a></li>
+        <li><a href="#安全">安全</a></li>
+      </ol>
+    </li>
+    <li><a href="#结论">结论</a></li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/">
+            <img src="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-diagram-of-a-company-ai-generated-content-may-b.png" width="714" height="1077" loading="lazy"
+                alt="Featured image of post Microsoft 设计多智能体系统" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/ai-agent/" style="background-color: #2a9d8f; color: #fff;">
+                AI Agent 原理、设计与实践
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/">Microsoft 设计多智能体系统</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            采用最新 AI 技术的企业正转向**多智能体系统**：一组自主化、特定任务的智能体，通过调度器协同工作，模拟跨职能人类团队处理复杂任务的方式
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-03-06T00:00:00Z'>2026年3月6日星期五</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 13 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#1-引言">1. 引言</a></li>
+    <li><a href="#2-问题阐述">2. 问题阐述</a></li>
+    <li><a href="#3-解决方案">3. 解决方案</a>
+      <ol>
+        <li><a href="#31-组件拆解">3.1 组件拆解</a></li>
+        <li><a href="#调度器orchestrator-语义内核">调度器（Orchestrator ,语义内核）</a></li>
+        <li><a href="#分类器自然语言理解-nlu小语言模型-slm大语言模型-llm">分类器（自然语言理解 NLU、小语言模型 SLM、大语言模型 LLM）</a></li>
+        <li><a href="#agent-registry-智能体注册中心">Agent Registry 智能体注册中心</a></li>
+        <li><a href="#监督智能体supervisor-agent-可选视扩展性需求">监督智能体（Supervisor Agent ,可选，视扩展性需求）</a></li>
+        <li><a href="#智能体-1-2-3-4带模型上下文协议-mcp-客户端">智能体 #1, #2, #3, #4（带模型上下文协议 MCP 客户端）</a></li>
+        <li><a href="#对话历史">对话历史</a></li>
+        <li><a href="#智能体状态">智能体状态</a></li>
+        <li><a href="#注册中心存储">注册中心存储</a></li>
+        <li><a href="#集成层与-mcp-服务器">集成层与 MCP 服务器</a></li>
+      </ol>
+    </li>
+    <li><a href="#32-核心优势">3.2 核心优势</a></li>
+    <li><a href="#4-多智能体系统实施">4. 多智能体系统实施</a>
+      <ol>
+        <li><a href="#41--架构模式">4.1  架构模式</a></li>
+        <li><a href="#模块化单体">模块化单体</a></li>
+        <li><a href="#微服务">微服务</a></li>
+        <li><a href="#系统评估与治理">系统评估与治理</a></li>
+        <li><a href="#智能体注册中心与调度">智能体注册中心与调度</a></li>
+        <li><a href="#运营韧性">运营韧性</a></li>
+        <li><a href="#安全">安全</a></li>
+      </ol>
+    </li>
+    <li><a href="#结论">结论</a></li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="microsoft-设计多智能体系统">Microsoft 设计多智能体系统
+</h1><h2 id="1-引言">1. 引言
+</h2><p>生成式人工智能正以企业技术领域罕见的速度，从概念验证试点转向关键业务负载。第一波项目通常只搭建单一的 “全能型” 智能体 —— 一个封装了提示工程、向量库与少量 API 连接器的大语言模型。这种模式适用于窄场景的 FAQ 机器人，但在真实企业约束下会迅速失效：</p>
+<ul>
+<li>覆盖数十条业务线的领域专业知识</li>
+<li>严格的数据主权与模型访问策略</li>
+<li>无需夜间重新部署全栈即可接入新能力或替换模型的需求</li>
+</ul>
+<p>因此，采用最新 AI 技术的企业正转向<strong>多智能体系统</strong>：一组自主化、特定任务的智能体，通过调度器协同工作，模拟跨职能人类团队处理复杂任务的方式。每个智能体包含：</p>
+<ul>
+<li>大语言模型（LLM）或小语言模型（SLM）核心</li>
+<li>领域专用工具集（API、知识图谱、私有数据）</li>
+<li>长短时记忆，用于持续优化规划</li>
+</ul>
+<p>其突破点并非单个智能体的智能，而是<strong>多个智能体共享上下文、分工协作、合并结果形成统一回答</strong>时涌现出的整体行为。</p>
+<h2 id="2-问题阐述">2. 问题阐述
+</h2><p>尽管基于大语言模型的助手在各行业快速落地，大多数企业实现仍停留在<strong>单一智能体架构</strong>：由一个通用智能体负责理解所有请求、调用所有工具、遵守所有策略。这种 “集中式智能” 模型适用于受限场景（如内部 FAQ、入门级聊天机器人），但在现代企业工作流需求下会彻底失效。</p>
+<p>试图规模化该模式的组织面临以下结构性挑战：</p>
+<ul>
+<li><strong>过度泛化</strong>：单一智能体试图服务多条业务线（各有监管、语言、决策差异），导致提示脆弱、回答通用、整体模型性能下降。</li>
+<li><strong>性能瓶颈</strong>：所有流量流经单一智能体，系统随用户增多、任务复杂化而变慢。</li>
+<li><strong>安全与合规暴露</strong>：集中访问金融、医疗、个人身份信息（PII）等多样数据集，违背数据最小化、最小权限原则，难以满足监管框架。</li>
+<li><strong>变更管理复杂</strong>：所有逻辑、工具、内存耦合在一个智能体中，新增功能需全栈回归测试，大幅拖慢价值交付并引发平台团队风险规避。</li>
+<li><strong>专业化灵活性不足</strong>：单体智能体难以模块化集成新工具、API 与模型（如本地推理轻量 SLM、垂直领域微调模型），阻碍创新。</li>
+</ul>
+<p>继续沿用单一智能体路线的企业，其限制并非来自 AI 本身，而是系统架构的僵化。这导致创新放缓、运营风险升高，并与领先架构逐渐脱节。</p>
+<p>向模块化、多智能体系统转型已不再是研究愿景，而是企业规模化落地 AI 的<strong>战略必需</strong>。越来越多企业正在将现有单一智能体架构重构为多智能体架构。</p>
+<h2 id="3-解决方案">3. 解决方案
+</h2><p>解决方案不是将单一智能体压榨到极限，而是<strong>将工作负载分发到专用智能体</strong>，每个智能体专注特定领域或功能，由中央组件保持系统协同与上下文感知。这直接形成<strong>多智能体架构</strong>：领域专家智能体在各自领域内独立处理任务，调度器确保各组件无缝集成。</p>
+<p>该架构基础组成：</p>
+<ul>
+<li>多个专注特定功能的领域智能体（如汇款支付智能体、投资顾问智能体）</li>
+<li>负责意图路由、上下文保留、任务分发的调度器</li>
+<li>支持智能体高效协作并向用户呈现统一体验的上下文共享机制</li>
+</ul>
+<p>为支撑企业级人工智能系统所需的<strong>模块化、可扩展、专业化</strong>能力，企业正采用<strong>分层式多智能体架构</strong>，将<strong>集中式编排</strong>与<strong>分布式智能</strong>相结合。</p>
+<p>如下所示，该架构旨在<strong>模拟现实世界的组织架构</strong>：由中央协调器（编排器）将任务委派给各类<strong>专业化智能体</strong>，每个智能体均具备领域专属能力、工具与记忆。系统划分为清晰的功能层，包括<strong>编排调度、任务分类、智能体执行、知识检索、数据存储与系统集成</strong>，在大规模部署下实现<strong>灵活性、可管控性与高性能</strong>。</p>
+<p><img src="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-diagram-of-a-company-ai-generated-content-may-b.png"
+	width="714"
+	height="1077"
+	srcset="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-diagram-of-a-company-ai-generated-content-may-b_hu_97e5991891cf8fc7.png 480w, ../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-diagram-of-a-company-ai-generated-content-may-b_hu_f236e1380d001754.png 1024w"
+	loading="lazy"
+	
+		alt="Multi-agent system architecture diagram showing orchestrator, agents, storage layers, and integration components"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="66"
+		data-flex-basis="159px"
+	
+></p>
+<h3 id="31-组件拆解">3.1 组件拆解
+</h3><h3 id="调度器orchestrator-语义内核">调度器（Orchestrator ,语义内核）
+</h3><ul>
+<li>
+<p>系统核心协调组件，管理系统的请求与响应流，提供统一管理、合理路由、上下文维护与请求生命周期管理。</p>
+</li>
+<li>
+<p><strong>工作方式</strong>：接收用户应用请求，确定处理方式，协调对应组件，维护状态，最终返回响应。</p>
+</li>
+</ul>
+<h3 id="分类器自然语言理解-nlu小语言模型-slm大语言模型-llm">分类器（自然语言理解 NLU、小语言模型 SLM、大语言模型 LLM）
+</h3><ul>
+<li>
+<p>负责理解用户输入并确定系统内合理路由，确保请求被正确理解并导向最合适智能体，提升回答质量与系统效率。</p>
+</li>
+<li>
+<p><strong>工作方式</strong>：分析用户输入内容、上下文、意图，进行分类并确定处理方式。采用从低成本到高成本的递进方案：NLU → SLM → LLM/SLM，依据置信度判断意图或继续推理。若最终未识别意图，返回 “IDK（我不知道）”。</p>
+</li>
+</ul>
+<h3 id="agent-registry-智能体注册中心">Agent Registry 智能体注册中心
+</h3><p>维护所有可用智能体信息、能力与运行状态的目录服务，支持动态发现与使用，无需硬编码依赖即可实现扩展性与系统演进。</p>
+<p><strong>工作方式</strong>：维护智能体元数据数据库（能力、端点、运行参数），提供查询与选择功能，为特定任务匹配合适智能体。</p>
+<p><strong>子组件：</strong></p>
+<ul>
+<li><strong>发现模块</strong>：主动识别并注册新智能体；实现发现协议；处理管理员发起的注册；网络扫描定位潜在智能体；管理上线流程；保留发现历史与重试逻辑。</li>
+<li><strong>验证模块</strong>：验证智能体能力与接口；安全验证与身份认证；探针请求测试功能；确保系统兼容；生成分类用元数据。</li>
+<li><strong>注册中心存储</strong>：持久化智能体信息；保留版本历史与能力演进；存储安全凭证与访问策略；记录交互指标与性能数据。</li>
+</ul>
+<h3 id="监督智能体supervisor-agent-可选视扩展性需求">监督智能体（Supervisor Agent ,可选，视扩展性需求）
+</h3><p>专用智能体，负责协调其他智能体完成复杂任务，将复杂任务拆解为子任务由专用智能体处理，再合成输出连贯回答。</p>
+<p><strong>工作方式</strong>：接收高层任务 → 拆解 → 委派 → 监控进度 → 聚合结果 → 确保完成。</p>
+<p>一种<strong>专用智能体</strong>，负责协调其他智能体以完成复杂任务。将复杂任务拆解为子任务由专用智能体处理，并将它们的输出<strong>合成</strong>为连贯一致的结果。</p>
+<p>工作机制：接收高层任务 → 任务分解 → 委派给对应专业智能体 → 监控执行进度 → 汇总结果 → 确保整体任务完成。</p>
+<p>最佳实践：</p>
+<ul>
+<li>监控各智能体在<strong>知识领域与行动范围</strong>上的重叠情况，避免冗余与混乱。</li>
+<li>避免将高度相似的智能体分开独立部署，这会降低编排器或意图分类器的性能。</li>
+<li>对相似智能体进行<strong>重构或分组</strong>，通过统一接口或能力封装，简化分类与路由逻辑。</li>
+<li>当架构跨领域扩展时，引入<strong>智能体监管器</strong>，用于管理和抽象相关智能体群组。</li>
+<li>采用<strong>分层组织架构</strong>（如：监管器 → 智能体组），保证结构清晰、可扩展，并简化意图解析。</li>
+</ul>
+<h3 id="智能体-1-2-3-4带模型上下文协议-mcp-客户端">智能体 #1, #2, #3, #4（带模型上下文协议 MCP 客户端）
+</h3><p>专为处理<strong>特定领域、任务或能力</strong>而设计的<strong>专业化 AI 智能体</strong>。相较于通用型智能体，<strong>领域专业化</strong>能在特定场景中提供更深度的专业能力与更优表现。</p>
+<p>工作机制：每个智能体专注于某一特定领域（如金融、医疗、代码开发）或功能（如摘要生成、信息调研、创意写作），针对用户请求应用专业知识、模型或技术。</p>
+<p>本地智能体与远程智能体的区别：</p>
+<ul>
+<li>本地智能体与编排器运行在<strong>同一环境</strong>中</li>
+<li>远程智能体<strong>跨网络边界</strong>运行</li>
+<li>智能体间通信应通过<strong>标准化协议</strong>实现，例如 A2A</li>
+<li>远程智能体需要额外考虑<strong>安全性与可靠性</strong></li>
+<li>通信模式不同（内存内通信 vs 网络协议）</li>
+<li>部署与扩缩容策略差异显著</li>
+<li>资源管理方式存在本质区别</li>
+</ul>
+<h3 id="对话历史">对话历史
+</h3><ul>
+<li>用户 - 智能体交互与对话流的持久化存储，支持上下文感知回答、从历史交互学习，并提供系统行为审计轨迹。</li>
+<li><strong>工作方式</strong>：结构化、可查询格式记录对话每一轮：用户输入、智能体响应与相关元数据。</li>
+</ul>
+<h3 id="智能体状态">智能体状态
+</h3><ul>
+<li>对智能体的<strong>运行状态、配置信息与运行时状态</strong>进行持久化存储。支持跨会话保持连续性、故障恢复，以及基于历史经验的自适应调整。</li>
+<li>工作机制：为每个智能体同时维护<strong>静态配置</strong>与<strong>动态运行时状态</strong>，使其能够恢复执行并保留已学习到的行为模式。</li>
+</ul>
+<h3 id="注册中心存储">注册中心存储
+</h3><ul>
+<li>用于<strong>智能体注册中心</strong>的专用存储，负责维护智能体元数据、能力信息与运行历史。它为智能体注册中心提供持久化数据层，确保在系统重启与更新过程中，智能体信息保持一致。</li>
+<li>工作机制：存储每个智能体的完整信息，包括能力、服务端点、安全凭证、性能指标与版本历史。</li>
+</ul>
+<h3 id="集成层与-mcp-服务器">集成层与 MCP 服务器
+</h3><ul>
+<li>**标准化接口层：**用于连接智能体与外部工具、服务和数据源。它为智能体提供统一的外部能力调用方式，无需为每个工具单独开发定制化集成。</li>
+<li><strong>工作机制：<strong>通过实现</strong>模型上下文协议（MCP）</strong>，将各类工具封装为标准化服务，供智能体自动发现与调用。</li>
+</ul>
+<h2 id="32-核心优势">3.2 核心优势
+</h2><ul>
+<li><strong>模块化与可扩展性</strong>：架构的模块化特性支持企业<strong>渐进式迭代升级 AI 系统</strong>，无需中断整个技术栈。通过智能体注册与编排，可无缝接入专注于新领域或新任务的新增智能体，无需对现有组件重新训练或重新部署。</li>
+<li><strong>领域专业化</strong>：不再依赖单一通用模型或单个智能体处理所有用户请求，每个智能体均<strong>针对特定领域的主题、规则与数据专门构建并精调优化</strong>。这能确保更高的准确率、更贴合业务需求，并减少不合规或模糊的输出。</li>
+<li><strong>可扩展性</strong>：通过对编排层、智能体层、知识层、存储层等基础层进行<strong>职责分离</strong>，系统可跨领域、跨场景横向扩展。智能体既可本地运行，也可集成远程智能体；随着系统内专业知识类型增多，监管器可统一管理智能体集群，支持企业逐步承载<strong>数百个专用任务智能体</strong>。</li>
+<li><strong>容错与稳定性</strong>：单个智能体发生故障时<strong>不会引发系统级联失效</strong>，编排器或智能体监管器可对任务进行重新路由、重试或降级切换至其他智能体，保障系统高可用与强韧性。</li>
+</ul>
+<h2 id="4-多智能体系统实施">4. 多智能体系统实施
+</h2><p>设计多智能体系统必须先开展内部评估：评估现有资产、团队能力，以及最关键的 —— 可从该系统受益的业务场景。新技术吸引力强，但成功关键在于系统与有意义业务场景对齐。无明确投资回报（ROI），项目易失败。</p>
+<p>许多组织在现有对话系统上构建智能体平台，也有组织与微软 Copilot、Azure Foundry 等公司战略对齐，围绕或直接采用其能力。该战略决策意义重大，但不在本文讨论范围内。</p>
+<p>无论选择何种路径，本文分享我们实施多智能体系统的经验与遇到的挑战，见解适用于任何架构方向。</p>
+<h3 id="41--架构模式">4.1  架构模式
+</h3><p>多智能体系统可设计为<strong>单体式</strong>或<strong>分布式系统</strong>，两种方案在性能、扩展性、可维护性、团队协作与运营复杂度上各有取舍。</p>
+<h3 id="模块化单体">模块化单体
+</h3><p>独立应用，调度器与专用智能体为定义清晰的内部模块，优势：简单、共享内存、低延迟通信。</p>
+<p><img src="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/word-image-19748-6.png"
+	width="528"
+	height="740"
+	srcset="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/word-image-19748-6_hu_a940bc01f84cfc6.png 480w, ../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/word-image-19748-6_hu_e95f20eaab614d7.png 1024w"
+	loading="lazy"
+	
+		alt="Modular monolith architecture diagram showing orchestrator and specialized agents as internal modules"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="71"
+		data-flex-basis="171px"
+	
+></p>
+<h3 id="微服务">微服务
+</h3><p>分布式架构，每个 / 每组智能体封装为独立服务，支持独立部署、细粒度扩展，可灵活使用多样工具、框架与编程语言。</p>
+<p><img src="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-diagram-of-a-service-ai-generated-content-may-b.png"
+	width="428"
+	height="493"
+	srcset="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-diagram-of-a-service-ai-generated-content-may-b_hu_b8b9bd40ee1fb9a8.png 480w, ../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-diagram-of-a-service-ai-generated-content-may-b_hu_442bd75a4432a111.png 1024w"
+	loading="lazy"
+	
+		alt="Microservices architecture diagram showing distributed agents as independent services with network communication"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="86"
+		data-flex-basis="208px"
+	
+></p>
+<h3 id="系统评估与治理">系统评估与治理
+</h3><p>同样至关重要的是，<strong>定义系统的评估方式</strong>，并<strong>识别直接影响其行为的组件</strong>。适用于单个智能体的规范化实践（如大模型运营 LLMOps、数据流水线、持续评估、CI/CD 等），也应延伸至<strong>系统级</strong>，以确保系统具备健壮性并与业务目标保持一致。</p>
+<p>为说明系统各模块如何关联及其可能产生的影响，我们以一个采用<strong>检索增强生成（RAG）</strong> 技术的知识库智能体为例。这类智能体通常会使用向量数据库，而数据库或索引一般由其他团队负责维护，其变更会直接影响知识库智能体的行为。一旦发生各类变更，我们若无法追踪变更内容与影响范围，当此类变更不断增多，最终用户就可能遭遇功能异常、体验受损的情况。为避免这一问题，我们建议<strong>从项目初期就制定版本管理策略</strong>，并确保生产环境处于<strong>受控、封闭</strong>的稳定状态。</p>
+<p><img src="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-screenshot-of-a-diagram-ai-generated-content-ma.png"
+	width="415"
+	height="658"
+	srcset="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-screenshot-of-a-diagram-ai-generated-content-ma_hu_d52ca97cedfe97a0.png 480w, ../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-screenshot-of-a-diagram-ai-generated-content-ma_hu_9d2cdc7627945bbf.png 1024w"
+	loading="lazy"
+	
+		alt="State machine diagram for agent versioning showing transitions between development, testing, and production states"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="63"
+		data-flex-basis="151px"
+	
+></p>
+<p>这是一份针对<strong>智能体版本管理</strong>所设计的状态机建议。注意：请勿使用state 字段来追踪版本，版本属于另一类独立的数据。</p>
+<h3 id="智能体注册中心与调度">智能体注册中心与调度
+</h3><p>多智能体系统的核心是<strong>智能体注册中心（Agent Registry）</strong>。该服务负责生成描述智能体的元数据，并验证智能体是否实现了系统支持的协议。注册流程可通过两种方式实现：</p>
+<ul>
+<li><strong>注册中心发起的智能体注册</strong>：当智能体已部署且可获取其信息时，注册机制可向目标智能体 URL 发起请求，以获取智能体信息。实现该机制需要注册中心知晓不同智能体信息接口的访问地址与方式。</li>
+<li><strong>智能体发起的自主注册</strong>：另一种方式是，注册机制提供一个 API 接口，供智能体将自身信息 “主动” 注册到注册中心。实现该机制需要注册中心提供一个可被智能体访问的接口，用于接收并录入智能体信息。</li>
+</ul>
+<p>在监管严格的行业中，开放自主注册路径难度较大，尤其是在需要接入外部智能体的场景下。可通过引入审批工作流等方式进行处理，具体场景将决定采用哪种最合适的方案，或两种方案并行。</p>
+<p>智能体完成注册后，即可定义智能体编排配置。<strong>编排器智能体服务</strong>将使用另一组元数据，来描述组成编排体系的智能体及其版本。该配置本质上是指定智能体与对应版本，类似于 Docker Compose 配置。</p>
+<p><img src="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-screenshot-of-a-phone-ai-generated-content-may.png"
+	width="432"
+	height="807"
+	srcset="../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-screenshot-of-a-phone-ai-generated-content-may_hu_892ceaf56f5e26a6.png 480w, ../../p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/images/a-screenshot-of-a-phone-ai-generated-content-may_hu_6902e22f62ec1d81.png 1024w"
+	loading="lazy"
+	
+		alt="Agent registry configuration interface showing metadata and orchestration settings"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="53"
+		data-flex-basis="128px"
+	
+></p>
+<p>在此再次强调：<strong>强烈建议对编排器与智能体的元数据进行版本管理</strong>，避免任何变更影响最终用户体验。</p>
+<h3 id="运营韧性">运营韧性
+</h3><p>多智能体系统的<strong>运行韧性</strong>，首先建立在<strong>可观测性</strong>之上。尽管本文不对可观测性展开深入探讨（相关内容已有大量资料覆盖），但必须明确：<strong>没有可观测性，就无法实现韧性</strong>。</p>
+<p>在具备可观测性的前提下，下一步是定义<strong>需要度量的指标</strong>以及<strong>系统应如何响应</strong>，以保障韧性。这包括监控智能体健康状态、检测故障，并实现恢复机制。</p>
+<p><strong>健康检查</strong>是基础。无论智能体是本地部署还是远程部署，都必须对其进行持续监控。当出现中断或故障时，应自动触发重试策略。这是韧性架构中的通用做法，有助于维持服务连续性。</p>
+<p>对于生成式 AI 应用，还需要额外关注：</p>
+<ul>
+<li><strong>Token 用量监控</strong>至关重要，可避免成本突增或性能下降。系统应追踪使用模式，并设置阈值与告警。</li>
+<li>必须具备<strong>降级 / 备用机制</strong>，以应对 Token 超限、模型响应失败等场景。例如：切换到更小模型、使用缓存结果，或优雅降级功能。</li>
+</ul>
+<p>韧性设计还应贯穿<strong>智能体的整个生命周期</strong>，包括：</p>
+<ul>
+<li>智能体及其依赖项的<strong>版本控制</strong></li>
+<li>生产环境<strong>隔离</strong>，避免意外副作用</li>
+<li>对上下游变更进行<strong>影响追踪</strong>（例如基于 RAG 的智能体所使用的向量数据库更新）</li>
+</ul>
+<p>通过<strong>主动设计故障与恢复流程</strong>，并确保系统行为可观测、可度量、可处置，团队能够构建出<strong>健壮、可靠</strong>且符合业务连续性目标的多智能体系统。</p>
+<h3 id="安全">安全
+</h3><p>生成式人工智能应用带来了一系列<strong>有别于传统软件系统</strong>的全新安全风险，其中包括模型幻觉、提示词注入攻击、数据泄露，以及为操纵模型行为而设计的对抗性输入等威胁。</p>
+<p><strong>提示词注入</strong>是一类尤为值得警惕的攻击途径：恶意用户会精心构造输入内容，篡改智能体的预期行为，或绕过系统的安全防护机制。这类攻击手段往往较为隐蔽，难以被检测，在高度依赖自然语言输入的系统中更是如此。</p>
+<p>在微软，我们的团队正通过<strong>AETHER（工程与研究领域的人工智能与伦理）委员会</strong>的工作，积极应对这些挑战。作为该计划的一部分，我们研发了一套专为人工智能系统打造的威胁建模框架，并将其应用于整个开发生命周期。这一框架有助于<strong>尽早识别并缓解安全风险</strong>，确保安全设计被深度融入多智能体系统的架构中。</p>
+<p>我们还发布了关于安全部署实践与负责任的人工智能使用规范指南，核心内容包括：</p>
+<ul>
+<li>输入验证与清洗</li>
+<li>针对智能体和编排层的基于角色的访问控制</li>
+<li>智能体交互行为的日志记录与审计追踪</li>
+<li>敏感数据与模型输出的隔离保护</li>
+<li>限流机制与滥用行为检测</li>
+</ul>
+<p>尽管本文并未全面覆盖人工智能安全的所有范畴，但我们强烈建议<strong>从项目初期就整合威胁建模与安全开发实践</strong>。安全绝非事后补救的措施，而必须成为所有生成式人工智能系统架构的<strong>核心基石</strong>。</p>
+<h2 id="结论">结论
+</h2><p>对于在企业内部规模化落地生成式 AI 的技术架构师与开发者而言，<strong>单智能体系统的局限性已日益凸显</strong>。这类架构虽然适用于快速原型验证，但会迅速变得僵化、难以治理，且无法满足企业级诉求 —— 如跨领域智能能力、持续演进的工具链、严格的合规与安全标准等。</p>
+<p><strong>多智能体架构</strong>为构建企业级 AI 系统提供了<strong>可扩展、高韧性、面向未来</strong>的基础。通过将职责分配给多个专业化智能体（每个智能体拥有独立模型、工具与记忆），并通过中央编排器统一协调行为，企业可以获得<strong>模块化、更强的容错能力与更清晰的职责分离</strong>。这种思路不仅与成熟的软件工程实践一致，还能更好地与现有企业系统及 API 实现互操作。</p>
+<p>至关重要的是，多智能体系统<strong>提升了可观测性、可审计性与合规能力</strong>，支持企业在规模化场景下有效执行策略、监控性能、保持治理可控。它还支持<strong>人在回路</strong>的协作模式：智能体作为人类专业能力的增强，而非替代，尤其适用于高风险领域。</p>
+<p>从战略视角看，这一架构转型使企业能够：</p>
+<ul>
+<li>在智能体中沉淀<strong>领域专属知识</strong></li>
+<li>通过动态分配任务<strong>优化计算成本</strong></li>
+<li>通过可复用、可组合的智能体模式<strong>加速价值落地周期</strong></li>
+</ul>
+<p>长期来看，智能体将逐步演化为承载<strong>企业内部知识</strong>的智能组件，为业务带来持续的差异化竞争力。</p>
+<p>总而言之，采用多智能体平台<strong>不只是一次技术升级</strong>，更是一项长期投资：用于打造<strong>自适应、合规、智能化</strong>的系统，使其能够随业务需求规模化扩展、交付实际价值，并与企业战略目标同步演进。</p>
+<p>来源：https://developer.microsoft.com/blog/designing-multi-agent-intelligence</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/ai-agent/">AI Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/">
+        
+        <div class="article-image">
+            <img src="../../p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/images/252Fdbd1b23601318794f079b6a6d19a3ef13257f871.png" width="1920" height="1080" loading="lazy"
+                alt="Featured image of post 使用 LangChain 构建多智能体工作流">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #13511380 0%, #fefefeC0 100%);">
+            <h2 class="article-title">使用 LangChain 构建多智能体工作流</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/">
+        
+        <div class="article-image">
+            <img src="../../p/%E4%B8%BB%E6%B5%81%E5%BC%80%E6%BA%90-rerank-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E6%9E%90%E4%B8%8E%E9%80%89%E5%9E%8B%E6%8C%87%E5%8D%972026-%E7%89%88/images/image-1-17667340159537.png" width="2000" height="1425" loading="lazy"
+                alt="Featured image of post 主流开源 Rerank 模型解析与选型指南（2026 版）">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #659df780 0%, #e5f3ffC0 100%);">
+            <h2 class="article-title">主流开源 Rerank 模型解析与选型指南（2026 版）</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90agentgpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240826145321939.png" width="1909" height="945" loading="lazy"
+                alt="Featured image of post 深入解析AgentGPT：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #181c1e80 0%, #e9eceeC0 100%);">
+            <h2 class="article-title">深入解析AgentGPT：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90babyagi%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/235015461-543a897f-70cc-4b63-941a-2ae3c9172b11-17241256699664.png" width="2978" height="2205" loading="lazy"
+                alt="Featured image of post 深入解析BabyAGI：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #24282980 0%, #f6fafaC0 100%);">
+            <h2 class="article-title">深入解析BabyAGI：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90autogpt%E5%8E%9F%E7%90%86%E5%AE%9E%E6%88%98%E4%B8%8E%E6%BA%90%E7%A0%81%E6%8B%86%E8%A7%A3/images/image-20240730120705816.png" width="1138" height="704" loading="lazy"
+                alt="Featured image of post 深入解析AutoGPT：原理、实战与源码拆解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #4b4d5080 0%, #fafbfcC0 100%);">
+            <h2 class="article-title">深入解析AutoGPT：原理、实战与源码拆解</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

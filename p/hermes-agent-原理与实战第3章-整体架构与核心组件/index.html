@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="理解 Hermes Agent 最高效的方式，是先看它的\"系统总图\"，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的\"心理模型\"，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。">
+<title>Hermes Agent 原理与实战——第3章 整体架构与核心组件</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Hermes Agent 原理与实战——第3章 整体架构与核心组件">
+<meta property='og:description' content="理解 Hermes Agent 最高效的方式，是先看它的\"系统总图\"，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的\"心理模型\"，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='hermes agent' /><meta property='article:published_time' content='2026-08-16T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-08-16T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Hermes Agent 原理与实战——第3章 整体架构与核心组件">
+<meta name="twitter:description" content="理解 Hermes Agent 最高效的方式，是先看它的\"系统总图\"，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的\"心理模型\"，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。"><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#hermes-agent-原理与实战第3章-整体架构与核心组件">Hermes Agent 原理与实战——第3章 整体架构与核心组件</a>
+      <ol>
+        <li><a href="#21-系统总图">2.1 系统总图</a></li>
+        <li><a href="#22-仓库目录速览">2.2 仓库目录速览</a></li>
+        <li><a href="#23-入口层六种调用方式">2.3 入口层：六种调用方式</a>
+          <ol>
+            <li><a href="#第1种cli-与-tuiclipy">第1种、CLI 与 TUI（cli.py）</a></li>
+            <li><a href="#第2种gatewaygatewayrunpy">第2种、Gateway（gateway/run.py）</a></li>
+            <li><a href="#第3种-acp-adapteracp_adapter">第3种、 ACP Adapter（acp_adapter/）</a></li>
+            <li><a href="#第4种api-server">第4种、API Server</a></li>
+            <li><a href="#第5种batch-runnerbatch_runnerpy">第5种、Batch Runner（batch_runner.py）</a></li>
+            <li><a href="#第6种python-library">第6种、Python Library</a></li>
+          </ol>
+        </li>
+        <li><a href="#24-主要子系统">2.4 主要子系统</a>
+          <ol>
+            <li><a href="#241-agent-核心aiagent">2.4.1 Agent 核心：<code>AIAgent</code></a></li>
+            <li><a href="#242-prompt-构建冻结快照与槽位设计">2.4.2 Prompt 构建：冻结快照与槽位设计</a></li>
+            <li><a href="#243-provider-运行时模型选择与故障切换">2.4.3 Provider 运行时：模型选择与故障切换</a></li>
+            <li><a href="#244-工具运行时">2.4.4 工具运行时</a></li>
+            <li><a href="#245-会话存储sqlite--fts5">2.4.5 会话存储：SQLite + FTS5</a></li>
+            <li><a href="#246-学习闭环memory--skills--curator--honcho">2.4.6 学习闭环：Memory + Skills + Curator + Honcho</a></li>
+            <li><a href="#247-gateway-内部多平台分发">2.4.7 Gateway 内部：多平台分发</a></li>
+            <li><a href="#248-自动化层cronkanbanwebhook">2.4.8 自动化层：Cron、Kanban、Webhook</a></li>
+            <li><a href="#249-安全与隔离">2.4.9 安全与隔离</a></li>
+          </ol>
+        </li>
+        <li><a href="#211-研究与训练atropos--trajectory">2.11 研究与训练：Atropos / Trajectory</a></li>
+        <li><a href="#25-设计原则">2.5 设计原则</a></li>
+        <li><a href="#26-关键概念词典">2.6 关键概念词典</a></li>
+        <li><a href="#本章小结">本章小结</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/hermes-agent/" style="background-color: #2a9d8f; color: #fff;">
+                Hermes Agent 原理与实战
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/">Hermes Agent 原理与实战——第3章 整体架构与核心组件</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            理解 Hermes Agent 最高效的方式，是先看它的&#34;系统总图&#34;，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的&#34;心理模型&#34;，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-08-16T00:00:00Z'>2026年8月16日星期日</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 26 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#hermes-agent-原理与实战第3章-整体架构与核心组件">Hermes Agent 原理与实战——第3章 整体架构与核心组件</a>
+      <ol>
+        <li><a href="#21-系统总图">2.1 系统总图</a></li>
+        <li><a href="#22-仓库目录速览">2.2 仓库目录速览</a></li>
+        <li><a href="#23-入口层六种调用方式">2.3 入口层：六种调用方式</a>
+          <ol>
+            <li><a href="#第1种cli-与-tuiclipy">第1种、CLI 与 TUI（cli.py）</a></li>
+            <li><a href="#第2种gatewaygatewayrunpy">第2种、Gateway（gateway/run.py）</a></li>
+            <li><a href="#第3种-acp-adapteracp_adapter">第3种、 ACP Adapter（acp_adapter/）</a></li>
+            <li><a href="#第4种api-server">第4种、API Server</a></li>
+            <li><a href="#第5种batch-runnerbatch_runnerpy">第5种、Batch Runner（batch_runner.py）</a></li>
+            <li><a href="#第6种python-library">第6种、Python Library</a></li>
+          </ol>
+        </li>
+        <li><a href="#24-主要子系统">2.4 主要子系统</a>
+          <ol>
+            <li><a href="#241-agent-核心aiagent">2.4.1 Agent 核心：<code>AIAgent</code></a></li>
+            <li><a href="#242-prompt-构建冻结快照与槽位设计">2.4.2 Prompt 构建：冻结快照与槽位设计</a></li>
+            <li><a href="#243-provider-运行时模型选择与故障切换">2.4.3 Provider 运行时：模型选择与故障切换</a></li>
+            <li><a href="#244-工具运行时">2.4.4 工具运行时</a></li>
+            <li><a href="#245-会话存储sqlite--fts5">2.4.5 会话存储：SQLite + FTS5</a></li>
+            <li><a href="#246-学习闭环memory--skills--curator--honcho">2.4.6 学习闭环：Memory + Skills + Curator + Honcho</a></li>
+            <li><a href="#247-gateway-内部多平台分发">2.4.7 Gateway 内部：多平台分发</a></li>
+            <li><a href="#248-自动化层cronkanbanwebhook">2.4.8 自动化层：Cron、Kanban、Webhook</a></li>
+            <li><a href="#249-安全与隔离">2.4.9 安全与隔离</a></li>
+          </ol>
+        </li>
+        <li><a href="#211-研究与训练atropos--trajectory">2.11 研究与训练：Atropos / Trajectory</a></li>
+        <li><a href="#25-设计原则">2.5 设计原则</a></li>
+        <li><a href="#26-关键概念词典">2.6 关键概念词典</a></li>
+        <li><a href="#本章小结">本章小结</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="hermes-agent-原理与实战第3章-整体架构与核心组件">Hermes Agent 原理与实战——第3章 整体架构与核心组件
+</h2><blockquote>
+<p>理解 Hermes Agent 最高效的方式，是先看它的&quot;系统总图&quot;，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的&quot;心理模型&quot;，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。</p>
+</blockquote>
+<h3 id="21-系统总图">2.1 系统总图
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                          <span class="err">入口层（</span><span class="n">Entry</span> <span class="n">Points</span><span class="err">）</span>                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                      <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">CLI</span> <span class="p">(</span><span class="n">cli</span><span class="o">.</span><span class="n">py</span><span class="p">)</span>       <span class="n">Gateway</span> <span class="p">(</span><span class="n">gateway</span><span class="o">/</span><span class="n">run</span><span class="o">.</span><span class="n">py</span><span class="p">)</span>      <span class="n">ACP</span> <span class="p">(</span><span class="n">acp_adapter</span><span class="o">/</span><span class="p">)</span> <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Batch</span> <span class="n">Runner</span>       <span class="n">API</span> <span class="n">Server</span>                    <span class="n">Python</span> <span class="n">Library</span>     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──────────┬──────────────┬───────────────────────┬───────────────────┘</span>
+</span></span><span class="line"><span class="cl">           <span class="err">│</span>              <span class="err">│</span>                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl">           <span class="err">▼</span>              <span class="err">▼</span>                       <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                  <span class="n">Agent</span> <span class="err">核心（</span><span class="n">AIAgent</span><span class="err">，</span><span class="n">run_agent</span><span class="o">.</span><span class="n">py</span><span class="err">）</span>                  <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌──────────────┐</span>  <span class="err">┌──────────────┐</span>  <span class="err">┌──────────────┐</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">Prompt</span>       <span class="err">│</span>  <span class="err">│</span> <span class="n">Provider</span>     <span class="err">│</span>  <span class="err">│</span> <span class="n">Tool</span>         <span class="err">│</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">Builder</span>      <span class="err">│</span>  <span class="err">│</span> <span class="n">Resolution</span>   <span class="err">│</span>  <span class="err">│</span> <span class="n">Dispatch</span>     <span class="err">│</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="p">(</span><span class="n">prompt_</span>     <span class="err">│</span>  <span class="err">│</span> <span class="p">(</span><span class="n">runtime_</span>    <span class="err">│</span>  <span class="err">│</span> <span class="p">(</span><span class="n">model_</span>      <span class="err">│</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="n">builder</span><span class="o">.</span><span class="n">py</span><span class="p">)</span> <span class="err">│</span>  <span class="err">│</span>  <span class="n">provider</span><span class="o">.</span><span class="n">py</span><span class="p">)</span><span class="err">│</span>  <span class="err">│</span>  <span class="n">tools</span><span class="o">.</span><span class="n">py</span><span class="p">)</span>   <span class="err">│</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└──────┬───────┘</span>  <span class="err">└──────┬───────┘</span>  <span class="err">└──────┬───────┘</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>         <span class="err">│</span>                 <span class="err">│</span>                 <span class="err">│</span>                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌──────┴───────┐</span>  <span class="err">┌──────┴───────┐</span>  <span class="err">┌──────┴───────┐</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">Compression</span>  <span class="err">│</span>  <span class="err">│</span> <span class="mi">3</span> <span class="n">API</span> <span class="n">Modes</span>  <span class="err">│</span>  <span class="err">│</span> <span class="n">Tool</span> <span class="n">Registry</span><span class="err">│</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="o">&amp;</span> <span class="n">Caching</span>    <span class="err">│</span>  <span class="err">│</span> <span class="n">chat_compl</span><span class="o">.</span>  <span class="err">│</span>  <span class="err">│</span> <span class="p">(</span><span class="n">registry</span><span class="o">.</span><span class="n">py</span><span class="p">)</span><span class="err">│</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>              <span class="err">│</span>  <span class="err">│</span> <span class="n">codex_resp</span><span class="o">.</span>  <span class="err">│</span>  <span class="err">│</span> <span class="mi">68</span> <span class="n">tools</span>     <span class="err">│</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>              <span class="err">│</span>  <span class="err">│</span> <span class="n">anthropic</span>    <span class="err">│</span>  <span class="err">│</span> <span class="mi">52</span> <span class="n">toolsets</span>  <span class="err">│</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└──────────────┘</span>  <span class="err">└──────────────┘</span>  <span class="err">└──────────────┘</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└─────────┴─────────────────┴─────────────────┴───────────────────────┘</span>
+</span></span><span class="line"><span class="cl">           <span class="err">│</span>                                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl">           <span class="err">▼</span>                                    <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌───────────────────┐</span>              <span class="err">┌──────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="err">会话存储</span>           <span class="err">│</span>              <span class="err">│</span> <span class="err">工具后端</span>              <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">Session</span> <span class="n">Storage</span>   <span class="err">│</span>              <span class="err">│</span> <span class="n">Tool</span> <span class="n">Backends</span>         <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="p">(</span><span class="n">SQLite</span> <span class="o">+</span> <span class="n">FTS5</span><span class="p">)</span>   <span class="err">│</span>              <span class="err">│</span> <span class="n">Terminal</span> <span class="p">(</span><span class="mi">7</span> <span class="n">backends</span><span class="p">)</span> <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">hermes_state</span><span class="o">.</span><span class="n">py</span>   <span class="err">│</span>              <span class="err">│</span> <span class="n">Browser</span> <span class="p">(</span><span class="mi">5</span> <span class="n">backends</span><span class="p">)</span>  <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">gateway</span><span class="o">/</span><span class="n">session</span><span class="o">.</span><span class="n">py</span><span class="err">│</span>              <span class="err">│</span> <span class="n">Web</span> <span class="p">(</span><span class="mi">4</span> <span class="n">backends</span><span class="p">)</span>      <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└───────────────────┘</span>              <span class="err">│</span> <span class="n">MCP</span> <span class="p">(</span><span class="err">动态</span><span class="p">)</span>            <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                                   <span class="err">│</span> <span class="ne">File</span> <span class="o">/</span> <span class="n">Vision</span> <span class="o">/</span> <span class="o">...</span>   <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                                   <span class="err">└──────────────────────┘</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Hermes 的整体架构是典型的 <strong>&ldquo;多入口 → 单一 Agent 核心 → 多种后端&rdquo;</strong> 分层结构：无论你从哪个入口（ CLI、Telegram bot、API Server、ACP IDE 还是 Python 库调用）进入，最终都会汇入同一个 <code>AIAgent</code> 核心，由它统一编排&quot;提示词构建、Provider 选择、工具调度、会话持久化&quot;。</p>
+<p>这个架构有以下几个关键特征：</p>
+<p><strong>第一，入口多样化：</strong> Hermes 不把自己限定为&quot;一个终端程序&quot;或&quot;一个聊天机器人&quot;。它通过 CLI、Gateway、ACP Adapter、API Server、Batch Runner 和 Python Library 六种形态对外暴露能力。</p>
+<p><strong>第二，核心单一化：</strong> 所有入口最终都调用 <code>run_agent.py</code> 中的 <code>AIAgent</code> 类。该核心对象负责从 prompt 组装、Provider 选择、工具调度、生成响应的完整对话循环。入口层只负责&quot;如何把外部输入翻译成 OpenAI 格式的消息&quot;以及&quot;如何把 Agent 的输出渲染回外部界面&quot;，不参与任何对话逻辑。</p>
+<p><strong>第三，后端可插拔：</strong> Provider 层支持 20 余家模型供应商和 3 种 API 模式；工具层支持 7 种终端后端、5 种浏览器后端、4 种 Web 后端以及动态 MCP 服务；存储层基于 SQLite + FTS5，支持全文检索和会话追踪。这种&quot;多后端&quot;设计让 Hermes 在模型选择、执行环境和数据持久化上都具备极高的自由度。</p>
+<h3 id="22-仓库目录速览">2.2 仓库目录速览
+</h3><p>熟悉仓库目录结构有助于更好的理解系统架构。以下是按功能组织的精简版目录解读。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">hermes-agent/
+</span></span><span class="line"><span class="cl">├── run_agent.py              # AIAgent —— 核心对话循环（约 15,000 行）
+</span></span><span class="line"><span class="cl">├── cli.py                    # HermesCLI —— 交互式终端 UI（约 11,500 行）
+</span></span><span class="line"><span class="cl">├── model_tools.py            # 工具发现、schema 收集、调度
+</span></span><span class="line"><span class="cl">├── toolsets.py               # 工具分组与平台预设
+</span></span><span class="line"><span class="cl">├── hermes_state.py           # SQLite 会话/状态库（带 FTS5）
+</span></span><span class="line"><span class="cl">├── hermes_constants.py       # HERMES_HOME、profile-aware 路径
+</span></span><span class="line"><span class="cl">├── batch_runner.py           # 批量轨迹生成
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├── agent/                    # Agent 内部模块
+</span></span><span class="line"><span class="cl">│   ├── prompt_builder.py     # 系统提示拼装
+</span></span><span class="line"><span class="cl">│   ├── context_engine.py     # ContextEngine 抽象（可插拔）
+</span></span><span class="line"><span class="cl">│   ├── context_compressor.py # 默认引擎：有损摘要压缩
+</span></span><span class="line"><span class="cl">│   ├── prompt_caching.py     # Anthropic prompt caching 标记
+</span></span><span class="line"><span class="cl">│   ├── auxiliary_client.py   # 辅助 LLM（视觉、摘要、压缩）
+</span></span><span class="line"><span class="cl">│   ├── model_metadata.py     # 模型上下文长度、token 估算
+</span></span><span class="line"><span class="cl">│   ├── models_dev.py         # models.dev 注册表
+</span></span><span class="line"><span class="cl">│   ├── anthropic_adapter.py  # Anthropic Messages API 适配
+</span></span><span class="line"><span class="cl">│   ├── display.py            # KawaiiSpinner、工具预览渲染
+</span></span><span class="line"><span class="cl">│   ├── skill_commands.py     # 技能斜杠命令
+</span></span><span class="line"><span class="cl">│   ├── memory_manager.py     # 记忆管理编排
+</span></span><span class="line"><span class="cl">│   ├── memory_provider.py    # 记忆 Provider 抽象基类
+</span></span><span class="line"><span class="cl">│   └── trajectory.py         # 轨迹保存
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├── hermes_cli/               # CLI 子命令与 setup
+</span></span><span class="line"><span class="cl">│   ├── main.py               # 入口：所有 `hermes` 子命令（约 10,400 行）
+</span></span><span class="line"><span class="cl">│   ├── config.py             # DEFAULT_CONFIG、OPTIONAL_ENV_VARS、迁移
+</span></span><span class="line"><span class="cl">│   ├── commands.py           # COMMAND_REGISTRY —— 集中式斜杠命令定义
+</span></span><span class="line"><span class="cl">│   ├── auth.py               # PROVIDER_REGISTRY、凭据解析
+</span></span><span class="line"><span class="cl">│   ├── runtime_provider.py   # Provider → api_mode + credentials
+</span></span><span class="line"><span class="cl">│   ├── models.py             # 模型目录、各家模型列表
+</span></span><span class="line"><span class="cl">│   ├── model_switch.py       # /model 命令逻辑（CLI 与 gateway 共享）
+</span></span><span class="line"><span class="cl">│   ├── setup.py              # 交互式 setup 向导（约 3,500 行）
+</span></span><span class="line"><span class="cl">│   ├── skin_engine.py        # CLI 主题引擎（皮肤）
+</span></span><span class="line"><span class="cl">│   ├── skills_config.py      # hermes skills —— 按平台启用/禁用
+</span></span><span class="line"><span class="cl">│   ├── skills_hub.py         # /skills 斜杠命令
+</span></span><span class="line"><span class="cl">│   ├── tools_config.py       # hermes tools —— 按平台启用/禁用
+</span></span><span class="line"><span class="cl">│   ├── plugins.py            # PluginManager：插件发现、加载、hook
+</span></span><span class="line"><span class="cl">│   ├── callbacks.py          # 终端回调（澄清、sudo、审批）
+</span></span><span class="line"><span class="cl">│   └── gateway.py            # hermes gateway start/stop
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├── tools/                    # 工具实现（每个工具一个文件）
+</span></span><span class="line"><span class="cl">│   ├── registry.py           # 中央工具注册表
+</span></span><span class="line"><span class="cl">│   ├── approval.py           # 危险命令检测
+</span></span><span class="line"><span class="cl">│   ├── terminal_tool.py      # 终端编排
+</span></span><span class="line"><span class="cl">│   ├── process_registry.py   # 后台进程管理
+</span></span><span class="line"><span class="cl">│   ├── file_tools.py         # read_file、write_file、patch、search_files
+</span></span><span class="line"><span class="cl">│   ├── web_tools.py          # web_search、web_extract
+</span></span><span class="line"><span class="cl">│   ├── browser_tool.py       # 10 个浏览器自动化工具
+</span></span><span class="line"><span class="cl">│   ├── code_execution_tool.py # execute_code 沙箱
+</span></span><span class="line"><span class="cl">│   ├── delegate_tool.py      # 子代理委派
+</span></span><span class="line"><span class="cl">│   ├── mcp_tool.py           # MCP 客户端（约 3,100 行）
+</span></span><span class="line"><span class="cl">│   ├── credential_files.py   # 文件型凭据透传
+</span></span><span class="line"><span class="cl">│   ├── env_passthrough.py    # 环境变量透传到沙箱
+</span></span><span class="line"><span class="cl">│   ├── ansi_strip.py         # ANSI 转义清理
+</span></span><span class="line"><span class="cl">│   └── environments/         # 终端后端（local、docker、ssh、modal、daytona、singularity）
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├── gateway/                  # 消息网关
+</span></span><span class="line"><span class="cl">│   ├── run.py                # GatewayRunner：消息分发（约 12,200 行）
+</span></span><span class="line"><span class="cl">│   ├── session.py            # SessionStore：对话持久化
+</span></span><span class="line"><span class="cl">│   ├── delivery.py           # 出站消息投递
+</span></span><span class="line"><span class="cl">│   ├── pairing.py            # DM 配对授权
+</span></span><span class="line"><span class="cl">│   ├── hooks.py              # Hook 发现与生命周期事件
+</span></span><span class="line"><span class="cl">│   ├── mirror.py             # 跨会话消息镜像
+</span></span><span class="line"><span class="cl">│   ├── status.py             # token 锁、profile 进程跟踪
+</span></span><span class="line"><span class="cl">│   └── platforms/            # 20 个平台 adapter：telegram、discord、slack、whatsapp 等
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├── acp_adapter/              # ACP（Agent Client Protocol）适配器,VS Code/Zed/JetBrains
+</span></span><span class="line"><span class="cl">├── acp_registry/             # ACP 注册表
+</span></span><span class="line"><span class="cl">├── plugins/memory/           # 记忆提供者插件
+</span></span><span class="line"><span class="cl">├── plugins/context_engine/   # 上下文引擎插件
+</span></span><span class="line"><span class="cl">├── skills/                   # 内置技能集
+</span></span><span class="line"><span class="cl">├── optional-skills/          # 可选官方技能集
+</span></span><span class="line"><span class="cl">├── cron/                     # cron 调度器实现（jobs.py、scheduler.py）
+</span></span><span class="line"><span class="cl">├── scripts/                  # 安装、构建、运行测试脚本
+</span></span><span class="line"><span class="cl">├── docker/                   # docker 沙箱镜像与脚本
+</span></span><span class="line"><span class="cl">├── environments/             # Atropos RL 环境
+</span></span><span class="line"><span class="cl">├── pyproject.toml            # 包定义、可选依赖
+</span></span><span class="line"><span class="cl">└── setup-hermes.sh           # 一键开发者初始化
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="23-入口层六种调用方式">2.3 入口层：六种调用方式
+</h3><p>Hermes 不是单一形态的程序，它通过六种入口对外提供同一个 <code>AIAgent</code>。</p>
+<h4 id="第1种cli-与-tuiclipy">第1种、CLI 与 TUI（cli.py）
+</h4><p>这是最常用的入口。在终端中输入 <code>hermes</code> 即可启动交互式会话。</p>
+<p>CLI 入口的核心特性包括：</p>
+<ul>
+<li><strong>多行输入与斜杠命令补全</strong>：支持输入多行文本，以及 <code>/</code> 开头的斜杠命令自动补全；</li>
+<li><strong>流式输出与实时预览</strong>：模型生成内容时逐字显示，工具调用前会先展示工具预览（如&quot;正在调用 terminal: ls -la&quot;）；</li>
+<li><strong>可中断执行</strong>：<code>Ctrl+C</code> 可随时打断当前 API 调用或工具执行，且支持&quot;边打断边发新消息&quot;，无需等待上一次调用完成；</li>
+<li><strong>可换肤的视觉元素</strong>：<code>Kawaii Spinner</code> 等动画元素可通过 <code>skin_engine.py</code> 更换主题；</li>
+<li><strong>丰富的斜杠命令</strong>：<code>/model</code> 切换模型、<code>/personality</code> 切换人格、<code>/new</code> 新建会话、<code>/reset</code> 清空历史、<code>/compress</code> 手动压缩、<code>/usage</code> 查看用量、<code>/insights</code> 查看统计、<code>/skills</code> 管理技能、<code>/&lt;skill-name&gt;</code> 直接触发技能、<code>/rollback</code> 回滚到指定轮次、<code>/checkpoint</code> 打检查点、<code>/cron</code> 管理定时任务、<code>/kanban</code> 管理看板等。</li>
+</ul>
+<p>CLI 的数据流如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">用户输入 → HermesCLI.process_input()
+</span></span><span class="line"><span class="cl">  → AIAgent.run_conversation()  # 调用 AIAgent
+</span></span><span class="line"><span class="cl">    → prompt_builder.build_system_prompt()
+</span></span><span class="line"><span class="cl">    → runtime_provider.resolve_runtime_provider()
+</span></span><span class="line"><span class="cl">    → API 调用（chat_completions / codex_responses / anthropic_messages）
+</span></span><span class="line"><span class="cl">    → tool_calls? → model_tools.handle_function_call() → 循环
+</span></span><span class="line"><span class="cl">    → 最终响应 → 显示 → 保存至 SessionDB
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="第2种gatewaygatewayrunpy">第2种、Gateway（gateway/run.py）
+</h4><p><code>hermes gateway start</code> 启动一个常驻进程，把同一个 Agent 暴露给 20 余种消息平台，。每个平台都有独立的 adapter 实现，位于 <code>gateway/platforms/&lt;name&gt;.py</code>，遵循统一的 <code>GatewayMessage</code> 接口。</p>
+<p>Gateway 支持的平台包括：Telegram、Discord、Slack、WhatsApp、Signal、Matrix、Mattermost、Email、SMS、企业微信、飞书、钉钉、QQ、Yuanbao（腾讯元宝）、Open WebUI、Webhooks、Home Assistant 等。</p>
+<p>Gateway 的核心价值在于<strong>解耦</strong>：平台 adapter 只负责&quot;把平台消息格式翻译成标准openAI消息格式&quot;，所有对话逻辑都在 AIAgent 中完成。这意味着一旦某个平台的消息协议发生变化，只需修改对应的 adapter 文件，无需触碰核心逻辑。</p>
+<p>Gateway 的数据流如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">平台事件 → Adapter.on_message() → MessageEvent
+</span></span><span class="line"><span class="cl">  → GatewayRunner._handle_message()
+</span></span><span class="line"><span class="cl">    → 授权用户
+</span></span><span class="line"><span class="cl">    → 解析会话 key
+</span></span><span class="line"><span class="cl">    → 创建带会话历史的 AIAgent
+</span></span><span class="line"><span class="cl">    → AIAgent.run_conversation()
+</span></span><span class="line"><span class="cl">    → 通过适配器回传响应
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="第3种-acp-adapteracp_adapter">第3种、 ACP Adapter（acp_adapter/）
+</h4><p>ACP（Agent Client Protocol）是 Zed Industries 联合 JetBrains 在 2025 年推出的开放开源标准协议，类比 LSP（Language Server Protocol），专门标准化<strong>IDE / 编辑器（Client） ↔ AI Agent</strong>之间通信。已被 VS Code、Zed、JetBrains 等主流编辑器支持。Hermes 的 ACP Adapter 通过 stdio/JSON-RPC 与 IDE 通信，让开发者可以在 IDE内直接跟 Hermes 对话，工具调用、文件 diff、执行终端命令。</p>
+<p>与其他入口相比，ACP 的独特之处在于<strong>上下文富化</strong>：IDE 可以自动把当前打开的文件、光标位置、选中的代码块作为上下文传递给 Agent。工具调用的结果（如文件修改、diff、终端输出）也会以 IDE 原生格式渲染，提供无缝的编程体验。</p>
+<h4 id="第4种api-server">第4种、API Server
+</h4><p><code>hermes api start</code> 暴露一个 <strong>OpenAI-compatible</strong> HTTP 端点。任何兼容 OpenAI Chat API 的前端——如 Open WebUI、LobeChat、LibreChat、ChatBox 等——都可以直接接入 Hermes。</p>
+<p>这相当于把 Hermes 变成了&quot;你的私有 ChatGPT&quot;，但背后拥有 Hermes 的全部能力：工具调用、会话持久化、多 Provider 切换、记忆系统等。</p>
+<h4 id="第5种batch-runnerbatch_runnerpy">第5种、Batch Runner（batch_runner.py）
+</h4><p><code>hermes batch run</code> 用于在大量 prompt 上并行跑 Agent，输出结构化的 ShareGPT-format 轨迹数据，主要用于训练数据生成与评测。</p>
+<p>Batch Runner 的典型用途包括：</p>
+<ul>
+<li>生成大规模工具调用训练数据；</li>
+<li>对不同模型进行 A/B 评测；</li>
+<li>批量处理文档、代码审查等重复性任务。</li>
+</ul>
+<h4 id="第6种python-library">第6种、Python Library
+</h4><p>Hermes 也可以作为 Python 库直接嵌入你的程序：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">run_agent</span> <span class="kn">import</span> <span class="n">AIAgent</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">agent</span> <span class="o">=</span> <span class="n">AIAgent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&#34;anthropic/claude-opus-4.6&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&#34;帮我把这个 CSV 转成 SQL INSERT 语句&#34;</span><span class="p">))</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这是最简单、最轻量的调用方式。<code>AIAgent</code> 对象初始化后，可以通过 <code>chat()</code> 或 <code>run_conversation()</code> 方法发起对话。</p>
+<h3 id="24-主要子系统">2.4 主要子系统
+</h3><h4 id="241-agent-核心aiagent">2.4.1 Agent 核心：<code>AIAgent</code>
+</h4><p><code>run_agent.py</code> 中的 <code>AIAgent</code> 类是 Hermes 的&quot;心脏&quot;，核心编排引擎。它的职责包括以下八个方面：</p>
+<ol>
+<li><strong>Prompt 组装</strong>：通过 <code>prompt_builder.py</code> 拼装系统提示与工具 schema；</li>
+<li><strong>Provider 选择</strong>：选择合适的 Provider 与 API 模式（chat_completions / codex_responses / anthropic_messages）；</li>
+<li><strong>可中断调用</strong>：发起 <strong>可中断</strong> 的模型调用（<code>_interruptible_api_call</code>，支持随时打断）；</li>
+<li><strong>工具执行</strong>：顺序或并发执行工具调用（带线程池）；</li>
+<li><strong>会话历史维护</strong>：维护 OpenAI 格式的对话历史；</li>
+<li><strong>容错处理</strong>：执行压缩、重试、回退、Provider 故障切换；</li>
+<li><strong>预算追踪</strong>：跟踪父子 Agent 的迭代预算；</li>
+<li><strong>记忆持久化</strong>：在上下文丢失前将持久化记忆刷写到磁盘。</li>
+</ol>
+<h5 id="1两个入口方法">1)、两个入口方法
+</h5><p><code>AIAgent</code> 对外暴露两个主要接口：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 简单接口 —— 返回最终响应字符串</span>
+</span></span><span class="line"><span class="cl"><span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&#34;Fix the bug in main.py&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 完整接口 —— 返回包含消息、元数据、用量统计的 dict</span>
+</span></span><span class="line"><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">run_conversation</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="n">user_message</span><span class="o">=</span><span class="s2">&#34;Fix the bug in main.py&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">system_message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>           <span class="c1"># 省略时自动构建</span>
+</span></span><span class="line"><span class="cl">    <span class="n">conversation_history</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>      <span class="c1"># 省略时自动从 session 加载</span>
+</span></span><span class="line"><span class="cl">    <span class="n">task_id</span><span class="o">=</span><span class="s2">&#34;task_abc123&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>chat()</code> 本质上是对 <code>run_conversation()</code> 的轻量封装，从结果字典中提取 <code>final_response</code> 字段。</p>
+<h5 id="2单轮生命周期">2)、单轮生命周期
+</h5><p>Agent Loop 的每次迭代（Turn）按以下严格顺序执行（即一次会话的处理流程）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">run_conversation()
+</span></span><span class="line"><span class="cl">  1. 若未提供则生成 task_id
+</span></span><span class="line"><span class="cl">  2. 将用户消息追加到对话历史
+</span></span><span class="line"><span class="cl">  3. 构建或复用已缓存的系统 prompt（prompt_builder.py）
+</span></span><span class="line"><span class="cl">  4. 检查是否需要预检压缩（上下文超过 50%）
+</span></span><span class="line"><span class="cl">  5. 从对话历史构建 API 消息
+</span></span><span class="line"><span class="cl">     - chat_completions：直接使用 OpenAI 格式
+</span></span><span class="line"><span class="cl">     - codex_responses：转换为 Responses API 输入项
+</span></span><span class="line"><span class="cl">     - anthropic_messages：通过 anthropic_adapter.py 转换
+</span></span><span class="line"><span class="cl">  6. 注入临时 prompt 层（预算警告、上下文压力提示）
+</span></span><span class="line"><span class="cl">  7. 若使用 Anthropic，应用 prompt 缓存标记
+</span></span><span class="line"><span class="cl">  8. 发起可中断的 API 调用（_interruptible_api_call）
+</span></span><span class="line"><span class="cl">  9. 解析响应：
+</span></span><span class="line"><span class="cl">     - 若有 tool_calls：执行工具，追加结果，回到步骤 5
+</span></span><span class="line"><span class="cl">     - 若为文本响应：持久化 session，按需刷写内存，返回
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这个循环的精妙之处在于<strong>状态管理</strong>。当模型返回工具调用时，循环不会退出，而是把工具执行结果追加到对话历史，然后重新回到步骤 5 发起下一轮 API 调用。这种&quot;推理 → 行动 → 观察 → 再推理&quot;的模式，正是 ReAct（Reasoning + Acting）范式的工程实现。</p>
+<h5 id="3三种-api-模式">3)、三种 API 模式
+</h5><p>Hermes 支持三种 API 执行模式，通过 Provider 选择、显式参数和 base URL 启发式规则来确定。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>API mode</th>
+          <th>用于</th>
+          <th>客户端</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>chat_completions</code></td>
+          <td>OpenAI 兼容端点（OpenRouter、自定义、绝大多数供应商）</td>
+          <td><code>openai.OpenAI</code></td>
+      </tr>
+      <tr>
+          <td><code>codex_responses</code></td>
+          <td>OpenAI Codex / Responses API</td>
+          <td><code>openai.OpenAI</code>（Responses 格式）</td>
+      </tr>
+      <tr>
+          <td><code>anthropic_messages</code></td>
+          <td>Anthropic 原生 Messages API</td>
+          <td><code>anthropic.Anthropic</code>（带 adapter）</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>模式选择优先级：构造参数 &gt; Provider 检测 &gt; base URL 启发式 &gt; 默认 <code>chat_completions</code>。三种模式的消息编码、工具调用结构、流式与缓存机制都不同，但内部统一收敛为 OpenAI 风格的 <code>role/content/tool_calls</code> 字典。</p>
+<h5 id="4消息交替规则">4)、消息交替规则
+</h5><p>所有消息在内部均使用兼容 OpenAI 的格式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="p">{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;system&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="s2">&#34;...&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;user&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="s2">&#34;...&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;assistant&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="s2">&#34;...&#34;</span><span class="p">,</span> <span class="s2">&#34;tool_calls&#34;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">]}</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span><span class="s2">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;tool&#34;</span><span class="p">,</span> <span class="s2">&#34;tool_call_id&#34;</span><span class="p">:</span> <span class="s2">&#34;...&#34;</span><span class="p">,</span> <span class="s2">&#34;content&#34;</span><span class="p">:</span> <span class="s2">&#34;...&#34;</span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Agent Loop 强制执行严格的消息角色交替规则：</p>
+<ul>
+<li>系统消息之后：<code>User → Assistant → User → Assistant → ...</code>。</li>
+<li>工具调用期间：<code>Assistant（含 tool_calls）→ Tool → Tool → ... → Assistant。</code></li>
+<li><strong>不允许</strong>连续出现两条 assistant 消息。</li>
+<li><strong>不允许</strong>连续出现两条 user 消息。</li>
+<li><strong>只有</strong> <code>tool</code> 角色可以连续出现（并行工具结果）。</li>
+</ul>
+<p>Provider 会验证这些序列，并拒绝格式错误的历史记录。Hermes 在构建 API 消息时会自动修复常见的交替错误，例如把连续的用户消息合并为一条，或在 tool_calls 后插入必要的 tool 响应。</p>
+<h4 id="242-prompt-构建冻结快照与槽位设计">2.4.2 Prompt 构建：冻结快照与槽位设计
+</h4><p>系统提示由若干&quot;槽位&quot;组成，按固定顺序拼装。每个槽位都有清晰职责：</p>
+<ol>
+<li><strong>Agent 身份（Identity）</strong>：优先使用 <code>~/.hermes/SOUL.md</code>，否则回退到 <code>prompt_builder.py</code> 中的 <code>DEFAULT_AGENT_IDENTITY</code></li>
+<li><strong>工具感知行为指导</strong>：如何正确使用工具、何时使用 <code>session_search</code> 回忆历史、对 GPT/Codex 模型的工具使用强制要求等</li>
+<li><strong>Honcho 静态块</strong>（激活时）：来自 Honcho 记忆 Provider 的人格/上下文数据。</li>
+<li><strong>可选系统消息</strong>：来自 config 或 API 参数的用户配置覆盖。</li>
+<li><strong>冻结MEMORY （环境/工作约定）快照</strong>：来自 <code>~/.hermes/memories/MEMORY.md</code> 的持久记忆，约 800 token；</li>
+<li><strong>冻结USER PROFILE（用户画像）快照</strong>：来自 <code>~/.hermes/memories/USER.md</code>的用户画像，约 500 token；</li>
+<li><strong>Skills 索引</strong>：当前可用技能的 <code>{name, description, category}</code> 列表，约 3k token</li>
+<li><strong>上下文文件</strong>：自动发现项目级文档 <code>.hermes.md</code>、<code>AGENTS.md</code>、<code>CLAUDE.md</code>、<code>.cursorrules</code> 等。</li>
+<li><strong>时间戳 / 可选会话 ID。</strong></li>
+<li><strong>平台提示</strong>：如&quot;You are a CLI AI Agent. Try not to use markdown&hellip;&quot;</li>
+</ol>
+<p>当设置了 <code>skip_context_files</code>（例如子 agent 委托）时，不会加载 SOUL.md，而是使用硬编码的 <code>DEFAULT_AGENT_IDENTITY</code>。</p>
+<p>关键设计：记忆与身份采用**冻结快照（frozen snapshot）**模式：记忆与身份在会话开始时一次性注入系统 prompt，期间即便 Agent 修改了文件，<strong>已构建的系统 prompt 也不会改变</strong>。这有两大好处：</p>
+<ul>
+<li><strong>保留缓存命中率</strong>：Anthropic 的 prefix cache 要求系统 prompt 前缀保持稳定。如果每轮都重新加载记忆文件，缓存会频繁失效，导致 token 成本大幅上升。</li>
+<li><strong>语义清晰性</strong>：Agent 在单轮对话中看到的&quot;记忆&quot;是静态的，不会因自己的写入操作而产生自我引用混乱。最新的记忆值始终通过 tool response 返回给 Agent。</li>
+</ul>
+<p><strong>具体示例：组装后的系统 prompt</strong></p>
+<p>以下是所有层都存在时最终系统 prompt 的简化视图（注释说明每个部分的来源）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl"># Layer 1: Agent Identity (from ~/.hermes/SOUL.md)
+</span></span><span class="line"><span class="cl">You are Hermes, an AI assistant created by Nous Research.
+</span></span><span class="line"><span class="cl">You are an expert software engineer and researcher.
+</span></span><span class="line"><span class="cl">You value correctness, clarity, and efficiency.
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 2: Tool-aware behavior guidance
+</span></span><span class="line"><span class="cl">You have persistent memory across sessions. Save durable facts using
+</span></span><span class="line"><span class="cl">the memory tool: user preferences, environment details, tool quirks,
+</span></span><span class="line"><span class="cl">and stable conventions. Memory is injected into every turn, so keep
+</span></span><span class="line"><span class="cl">it compact and focused on facts that will still matter later.
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">When the user references something from a past conversation or you
+</span></span><span class="line"><span class="cl">suspect relevant cross-session context exists, use session_search
+</span></span><span class="line"><span class="cl">to recall it before asking them to repeat themselves.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Tool-use enforcement (for GPT/Codex models only)
+</span></span><span class="line"><span class="cl">You MUST use your tools to take action — do not describe what you
+</span></span><span class="line"><span class="cl">would do or plan to do without actually doing it.
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 3: Honcho static block (when active)
+</span></span><span class="line"><span class="cl">[Honcho personality/context data]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 4: Optional system message (from config or API)
+</span></span><span class="line"><span class="cl">[User-configured system message override]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 5: Frozen MEMORY snapshot
+</span></span><span class="line"><span class="cl">## Persistent Memory
+</span></span><span class="line"><span class="cl">- User prefers Python 3.12, uses pyproject.toml
+</span></span><span class="line"><span class="cl">- Default editor is nvim
+</span></span><span class="line"><span class="cl">- Working on project &#34;atlas&#34; in ~/code/atlas
+</span></span><span class="line"><span class="cl">- Timezone: US/Pacific
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 6: Frozen USER profile snapshot
+</span></span><span class="line"><span class="cl">## User Profile
+</span></span><span class="line"><span class="cl">- Name: Alice
+</span></span><span class="line"><span class="cl">- GitHub: alice-dev
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 7: Skills index
+</span></span><span class="line"><span class="cl">## Skills (mandatory)
+</span></span><span class="line"><span class="cl">Before replying, scan the skills below. If one clearly matches
+</span></span><span class="line"><span class="cl">your task, load it with skill_view(name) and follow its instructions.
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">&lt;available_skills&gt;
+</span></span><span class="line"><span class="cl">  software-development:
+</span></span><span class="line"><span class="cl">    - code-review: Structured code review workflow
+</span></span><span class="line"><span class="cl">    - test-driven-development: TDD methodology
+</span></span><span class="line"><span class="cl">  research:
+</span></span><span class="line"><span class="cl">    - arxiv: Search and summarize arXiv papers
+</span></span><span class="line"><span class="cl">&lt;/available_skills&gt;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 8: Context files (from project directory)
+</span></span><span class="line"><span class="cl"># Project Context
+</span></span><span class="line"><span class="cl">The following project context files have been loaded and should be followed:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">## AGENTS.md
+</span></span><span class="line"><span class="cl">This is the atlas project. Use pytest for testing. The main
+</span></span><span class="line"><span class="cl">entry point is src/atlas/main.py. Always run `make lint` before
+</span></span><span class="line"><span class="cl">committing.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 9: Timestamp + session
+</span></span><span class="line"><span class="cl">Current time: 2026-03-30T14:30:00-07:00
+</span></span><span class="line"><span class="cl">Session: abc123
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Layer 10: Platform hint
+</span></span><span class="line"><span class="cl">You are a CLI AI Agent. Try not to use markdown but simple text
+</span></span><span class="line"><span class="cl">renderable inside a terminal.
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="243-provider-运行时模型选择与故障切换">2.4.3 Provider 运行时：模型选择与故障切换
+</h4><p><code>hermes_cli/runtime_provider.py</code> + <code>agent/auxiliary_client.py</code> 协同决定每次调用走哪家：</p>
+<ul>
+<li><strong>Provider Routing</strong>：多家 Provider 排序成优先级链；</li>
+<li><strong>Fallback Providers</strong>：主 Provider 报错（限流/网络/5xx）时自动切到下一家；视觉、压缩等辅助任务可以走单独的 fallback；</li>
+<li><strong>Credential Pool</strong>：同一家 Provider 可挂多把 Key，按 round-robin / 限流自动轮换；</li>
+<li><strong>Auxiliary Client</strong>：视觉描述、长 chat 摘要、压缩等&quot;次要任务&quot;走更便宜/更快的辅助模型。</li>
+</ul>
+<p><strong>模式解析顺序</strong>：显式 <code>api_mode</code> 参数 → Provider 特定检测（<code>anthropic</code> → <code>anthropic_messages</code>）→ Base URL 启发式（<code>api.anthropic.com</code> → <code>anthropic_messages</code>）→ 默认 <code>chat_completions</code>。</p>
+<p>三种模式只是&quot;运输方式&quot;不同，内部统一收敛为 OpenAI 风格的 <code>role/content/tool_calls</code> 字典，可无感切换。</p>
+<h4 id="244-工具运行时">2.4.4 工具运行时
+</h4><p>工具系统是 Hermes 与外部世界交互的&quot;手脚&quot;。它由三层组成：Registry（注册表）、Toolsets（分组）和 Dispatch（调度）。</p>
+<h5 id="1三层架构"><strong>1）三层架构</strong>
+</h5><p>工具系统由三层组成：</p>
+<ol>
+<li><strong>Registry</strong>：<code>tools/registry.py</code> 集中注册全部工具，每个工具是一个 Python 函数 + JSON Schema；</li>
+<li><strong>Toolsets</strong>：<code>toolsets.py</code> 把工具按用途分组（<code>web</code>、<code>terminal</code>、<code>file</code>、<code>browser</code>、<code>memory</code>、<code>delegation</code> 等共 52 组）；同时维护 <strong>平台预设</strong>（<code>hermes-cli</code>、<code>hermes-telegram</code>、<code>hermes-discord</code>、<code>hermes-wecom</code> 等），定义&quot;在某平台默认开哪些组&quot;；</li>
+<li><strong>Dispatch</strong>：<code>model_tools.py</code> 在每次推理前把当前启用的工具 schema 收集起来作为可用工具列表，模型返回 <code>tool_calls</code> 后再调度执行。</li>
+</ol>
+<h5 id="2工具发现机制">2）工具发现机制
+</h5><p>工具注册发生在<strong>导入时</strong>，早于任何 Agent 实例的创建。依赖链如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">tools/registry.py  （无依赖——被所有工具文件导入）
+</span></span><span class="line"><span class="cl">       ↑
+</span></span><span class="line"><span class="cl">tools/*.py  （每个文件在导入时调用 registry.register()）
+</span></span><span class="line"><span class="cl">       ↑
+</span></span><span class="line"><span class="cl">model_tools.py  （导入 tools/registry 并触发工具发现）
+</span></span><span class="line"><span class="cl">       ↑
+</span></span><span class="line"><span class="cl">run_agent.py, cli.py, batch_runner.py, environments/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>任何在顶层调用 <code>registry.register()</code> 的 <code>tools/*.py</code> 文件都会被自动发现——无需手动维护导入列表。这种设计让新增工具变得极其简单：创建一个 Python 文件，写好函数和 schema，调用 <code>register()</code>，重启 Hermes 即可生效。</p>
+<h5 id="3终端工具">3）终端工具
+</h5><p>终端工具是 Hermes 最强大的工具之一，支持 <strong>7 种后端</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>后端</th>
+          <th>描述</th>
+          <th>典型场景</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>local</code></td>
+          <td>本地 shell</td>
+          <td>个人开发机</td>
+      </tr>
+      <tr>
+          <td><code>docker</code></td>
+          <td>本地 / 远程 docker 容器</td>
+          <td>沙箱、隔离执行</td>
+      </tr>
+      <tr>
+          <td><code>ssh</code></td>
+          <td>远端 SSH</td>
+          <td>操控生产服务器</td>
+      </tr>
+      <tr>
+          <td><code>daytona</code></td>
+          <td>Daytona Serverless 工作空间</td>
+          <td>空闲 0 成本</td>
+      </tr>
+      <tr>
+          <td><code>modal</code></td>
+          <td>Modal serverless</td>
+          <td>自动 scale 的云端执行</td>
+      </tr>
+      <tr>
+          <td><code>singularity</code></td>
+          <td>HPC Singularity 容器</td>
+          <td>大学/超算环境</td>
+      </tr>
+      <tr>
+          <td><code>tmux</code></td>
+          <td>内嵌 tmux 会话视图</td>
+          <td>长进程观察</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>切换只需一条命令：<code>hermes config set terminal.backend docker</code>。不同后端共享相同的工具接口（<code>terminal</code> 工具的参数和返回值格式一致），Agent 无需关心命令实际运行在哪个环境中。</p>
+<p><strong>4）工具审批与安全</strong></p>
+<p>工具执行支持 <strong>并发（<code>tool_concurrency</code>）</strong> 与 <strong>审批回调（<code>approval</code>）</strong>：</p>
+<ul>
+<li>危险命令（<code>rm -rf /</code>、修改 <code>/etc</code>、数据库删除等）会触发 <code>tools/approval.py</code> 的检测；</li>
+<li>CLI 用户会看到一个&quot;是否允许&quot;的交互式 prompt；</li>
+<li>Gateway 用户可以接到 DM 配对授权流程；</li>
+<li>用户可在 <code>~/.hermes/config.yaml</code> 中添加白名单，跳过特定命令的审批。</li>
+</ul>
+<h4 id="245-会话存储sqlite--fts5">2.4.5 会话存储：SQLite + FTS5
+</h4><p>Hermes 使用单一 SQLite 数据库 <code>~/.hermes/state.db</code> 持久化所有会话数据。这替代了早期的逐会话 JSONL 文件方案，提供了更强的查询能力和一致性保证。</p>
+<p>存储内容：</p>
+<ul>
+<li>每条对话历史（与 OpenAI 格式 1:1 对应，便于恢复）；</li>
+<li>任务（task_id）、迭代、token usage、cost；</li>
+<li>工具调用日志、轨迹；</li>
+<li>Skills 元数据；</li>
+<li>Cron 任务与执行历史。</li>
+</ul>
+<p>Kanban 独立使用 <code>kanban.db</code>。启用 <strong>FTS5 全文索引</strong>，让 <code>session_search</code> 工具可快速检索。Gateway 自己也维护一份 <code>gateway/session.py</code> 中的 SessionStore，多平台对话与 Profile 相互隔离。</p>
+<p>会话具有<strong>血缘追踪</strong>（跨压缩的父/子关系）、按平台隔离，以及带竞争处理的原子写入。</p>
+<h4 id="246-学习闭环memory--skills--curator--honcho">2.4.6 学习闭环：Memory + Skills + Curator + Honcho
+</h4><p>Hermes 的&quot;自我提升&quot;机制由 4 个协作模块构成，形成从<strong>记忆沉淀→生成技能→自动梳理→用户精细化建模</strong>的完整闭环：</p>
+<ol>
+<li>
+<p><strong>Memory Manager（<code>agent/memory_manager.py</code>）</strong>：Memory Manager 是记忆系统的编排中枢。它向 Agent 暴露 <code>memory(action=add|replace|remove, target=memory|user, content=...)</code> 工具，让 Agent 在对话中随时读写持久记忆。</p>
+<p>记忆分为两类：</p>
+<ul>
+<li><strong>MEMORY.md</strong>：环境约定、项目规范、工具 quirks 等&quot;事实性&quot;记忆，约 800 token；</li>
+<li><strong>USER.md</strong>：用户画像、偏好、习惯等&quot;人格性&quot;记忆，约 500 token。</li>
+</ul>
+<p>这两份文件在会话开始时作为<strong>冻结快照</strong>注入系统 prompt。Agent 的写入操作会更新磁盘文件，但不会修改当前会话的系统 prompt——直到新会话开始时才生效。</p>
+</li>
+<li>
+<p><strong>Skills Manager（<code>hermes_cli/skills_config.py</code> + <code>skills/</code>）</strong>：管理 <code>~/.hermes/skills/</code> 下的所有技能；自动把每个技能注册成 <code>/&lt;skill-name&gt;</code> 斜杠命令；Skills 采用<strong>进度披露式加载（progressive disclosure）</strong>：</p>
+<ul>
+<li><strong>Level 0</strong>：仅注入 Skills 索引（<code>{name, description, category}</code> 列表），约 3k token；</li>
+<li><strong>Level 1</strong>：当 Agent 调用 <code>skill_view(name)</code> 时，注入该 Skill 的全文；</li>
+<li><strong>Level 2</strong>：Skill 引用文件按需加载。</li>
+</ul>
+<p>这种设计让 Agent 在&quot;知道有什么技能&quot;和&quot;知道技能详细内容&quot;之间取得了平衡。</p>
+</li>
+<li>
+<p><strong>Curator</strong>：Curator 是一个周期性&quot;提示&quot;机制。它会在适当时机（如会话结束、空闲时段）提醒 Agent 整理记忆、搬运重要事实、识别可技能化的步骤。</p>
+<p>Curator 的工作包括：</p>
+<ul>
+<li>识别对话中反复出现的模式，建议写入 MEMORY.md；</li>
+<li>发现用户偏好的变化，更新 USER.md；</li>
+<li>识别可复用的工作流，提示创建新 Skill；</li>
+<li>清理过时或冗余的记忆条目。</li>
+</ul>
+</li>
+<li>
+<p><strong>Honcho Memory Provider（<code>plugins/memory/honcho/</code>）</strong>：Honcho 是一个可选的<strong>辩证用户建模</strong>后端，把零散的&quot;用户偏好&quot;整合成更紧凑的 `USER.md。与普通记忆系统不同，Honcho 不简单地&quot;追加&quot;用户偏好，而是：</p>
+<ul>
+<li>收集零散的&quot;用户偏好&quot;证据；</li>
+<li>进行辩证推理（考虑矛盾偏好、时效性变化）；</li>
+<li>整合成更紧凑、更准确的 <code>USER.md</code>。</li>
+</ul>
+<p>这种&quot;建模&quot;而非&quot;记录&quot;的方式，能显著减少用户画像中的噪声和矛盾。</p>
+</li>
+</ol>
+<p>这四大模块联动形成可持续自进化体系，让 Agent 在你的工作流里&quot;越用越聪明&quot;。</p>
+<h4 id="247-gateway-内部多平台分发">2.4.7 Gateway 内部：多平台分发
+</h4><p>Gateway 是 Hermes 连接外部消息平台的桥梁。它把平台细节与 Agent 核心完全解耦，支持 Hermes 同时对接 20 +种消息平台。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Telegram / Discord / Slack / WeCom / Feishu / DingTalk / ...
+</span></span><span class="line"><span class="cl">                ↓ Adapter 把平台事件统一为 GatewayMessage
+</span></span><span class="line"><span class="cl">        gateway/run.py 的 GatewayRunner（消息泵）
+</span></span><span class="line"><span class="cl">                ↓ 根据 conversation_id 找对应 SessionStore 的会话
+</span></span><span class="line"><span class="cl">              AIAgent.run_conversation(...)
+</span></span><span class="line"><span class="cl">                ↓ 文本/语音/图片附件 → 转成 OpenAI 格式
+</span></span><span class="line"><span class="cl">              gateway/delivery.py 出站投递
+</span></span><span class="line"><span class="cl">                ↓ 按平台 adapter 还原成 Telegram/Discord/Slack 的消息
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>关键能力：</p>
+<ul>
+<li><strong>DM Pairing</strong>：陌生人发起对话需要先经过授权。默认情况下，所有 IM 平台拒绝未授权的私聊（DM），只有显式配对的用户才能让 Agent 干活。这是防止 Agent 被滥用的第一道防线。</li>
+<li><strong>Cross-Session Mirror</strong>（<code>gateway/mirror.py</code>）：在不同平台的对话之间镜像消息，实现&quot;在 Telegram 跟它说话，在 Slack 也能看到上下文&quot;；</li>
+<li><strong>Status / Token Lock</strong>（<code>gateway/status.py</code>）：Profile 被多个进程同时启动。当 Gateway 正在运行时，CLI 或其他 Gateway 实例会检测到锁文件并给出友好提示。</li>
+<li><strong>Hooks（<code>gateway/hooks.py</code>）</strong>：基于 <code>~/.hermes/hooks/</code> 下的 <code>HOOK.yaml + handler.py</code> 监听生命周期事件。可监听的事件包括 <code>agent:start</code>、<code>agent:end</code>、<code>command:*</code>、<code>message:received</code>、<code>message:sent</code> 等。Hooks 让 Hermes 能集成自定义的告警、日志、审批流程。</li>
+</ul>
+<h4 id="248-自动化层cronkanbanwebhook">2.4.8 自动化层：Cron、Kanban、Webhook
+</h4><p>除了即时对话，Hermes 还提供三种自动化机制，把它从&quot;对话助手&quot;升级为&quot;自动化操作系统&quot;。</p>
+<h5 id="1cron-调度器cron">1）Cron 调度器（cron/）
+</h5><p><code>cron/</code> 模块独立维护一份调度表，每个 job 都跑在<strong>全新的 Agent 会话</strong>中。这意味着：</p>
+<ul>
+<li>定时任务不会污染你的主会话历史；</li>
+<li>每个任务都有独立的迭代预算和容错机制；</li>
+<li>可以挂 0/1/N 个 skill，让任务按预定义工作流执行；</li>
+<li>可以指定结果投递目标（<code>telegram://chat_id</code>、<code>wecom</code>、邮件、文件等）。</li>
+</ul>
+<p>Cron 任务以 JSON 格式存储，支持多种调度格式（类 crontab 表达式、自然语言时间等）。</p>
+<h5 id="2kanban-看板hermes-kanban">2）Kanban 看板（hermes kanban）
+</h5><p><code>hermes kanban</code> + <code>kanban_*</code> 工具组提供了多 Profile 协作的 SQLite 任务板。</p>
+<p>Kanban 与 <code>delegate_task</code> 的区别在于持久化和可恢复性：</p>
+<ul>
+<li><code>delegate_task</code> 是&quot;一次性&quot;的子 Agent 委派，任务完成后子 Agent 销毁；</li>
+<li>Kanban 是&quot;持久化&quot;的任务板，任务可以在多个 Profile 之间流转，支持人工介入、状态跟踪、历史回溯。</li>
+</ul>
+<p>Kanban 适合&quot;需要跨天执行、持久化、可恢复、需要人审批介入&quot;的复杂工作流。</p>
+<h5 id="3webhook-集成">3）Webhook 集成
+</h5><p>Gateway 的 webhook 平台 adapter 可以接收外部事件（GitHub PR、Stripe 支付、Slack action）并 trigger Hermes 任务。</p>
+<p>典型场景：</p>
+<ul>
+<li>GitHub PR 创建 → Webhook → Hermes 执行代码审查 → 在 PR 中发表评论；</li>
+<li>Stripe 支付成功 → Webhook → Hermes 发送确认邮件；</li>
+<li>Slack action 点击 → Webhook → Hermes 执行指定工作流。</li>
+</ul>
+<h4 id="249-安全与隔离">2.4.9 安全与隔离
+</h4><p>Hermes 把&quot;安全&quot;作为一等公民：</p>
+<ul>
+<li><strong>危险命令检测</strong>：<code>tools/approval.py</code> 内置了多层危险命令检测：正则模式匹配 <code>rm -rf /</code>、<code>mkfs.*</code>、<code>dd if=/dev/zero</code> 等高危命令；用户可在 <code>~/.hermes/config.yaml</code> 加白名单；</li>
+<li><strong>Container Isolation</strong>：Docker 后端默认运行用户级容器，<code>--read-only</code>：根文件系统只读；<code>--cap-drop=ALL</code>：丢弃所有 Linux capabilities；<code>--network=none</code>：禁止网络访问等可选；</li>
+<li><strong>DM Pairing</strong>：所有 IM 平台默认拒绝未授权 DM，只有显式配对的用户才能让 Agent 干活；</li>
+<li><strong>Credential Files</strong>：API Key、SSH key 等敏感信息通过 <code>tools/credential_files.py</code> 以文件形式透传到沙箱，避免直接 export 到环境变量。这减少了凭据在进程列表、日志、崩溃报告中泄露的风险。</li>
+</ul>
+<h3 id="211-研究与训练atropos--trajectory">2.11 研究与训练：Atropos / Trajectory
+</h3><p>Hermes 把日常 Agent 跑出来的对话/工具调用直接当成 RL 训练数据：</p>
+<ul>
+<li><code>batch_runner.py</code> 跑大量 prompt，输出 ShareGPT/Trajectory；</li>
+<li><code>environments/</code> 里实现了若干 Atropos 兼容的 RL 环境；</li>
+<li><code>trajectory_compressor.py</code> 提供轨迹压缩，便于训练；</li>
+<li><code>tinker-atropos</code>、<code>mini_swe_runner.py</code> 等脚手架让研究者能直接基于 Hermes 训练新一代工具调用模型，无需从零构建环境。</li>
+</ul>
+<h3 id="25-设计原则">2.5 设计原则
+</h3><p>Hermes 的六项核心设计原则，它们是理解架构决策的&quot;北极星&quot;：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>原则</th>
+          <th>实践含义</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Prompt 稳定性</strong></td>
+          <td>系统 prompt 在对话中途不会改变。除用户显式操作（<code>/model</code>）外，不进行破坏缓存的变更。</td>
+      </tr>
+      <tr>
+          <td><strong>可观测执行</strong></td>
+          <td>每次工具调用均通过回调对用户可见。CLI（spinner）和 Gateway（聊天消息）中均有进度更新。</td>
+      </tr>
+      <tr>
+          <td><strong>可中断</strong></td>
+          <td>API 调用和工具执行可被用户输入或信号在执行中途取消。</td>
+      </tr>
+      <tr>
+          <td><strong>平台无关的核心</strong></td>
+          <td>单一 AIAgent 类同时服务于 CLI、Gateway、ACP、批处理和 API 服务器。平台差异存在于入口点，而非 Agent 内部。</td>
+      </tr>
+      <tr>
+          <td><strong>松耦合</strong></td>
+          <td>可选子系统（MCP、插件、记忆 Provider、RL 环境）使用注册表模式和 check_fn 门控，而非硬依赖。</td>
+      </tr>
+      <tr>
+          <td><strong>Profile 隔离</strong></td>
+          <td>每个 profile 拥有独立的 HERMES_HOME、配置、记忆、会话和 Gateway PID。多个 profile 可并发运行。</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="26-关键概念词典">2.6 关键概念词典
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>英文</th>
+          <th>中文</th>
+          <th>含义</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>AIAgent</td>
+          <td>智能体核心</td>
+          <td><code>run_agent.py</code> 中那个对话循环对象</td>
+      </tr>
+      <tr>
+          <td>Provider</td>
+          <td>模型供应商</td>
+          <td>OpenRouter / Anthropic / OpenAI 等</td>
+      </tr>
+      <tr>
+          <td>API Mode</td>
+          <td>API 模式</td>
+          <td>chat_completions / codex_responses / anthropic_messages</td>
+      </tr>
+      <tr>
+          <td>Toolset</td>
+          <td>工具集</td>
+          <td>工具的逻辑分组</td>
+      </tr>
+      <tr>
+          <td>Skill</td>
+          <td>技能</td>
+          <td>一段可复用步骤说明（<code>SKILL.md</code>）</td>
+      </tr>
+      <tr>
+          <td>Memory / USER</td>
+          <td>记忆 / 用户画像</td>
+          <td><code>MEMORY.md</code> / <code>USER.md</code></td>
+      </tr>
+      <tr>
+          <td>Profile</td>
+          <td>配置剖面</td>
+          <td>一份完整的&quot;身份 + 配置 + 数据&quot;，可以并存多个</td>
+      </tr>
+      <tr>
+          <td>Backend</td>
+          <td>终端后端</td>
+          <td>local / docker / ssh / modal 等</td>
+      </tr>
+      <tr>
+          <td>Gateway</td>
+          <td>网关</td>
+          <td>多平台消息分发进程</td>
+      </tr>
+      <tr>
+          <td>Adapter</td>
+          <td>适配器</td>
+          <td>某个具体平台的接入实现</td>
+      </tr>
+      <tr>
+          <td>Hook</td>
+          <td>钩子</td>
+          <td>在生命周期事件上跑用户代码</td>
+      </tr>
+      <tr>
+          <td>Plugin</td>
+          <td>插件</td>
+          <td>给 Hermes 加工具/记忆 provider/上下文引擎</td>
+      </tr>
+      <tr>
+          <td>MCP</td>
+          <td>Model Context Protocol</td>
+          <td>外部工具服务标准</td>
+      </tr>
+      <tr>
+          <td>ACP</td>
+          <td>Agent Client Protocol</td>
+          <td>IDE 与 Agent 协议</td>
+      </tr>
+      <tr>
+          <td>Curator</td>
+          <td>策展子系统</td>
+          <td>提醒 Agent 整理记忆与提炼技能</td>
+      </tr>
+      <tr>
+          <td>Trajectory</td>
+          <td>轨迹</td>
+          <td>一次会话的结构化日志</td>
+      </tr>
+      <tr>
+          <td>Kanban</td>
+          <td>看板</td>
+          <td>多 Profile 协作的 SQLite 任务板</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="本章小结">本章小结
+</h3><p>本章建立了 Hermes 架构的完整&quot;心智模型&quot;。用十个要点回顾：</p>
+<ol>
+<li>
+<p><strong>多入口、单核心、多后端</strong>的分层结构是 Hermes 的骨架。CLI、Gateway、ACP、API Server、Batch Runner、Python Library 六种形态共享同一个 <code>AIAgent</code> 核心。</p>
+</li>
+<li>
+<p><strong><code>AIAgent</code> 是心脏</strong>。这个核心类负责 Prompt 组装、Provider 选择、工具调度、历史维护、容错处理、预算追踪和记忆持久化。</p>
+</li>
+<li>
+<p><strong>三种 API 模式</strong>（<code>chat_completions</code>、<code>codex_responses</code>、<code>anthropic_messages</code>）让 Hermes 能跨 OpenAI/Codex/Anthropic 不变形地使用工具调用。模式选择遵循&quot;构造参数 &gt; Provider 检测 &gt; base URL 启发式 &gt; 默认&quot;的优先级链。</p>
+</li>
+<li>
+<p><strong>Prompt 由 10 个槽位拼成</strong>，采用<strong>冻结快照</strong>与<strong>进度披露</strong>两种机制平衡 token 消耗与信息新鲜度。系统 prompt 在会话期间保持稳定，以最大化 Provider 侧缓存命中率。</p>
+</li>
+<li>
+<p><strong>Provider Runtime</strong> 通过解析优先级链、Fallback Providers、Credential Pool 和 Auxiliary Client，解决了&quot;模型自由度&quot;问题——用户可以在数十家 Provider 之间无缝切换。</p>
+</li>
+<li>
+<p><strong>7 种终端后端</strong>（local、docker、ssh、modal、daytona、singularity、tmux）解决了&quot;运行环境自由度&quot;问题。切换只需一条配置命令，工具接口完全统一。</p>
+</li>
+<li>
+<p><strong>SQLite + FTS5</strong> 是会话与任务的统一存储。FTS5  支持全文搜索。</p>
+</li>
+<li>
+<p><strong>Memory + Skills + Curator + Honcho</strong> 形成<strong>学习闭环</strong>。Agent 在日常对话中积累记忆、提炼技能、更新用户画像，实现&quot;越用越聪明&quot;。</p>
+</li>
+<li>
+<p><strong>Gateway</strong> 通过统一 Adapter 接口让 Hermes 同时在 20+ 平台上活着。DM Pairing、Cross-Session Mirror、Hooks 等机制保证了安全性与可扩展性。</p>
+</li>
+<li>
+<p><strong>Cron + Kanban + Webhook</strong> 把 Hermes 从&quot;对话助手&quot;升级为<strong>自动化操作系统</strong>，支持定时任务、持久化工作流和外部事件触发。</p>
+</li>
+</ol>
+<p>理解这些概念后，你已经具备了阅读 Hermes 源码、排查问题和定制扩展所需的全景视角。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/hermes-agent/">Hermes Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第5章 模型供应商与配置</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第2章 安装、配置与首次对话</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

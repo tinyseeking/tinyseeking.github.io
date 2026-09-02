@@ -6,12 +6,19 @@
     <description>Recent content in Categories on Tiny 的技术博客</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sat, 01 Aug 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 28 Aug 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://tinyseeking.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hermes Agent 原理与实战</title>
+      <link>https://tinyseeking.github.io/categories/hermes-agent/</link>
+      <pubDate>Fri, 28 Aug 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/categories/hermes-agent/</guid>
+      <description></description>
+    </item>
     <item>
       <title>栖微 AI Agent 工程师实战成长营</title>
       <link>https://tinyseeking.github.io/categories/ai-agent-camp/</link>
-      <pubDate>Sat, 01 Aug 2026 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 25 Aug 2026 00:00:00 +0000</pubDate>
       <guid>https://tinyseeking.github.io/categories/ai-agent-camp/</guid>
       <description></description>
     </item>
@@ -25,7 +32,7 @@
     <item>
       <title>AI Agent 原理、设计与实践</title>
       <link>https://tinyseeking.github.io/categories/ai-agent/</link>
-      <pubDate>Tue, 03 Feb 2026 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 06 Mar 2026 00:00:00 +0000</pubDate>
       <guid>https://tinyseeking.github.io/categories/ai-agent/</guid>
       <description></description>
     </item>

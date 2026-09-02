@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hermes Agent on Tiny 的技术博客</title>
+    <link>https://tinyseeking.github.io/tags/hermes-agent/</link>
+    <description>Recent content in Hermes Agent on Tiny 的技术博客</description>
+    <generator>Hugo</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Fri, 28 Aug 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://tinyseeking.github.io/tags/hermes-agent/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性</title>
+      <link>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/</link>
+      <pubDate>Fri, 28 Aug 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/</guid>
+      <description>&lt;h1 id=&#34;hermes-agent-原理与实战第6章-prompt-系统soulmd-与身份个性&#34;&gt;Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性&#xD;&#xA;&lt;/h1&gt;&lt;blockquote&gt;&#xA;&lt;p&gt;在前面的章节中，我们已经了解了 Hermes Agent 的整体架构、安装配置以及多入口调用方式。无论用户通过 CLI、Telegram Bot 还是 API Server 与 Hermes 交互，最终所有的请求都会汇聚到 &lt;code&gt;AIAgent&lt;/code&gt; 这个核心对象。而 &lt;code&gt;AIAgent&lt;/code&gt; 要做的第一件事，就是构建系统提示词（System Prompt）——它决定了 Agent 是谁、知道什么、能做什么、以什么风格回应用户。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理</title>
+      <link>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/</link>
+      <pubDate>Wed, 26 Aug 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/</guid>
+      <description>&lt;h1 id=&#34;hermes-agent-原理与实战第4章-cli-tui--profile-与会话管理&#34;&gt;Hermes Agent 原理与实战——第4章 CLI &amp;amp;TUI &amp;amp; Profile 与会话管理&#xD;&#xA;&lt;/h1&gt;&lt;blockquote&gt;&#xA;&lt;p&gt;CLI（Command Line Interface，命令行界面）及其增强形态 TUI（Terminal User Interface，终端用户界面）是 Hermes Agent 操作最常用的入口。不同于网页 GUI 的沉重与纯命令行的简陋，Hermes 的 TUI 运行在终端内部，以字符绘制的面板、状态栏、滚动区和菜单构成了一套半可视化操作界面——比 CLI 直观，比 GUI 轻量，它支持多行编辑、斜杠命令自动补全、对话历史记录、中断并重定向，以及流式工具输出，专为长期在终端中工作的人设计。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Hermes Agent 原理与实战——第5章 模型供应商与配置</title>
+      <link>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Wed, 26 Aug 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/</guid>
+      <description>&lt;h1 id=&#34;hermes-agent-原理与实战第5章-模型供应商与配置&#34;&gt;Hermes Agent 原理与实战——第5章 模型供应商与配置&#xD;&#xA;&lt;/h1&gt;&lt;blockquote&gt;&#xA;&lt;p&gt;Hermes Agent 将&amp;quot;模型&amp;quot;做成了可热插拔的运行时组件。你可以用 &lt;code&gt;hermes model&lt;/code&gt; 在 200 多个模型之间任意切换，也可以为不同任务配置不同的模型与不同的 fallback 链；同时凭据可以集中管理、复用密钥池。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Hermes Agent 原理与实战——第2章 安装、配置与首次对话</title>
+      <link>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/</link>
+      <pubDate>Sun, 16 Aug 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/</guid>
+      <description>&lt;h1 id=&#34;hermes-agent-原理与实战第2章-安装配置与首次对话&#34;&gt;Hermes Agent 原理与实战——第2章 安装、配置与首次对话&#xD;&#xA;&lt;/h1&gt;&lt;blockquote&gt;&#xA;&lt;p&gt;本章将引导你从零搭建一套可投入实际使用的 Hermes Agent 运行环境。依次完成程序安装、选择模型 provider（服务提供商）配置、验证对话正常运行，同时介绍常见故障排查思路。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Hermes Agent 原理与实战——第3章 整体架构与核心组件</title>
+      <link>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/</link>
+      <pubDate>Sun, 16 Aug 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/</guid>
+      <description>&lt;h2 id=&#34;hermes-agent-原理与实战第3章-整体架构与核心组件&#34;&gt;Hermes Agent 原理与实战——第3章 整体架构与核心组件&#xD;&#xA;&lt;/h2&gt;&lt;blockquote&gt;&#xA;&lt;p&gt;理解 Hermes Agent 最高效的方式，是先看它的&amp;quot;系统总图&amp;quot;，再逐个拆解。本章探究 Hermes 的整体架构、Agent Loop 内部机制、Prompt 组装、Provider 运行时解析以及会话存储等核心技术。通过本章，你将建立起对 Hermes 整体架构的&amp;quot;心理模型&amp;quot;，理解它为何能在 CLI、Telegram、IDE、API Server 等十余种入口下保持行为一致，以及核心组件之间如何协同工作。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念</title>
+      <link>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/</link>
+      <pubDate>Sat, 15 Aug 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/</guid>
+      <description>&lt;h1 id=&#34;hermes-agent-原理与实战第1章-hermes-agent-简介与核心理念&#34;&gt;Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念&#xD;&#xA;&lt;/h1&gt;&lt;h3 id=&#34;11-hermes-agent-介绍&#34;&gt;1.1 Hermes Agent 介绍&#xD;&#xA;&lt;/h3&gt;&lt;h4 id=&#34;111-hermes-agent是什么&#34;&gt;1.1.1 Hermes Agent是什么&#xD;&#xA;&lt;/h4&gt;&lt;p&gt;&lt;strong&gt;Hermes Agent&lt;/strong&gt;（以下简称 Hermes）是由 &lt;a class=&#34;link&#34; href=&#34;https://nousresearch.com/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;&#xD;&#xA;    &gt;Nous Research&lt;/a&gt; 构建的&lt;strong&gt;开源、自进化通用型 AI 智能体&lt;/strong&gt;（Self-Improving AI Agent）。它并非某个大语言模型的简单封装，也不是传统意义上的 IDE 插件，而是一套完整的 &lt;strong&gt;Agent Harness（智能体 Harness）&lt;/strong&gt;——一个赋予 AI 模型自主思考、调用工具、记忆持久化、自我迭代进化、跨平台交互的底层运行时系统。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

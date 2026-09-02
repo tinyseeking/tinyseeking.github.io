@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="本章将深入拆解 Hermes 的 Prompt Builder 模型、SOUL.md身份文件、Personality 预设系统、冻结快照机制以及 Prompt Cache 命中率优化策略，帮助你从根本上理解并掌控 Agent 的\"身份设定与行为逻辑的核心根源\"。">
+<title>Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性">
+<meta property='og:description' content="本章将深入拆解 Hermes 的 Prompt Builder 模型、SOUL.md身份文件、Personality 预设系统、冻结快照机制以及 Prompt Cache 命中率优化策略，帮助你从根本上理解并掌控 Agent 的\"身份设定与行为逻辑的核心根源\"。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='hermes agent' /><meta property='article:published_time' content='2026-08-28T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-08-28T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性">
+<meta name="twitter:description" content="本章将深入拆解 Hermes 的 Prompt Builder 模型、SOUL.md身份文件、Personality 预设系统、冻结快照机制以及 Prompt Cache 命中率优化策略，帮助你从根本上理解并掌控 Agent 的\"身份设定与行为逻辑的核心根源\"。"><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#61-prompt-系统的核心设计理念">6.1 Prompt 系统的核心设计理念</a></li>
+    <li><a href="#62-prompt-builder-槽位模型详解">6.2 Prompt Builder 槽位模型详解</a>
+      <ol>
+        <li><a href="#621-缓存的系统-prompt提示词层">6.2.1 缓存的系统 prompt（提示词）层</a>
+          <ol>
+            <li><a href="#slot-1agent-identity身份标识">Slot 1：Agent Identity（身份标识）</a></li>
+            <li><a href="#slot-2tool-aware-behavior-guidance工具感知行为指导">Slot 2：Tool-aware Behavior Guidance（工具感知行为指导）</a></li>
+            <li><a href="#slot-3honcho-static-block可选">Slot 3：Honcho Static Block（可选）</a></li>
+            <li><a href="#slot-4optional-system-message可选系统消息">Slot 4：Optional System Message（可选系统消息）</a></li>
+            <li><a href="#slot-5--6frozen-memory--user-profile-snapshots冻结快照">Slot 5 &amp; 6：Frozen MEMORY &amp; USER Profile Snapshots（冻结快照）</a></li>
+            <li><a href="#slot-7skills-index技能索引">Slot 7：Skills Index（技能索引）</a></li>
+            <li><a href="#slot-8context-files上下文文件">Slot 8：Context Files（上下文文件）</a></li>
+            <li><a href="#slot-9--10timestamp--session-id-与-platform-hint">Slot 9 &amp; 10：Timestamp / Session ID 与 Platform Hint</a></li>
+          </ol>
+        </li>
+        <li><a href="#622-仅-api-调用时添加的层">6.2.2 仅 API 调用时添加的层</a>
+          <ol>
+            <li><a href="#slot-11personality-override个性覆盖层">Slot 11：Personality Override（个性覆盖层）</a></li>
+            <li><a href="#slot-12tool-schemas工具模式定义">Slot 12：Tool Schemas（工具模式定义）</a></li>
+            <li><a href="#slot-13ephemeral-layers临时层">Slot 13：Ephemeral Layers（临时层）</a></li>
+          </ol>
+        </li>
+        <li><a href="#623-具体示例组装后的系统提示词">6.2.3 具体示例：组装后的系统提示词</a></li>
+      </ol>
+    </li>
+    <li><a href="#63-soulmdagent-的主要身份标识">6.3 SOUL.md：Agent 的主要身份标识</a>
+      <ol>
+        <li><a href="#631-什么是-soulmd">6.3.1 什么是 SOUL.md</a></li>
+        <li><a href="#632-自动初始化行为">6.3.2 自动初始化行为</a></li>
+        <li><a href="#633-soulmd-应该写什么">6.3.3 SOUL.md 应该写什么</a></li>
+        <li><a href="#634-优质-soulmd-示例">6.3.4 优质 SOUL.md 示例</a></li>
+        <li><a href="#635-安全扫描机制">6.3.5 安全扫描机制</a></li>
+        <li><a href="#636-soulmd-与-agentsmd-的分工">6.3.6 SOUL.md 与 AGENTS.md 的分工</a></li>
+      </ol>
+    </li>
+    <li><a href="#64-personality-个性-预设与-personality-切换">6.4 Personality (个性) 预设与 /personality 切换</a>
+      <ol>
+        <li><a href="#641-内置个性列表">6.4.1 内置个性列表</a></li>
+        <li><a href="#642-如何切换个性">6.4.2 如何切换个性</a></li>
+        <li><a href="#643-自定义个性配置">6.4.3 自定义个性配置</a></li>
+        <li><a href="#644-personality-与-soulmd-的协作关系">6.4.4 Personality 与 SOUL.md 的协作关系</a></li>
+        <li><a href="#645-推荐工作流">6.4.5 推荐工作流</a></li>
+      </ol>
+    </li>
+    <li><a href="#65-冻结快照机制为什么记忆在对话中不变">6.5 冻结快照机制：为什么记忆在对话中&quot;不变&quot;</a>
+      <ol>
+        <li><a href="#1冻结快照的工作方式">1、冻结快照的工作方式</a></li>
+        <li><a href="#2冻结机制的设计权衡">2、冻结机制的设计权衡</a></li>
+        <li><a href="#3配置记忆限制">3、配置记忆限制</a></li>
+      </ol>
+    </li>
+    <li><a href="#66-如何自定义-prompt">6.6 如何自定义 Prompt</a>
+      <ol>
+        <li><a href="#661-优先使用的自定义入口">6.6.1 优先使用的自定义入口</a></li>
+        <li><a href="#662-何时应该编辑核心代码">6.6.2 何时应该编辑核心代码</a></li>
+      </ol>
+    </li>
+    <li><a href="#67-本章小结">6.7 本章小结</a></li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/hermes-agent/" style="background-color: #2a9d8f; color: #fff;">
+                Hermes Agent 原理与实战
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/">Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            本章将深入拆解 Hermes 的 Prompt Builder 模型、SOUL.md身份文件、Personality 预设系统、冻结快照机制以及 Prompt Cache 命中率优化策略，帮助你从根本上理解并掌控 Agent 的&#34;身份设定与行为逻辑的核心根源&#34;。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-08-28T00:00:00Z'>2026年8月28日星期五</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 26 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#61-prompt-系统的核心设计理念">6.1 Prompt 系统的核心设计理念</a></li>
+    <li><a href="#62-prompt-builder-槽位模型详解">6.2 Prompt Builder 槽位模型详解</a>
+      <ol>
+        <li><a href="#621-缓存的系统-prompt提示词层">6.2.1 缓存的系统 prompt（提示词）层</a>
+          <ol>
+            <li><a href="#slot-1agent-identity身份标识">Slot 1：Agent Identity（身份标识）</a></li>
+            <li><a href="#slot-2tool-aware-behavior-guidance工具感知行为指导">Slot 2：Tool-aware Behavior Guidance（工具感知行为指导）</a></li>
+            <li><a href="#slot-3honcho-static-block可选">Slot 3：Honcho Static Block（可选）</a></li>
+            <li><a href="#slot-4optional-system-message可选系统消息">Slot 4：Optional System Message（可选系统消息）</a></li>
+            <li><a href="#slot-5--6frozen-memory--user-profile-snapshots冻结快照">Slot 5 &amp; 6：Frozen MEMORY &amp; USER Profile Snapshots（冻结快照）</a></li>
+            <li><a href="#slot-7skills-index技能索引">Slot 7：Skills Index（技能索引）</a></li>
+            <li><a href="#slot-8context-files上下文文件">Slot 8：Context Files（上下文文件）</a></li>
+            <li><a href="#slot-9--10timestamp--session-id-与-platform-hint">Slot 9 &amp; 10：Timestamp / Session ID 与 Platform Hint</a></li>
+          </ol>
+        </li>
+        <li><a href="#622-仅-api-调用时添加的层">6.2.2 仅 API 调用时添加的层</a>
+          <ol>
+            <li><a href="#slot-11personality-override个性覆盖层">Slot 11：Personality Override（个性覆盖层）</a></li>
+            <li><a href="#slot-12tool-schemas工具模式定义">Slot 12：Tool Schemas（工具模式定义）</a></li>
+            <li><a href="#slot-13ephemeral-layers临时层">Slot 13：Ephemeral Layers（临时层）</a></li>
+          </ol>
+        </li>
+        <li><a href="#623-具体示例组装后的系统提示词">6.2.3 具体示例：组装后的系统提示词</a></li>
+      </ol>
+    </li>
+    <li><a href="#63-soulmdagent-的主要身份标识">6.3 SOUL.md：Agent 的主要身份标识</a>
+      <ol>
+        <li><a href="#631-什么是-soulmd">6.3.1 什么是 SOUL.md</a></li>
+        <li><a href="#632-自动初始化行为">6.3.2 自动初始化行为</a></li>
+        <li><a href="#633-soulmd-应该写什么">6.3.3 SOUL.md 应该写什么</a></li>
+        <li><a href="#634-优质-soulmd-示例">6.3.4 优质 SOUL.md 示例</a></li>
+        <li><a href="#635-安全扫描机制">6.3.5 安全扫描机制</a></li>
+        <li><a href="#636-soulmd-与-agentsmd-的分工">6.3.6 SOUL.md 与 AGENTS.md 的分工</a></li>
+      </ol>
+    </li>
+    <li><a href="#64-personality-个性-预设与-personality-切换">6.4 Personality (个性) 预设与 /personality 切换</a>
+      <ol>
+        <li><a href="#641-内置个性列表">6.4.1 内置个性列表</a></li>
+        <li><a href="#642-如何切换个性">6.4.2 如何切换个性</a></li>
+        <li><a href="#643-自定义个性配置">6.4.3 自定义个性配置</a></li>
+        <li><a href="#644-personality-与-soulmd-的协作关系">6.4.4 Personality 与 SOUL.md 的协作关系</a></li>
+        <li><a href="#645-推荐工作流">6.4.5 推荐工作流</a></li>
+      </ol>
+    </li>
+    <li><a href="#65-冻结快照机制为什么记忆在对话中不变">6.5 冻结快照机制：为什么记忆在对话中&quot;不变&quot;</a>
+      <ol>
+        <li><a href="#1冻结快照的工作方式">1、冻结快照的工作方式</a></li>
+        <li><a href="#2冻结机制的设计权衡">2、冻结机制的设计权衡</a></li>
+        <li><a href="#3配置记忆限制">3、配置记忆限制</a></li>
+      </ol>
+    </li>
+    <li><a href="#66-如何自定义-prompt">6.6 如何自定义 Prompt</a>
+      <ol>
+        <li><a href="#661-优先使用的自定义入口">6.6.1 优先使用的自定义入口</a></li>
+        <li><a href="#662-何时应该编辑核心代码">6.6.2 何时应该编辑核心代码</a></li>
+      </ol>
+    </li>
+    <li><a href="#67-本章小结">6.7 本章小结</a></li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="hermes-agent-原理与实战第6章-prompt-系统soulmd-与身份个性">Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性
+</h1><blockquote>
+<p>在前面的章节中，我们已经了解了 Hermes Agent 的整体架构、安装配置以及多入口调用方式。无论用户通过 CLI、Telegram Bot 还是 API Server 与 Hermes 交互，最终所有的请求都会汇聚到 <code>AIAgent</code> 这个核心对象。而 <code>AIAgent</code> 要做的第一件事，就是构建系统提示词（System Prompt）——它决定了 Agent 是谁、知道什么、能做什么、以什么风格回应用户。</p>
+<p>本章将深入拆解 Hermes 的 Prompt Builder 模型、<code>SOUL.md</code> 身份文件、Personality 预设系统、冻结快照机制以及 Prompt Cache 命中率优化策略，帮助你从根本上理解并掌控 Agent 的<code>身份设定与行为逻辑的核心根源</code>。</p>
+</blockquote>
+<h2 id="61-prompt-系统的核心设计理念">6.1 Prompt 系统的核心设计理念
+</h2><p>Hermes 刻意将以下两者分离：</p>
+<ul>
+<li><strong>缓存的系统 prompt（提示词） 状态</strong>。</li>
+<li><strong>每次 API 调用时临时添加的内容。</strong></li>
+</ul>
+<p>这种分离不是随意的工程选择，而是经过深思熟虑的设计决策，它权衡了以下多个维度：</p>
+<ul>
+<li><strong>Token 用量</strong>：稳定的系统前缀可以被提供商侧的缓存机制复用，避免每次请求都重复计费；</li>
+<li><strong>Prompt 缓存效果</strong>：频繁变动的内容放在临时层，不变的内容放在缓存层，最大化缓存命中率；</li>
+<li><strong>会话连续性</strong>：冻结的快照确保同一对话中 Agent 对记忆和身份的认知保持一致；</li>
+<li><strong>记忆正确性</strong>：避免会话中途记忆更新导致系统提示词反复变化，进而引发模型行为漂移。</li>
+</ul>
+<p>理解这一设计理念是掌握后续所有槽位机制的前提。Hermes 的 Prompt 组装大致可分为两大阶段：</p>
+<ol>
+<li><strong>系统提示词组装阶段</strong>：在会话开始时（或需要重建时），<code>agent/prompt_builder.py</code> 按固定顺序拼装多个&quot;槽位&quot;（Slot），生成一个相对稳定的系统提示前缀。这个前缀在 Claude、OpenRouter 等支持 prompt caching 的平台上会被标记为缓存边界。</li>
+<li><strong>API 调用阶段</strong>：在每次调用模型时，除了已缓存的系统前缀，还会临时附加工具 schema、ephemeral 提示层、当前轮次的用户消息等内容。这些临时内容不参与长期缓存，或仅参与短期缓存。</li>
+</ol>
+<p>这种&quot;稳定前缀 + 临时后缀&quot;的双层架构，让 Hermes 在长对话中既能保持身份与记忆的稳定，又能灵活响应每轮的具体上下文。</p>
+<h2 id="62-prompt-builder-槽位模型详解">6.2 Prompt Builder 槽位模型详解
+</h2><p><code>agent/prompt_builder.py</code> 是 Hermes Prompt 系统的核心实现文件。它使用一种<strong>固定顺序的槽位模型</strong>（Slot Model）来组装系统提示词。可以把每个槽位理解为系统提示词中的一个&quot;乐高积木&quot;——每个积木职责清晰、位置固定、可独立开关。</p>
+<p>Hermes的 prompt 系统可分为两个部分：<code>已缓存的系统 prompt 层</code>和<code> API 调用时临时附加的层 </code>。以下是所有槽位按注入顺序排列的完整视图。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                     <span class="err">已缓存的系统</span> <span class="n">prompt</span> <span class="err">层</span>                            <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">（这些层在会话开始时拼装一次，随后保持冻结，适合长期缓存）</span>              <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">Identity</span><span class="err">（身份标识）</span>                                   <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="o">~/.</span><span class="n">hermes</span><span class="o">/</span><span class="n">SOUL</span><span class="o">.</span><span class="n">md</span> <span class="err">或内置默认身份</span>                           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Tool</span><span class="o">-</span><span class="n">aware</span> <span class="n">Behavior</span> <span class="n">Guidance</span><span class="err">（工具感知行为指导）</span>              <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="err">持久记忆说明、</span><span class="n">session_search</span> <span class="err">提示、工具使用强制等</span>           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Honcho</span> <span class="n">Static</span> <span class="n">Block</span><span class="err">（可选）</span>                                  <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="n">Honcho</span> <span class="n">Memory</span> <span class="n">Provider</span> <span class="err">激活时的静态人格</span><span class="o">/</span><span class="err">上下文数据</span>          <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">4</span><span class="p">:</span> <span class="n">Optional</span> <span class="n">System</span> <span class="n">Message</span><span class="err">（可选系统消息）</span>                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="err">来自</span> <span class="n">config</span><span class="o">.</span><span class="n">yaml</span> <span class="err">或</span> <span class="n">API</span> <span class="err">参数的系统消息覆盖</span>                  <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">5</span><span class="p">:</span> <span class="n">Frozen</span> <span class="n">MEMORY</span> <span class="n">Snapshot</span><span class="err">（冻结的记忆快照）</span>                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="o">~/.</span><span class="n">hermes</span><span class="o">/</span><span class="n">memories</span><span class="o">/</span><span class="n">MEMORY</span><span class="o">.</span><span class="n">md</span> <span class="err">的会话起始快照</span>                 <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">6</span><span class="p">:</span> <span class="n">Frozen</span> <span class="n">USER</span> <span class="n">Profile</span> <span class="n">Snapshot</span><span class="err">（冻结的用户画像快照）</span>            <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="o">~/.</span><span class="n">hermes</span><span class="o">/</span><span class="n">memories</span><span class="o">/</span><span class="n">USER</span><span class="o">.</span><span class="n">md</span> <span class="err">的会话起始快照</span>                   <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">7</span><span class="p">:</span> <span class="n">Skills</span> <span class="n">Index</span><span class="err">（技能索引）</span>                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="err">已启用技能的</span> <span class="p">{</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">category</span><span class="p">}</span> <span class="err">列表</span>             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">8</span><span class="p">:</span> <span class="n">Context</span> <span class="n">Files</span><span class="err">（上下文文件）</span>                                  <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="o">.</span><span class="n">hermes</span><span class="o">.</span><span class="n">md</span> <span class="o">/</span> <span class="n">AGENTS</span><span class="o">.</span><span class="n">md</span> <span class="o">/</span> <span class="n">CLAUDE</span><span class="o">.</span><span class="n">md</span> <span class="o">/</span> <span class="o">.</span><span class="n">cursorrules</span>         <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">9</span><span class="p">:</span> <span class="n">Timestamp</span> <span class="o">+</span> <span class="n">Session</span> <span class="n">ID</span><span class="err">（时间戳与会话标识）</span>                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="err">当前时间与可选会话</span> <span class="n">ID</span>                                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">10</span><span class="p">:</span> <span class="n">Platform</span> <span class="n">Hint</span><span class="err">（平台提示）</span>                                   <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="n">CLI</span><span class="o">/</span><span class="n">Discord</span><span class="o">/</span><span class="n">Telegram</span> <span class="err">等平台的格式指导</span>                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                     <span class="n">API</span> <span class="err">调用时临时附加的层</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>           <span class="err">（这些层不进入长期缓存，或仅作短期缓存）</span>                         <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">11</span><span class="p">:</span> <span class="n">Personality</span> <span class="n">Override</span><span class="err">（个性覆盖层）</span>                           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="o">/</span><span class="n">personality</span> <span class="err">命令激活的临时预设</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">12</span><span class="p">:</span> <span class="n">Tool</span> <span class="n">Schemas</span><span class="err">（工具模式定义）</span>                                <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="err">当前启用</span> <span class="n">toolset</span> <span class="err">的</span> <span class="n">JSON</span> <span class="n">Schema</span> <span class="err">描述</span>                        <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">├─────────────────────────────────────────────────────────────────────┤</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Slot</span> <span class="mi">13</span><span class="p">:</span> <span class="n">Ephemeral</span> <span class="n">Layers</span><span class="err">（临时层）</span>                                  <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>          <span class="err">→</span> <span class="err">预算告警、上下文压力提示、压缩提示、</span><span class="n">prefill</span> <span class="err">消息等</span>           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└─────────────────────────────────────────────────────────────────────┘</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="621-缓存的系统-prompt提示词层">6.2.1 缓存的系统 prompt（提示词）层
+</h3><p>缓存的系统提示词包含10个槽位，下面对各个槽位详细说明。</p>
+<h4 id="slot-1agent-identity身份标识">Slot 1：Agent Identity（身份标识）
+</h4><p>这是系统提示词中<strong>最核心、最优先</strong>部分。充当代理的身份标识，它回答了一个根本问题：&ldquo;这个 Agent 是谁？&rdquo;</p>
+<p>Identity 槽位的内容来源有两个，按优先级排列：</p>
+<ol>
+<li><strong>用户自定义身份</strong>：<code>~/.hermes/SOUL.md</code>（或 <code>$HERMES_HOME/SOUL.md</code>）的内容。如果该文件存在且有有效内容，它将完全替换内置默认身份，原样注入到系统提示词的第一位。</li>
+<li><strong>内置默认身份</strong>：如果 <code>SOUL.md</code> 不存在、为空或无法加载，系统回退到硬编码的默认身份：</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">You are Hermes Agent, an intelligent AI assistant created by Nous Research.
+</span></span><span class="line"><span class="cl">You are helpful, knowledgeable, and direct. You assist users with a wide
+</span></span><span class="line"><span class="cl">range of tasks including answering questions, writing and editing code,
+</span></span><span class="line"><span class="cl">analyzing information, creative work, and executing actions via your tools.
+</span></span><span class="line"><span class="cl">You communicate clearly, admit uncertainty when appropriate, and prioritize
+</span></span><span class="line"><span class="cl">being genuinely useful over being verbose unless otherwise directed below.
+</span></span><span class="line"><span class="cl">Be targeted and efficient in your exploration and investigations.
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这个槽位的设计有几个关键约束：</p>
+<ul>
+<li><strong>仅从 <code>HERMES_HOME</code> 加载</strong>：Hermes 不会在当前工作目录中查找 <code>SOUL.md</code>。这样做是为了保证个性的可预测性——如果你从任意目录启动 Hermes，不会随项目切换而意外改变。</li>
+<li><strong>安全扫描与截断</strong>：<code>SOUL.md</code> 在注入前会经过提示词注入扫描（检查不可见 unicode、&ldquo;ignore previous instructions（忽略前面指令）&rdquo; 等恶意模式），并在超过上限（默认 20,000 字符）后，保留前 70% + 后 20%，中间用截断标记代替。</li>
+<li><strong>防止重复</strong>：由于 <code>SOUL.md</code> 已经在 Slot 1 作为身份注入，<code>build_context_files_prompt()</code> 会传入 <code>skip_soul=True</code>，确保它在 Slot 8（上下文文件）中不再出现第二次。</li>
+<li><strong>子 Agent 回退</strong>：当设置了 <code>skip_context_files</code>（例如子 Agent 委托上下文），不会加载 <code>SOUL.md</code>，而是使用硬编码的 <code>DEFAULT_AGENT_IDENTITY</code>，避免子 Agent 继承过于具体的父身份。</li>
+</ul>
+<h4 id="slot-2tool-aware-behavior-guidance工具感知行为指导">Slot 2：Tool-aware Behavior Guidance（工具感知行为指导）
+</h4><p>这一层向模型解释它拥有哪些持久能力、应该如何使用工具。内容包括：</p>
+<ul>
+<li><strong>持久记忆指导</strong>：告知模型它有跨会话的持久记忆，应使用 <code>memory</code> 工具保存持久事实（如：用户偏好、环境细节、工具特性、稳定约定），并保持记忆内容紧凑；</li>
+<li><strong>会话搜索指导</strong>：当用户引用过去的对话或模型怀疑存在跨会话上下文时，应先用 <code>session_search</code> 检索，而不是直接问用户；</li>
+<li><strong>工具使用强制（Tool-use Enforcement）</strong>：对于 GPT/Codex 等模型，注入 &ldquo;You MUST use your tools to take action — do not describe what you would do&rdquo; 这类指导，防止模型&quot;光说不练&quot;。</li>
+</ul>
+<p>这一层是<strong>行为协议层</strong>——它不定义 Agent 是谁，而是定义 Agent 应该怎么工作。</p>
+<h4 id="slot-3honcho-static-block可选">Slot 3：Honcho Static Block（可选）
+</h4><p>当 Honcho Memory Provider 被激活时，这一层会注入 Honcho 提供的静态人格/上下文数据块。Honcho 是一个可选的辩证用户建模后端，能把零散的&quot;用户偏好&quot;整合成更结构化的上下文。如果未启用 Honcho，这一层为空。</p>
+<h4 id="slot-4optional-system-message可选系统消息">Slot 4：Optional System Message（可选系统消息）
+</h4><p>来自 <code>config.yaml</code> 中 <code>agent.system_prompt</code> 配置或 API 调用参数传入的系统消息覆盖。这是一个通用扩展槽，允许部署方或用户在不修改核心代码的前提下，向系统提示词注入额外的指令文本。</p>
+<h4 id="slot-5--6frozen-memory--user-profile-snapshots冻结快照">Slot 5 &amp; 6：Frozen MEMORY &amp; USER Profile Snapshots（冻结快照）
+</h4><p>这两个槽位分别注入 <code>~/.hermes/memories/MEMORY.md</code> 和 <code>~/.hermes/memories/USER.md</code> 的<strong>会话起始快照</strong>。</p>
+<ul>
+<li><strong>MEMORY.md</strong>：存储环境约定、工作习惯、项目上下文等关键事实。默认上限约 2,200 字符（约 800 tokens）。</li>
+<li><strong>USER.md</strong>：存储用户画像信息，如姓名、GitHub 账号、技术栈偏好等。默认上限约 1,375 字符（约 500 tokens）。</li>
+</ul>
+<p>之所以称为&quot;冻结快照&quot;，是因为：</p>
+<ul>
+<li>它们在会话开始时读取并注入系统提示词；</li>
+<li>会话中途，即使用户或 Agent 通过 <code>memory</code> 工具修改了磁盘上的 <code>MEMORY.md</code> 或 <code>USER.md</code>，<strong>已构建的系统提示词也不会立即更新</strong>；</li>
+<li>新的记忆内容要等到新会话开始、或强制重建 prompt 时才生效。</li>
+</ul>
+<p>这种冻结机制有两个目的：</p>
+<ol>
+<li><strong>保持 prompt cache 稳定</strong>：如果每轮都因为记忆更新而修改系统前缀，缓存<strong>会不断失效</strong>，导致 token 成本飙升；</li>
+<li><strong>避免同一对话中的认知漂移</strong>：同一轮对话中，Agent 对&quot;我是谁&quot;和&quot;用户是谁&quot;的认知应当保持一致。</li>
+</ol>
+<h4 id="slot-7skills-index技能索引">Slot 7：Skills Index（技能索引）
+</h4><p>当 skills 工具可用时，这一层会向 prompt 贡献一个<strong>紧凑的技能索引</strong>。格式类似：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">## Skills (mandatory)
+</span></span><span class="line"><span class="cl">Before replying, scan the skills below. If one clearly matches your task,
+</span></span><span class="line"><span class="cl">load it with skill_view(name) and follow its instructions.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">&lt;available_skills&gt;
+</span></span><span class="line"><span class="cl">  software-development:
+</span></span><span class="line"><span class="cl">    - code-review: 结构化代码审查工作流
+</span></span><span class="line"><span class="cl">    - test-driven-development: TDD 方法论
+</span></span><span class="line"><span class="cl">  research:
+</span></span><span class="line"><span class="cl">    - arxiv: 搜索并总结 arXiv 论文
+</span></span><span class="line"><span class="cl">&lt;/available_skills&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Skills 系统采用<strong>渐进式披露</strong>（Progressive Disclosure）策略：Level 0 只注入索引（约 3k token），Level 1 在模型调用 <code>skill_view()</code> 时注入该技能的全文（SKILL.md），Level 2 在技能内部引用文件时按需加载。这避免了把所有技能文档一次性塞进上下文窗口。</p>
+<h4 id="slot-8context-files上下文文件">Slot 8：Context Files（上下文文件）
+</h4><p>这一层加载<strong>项目级</strong>的上下文指令文件。Hermes 使用<strong>优先级系统</strong>——只加载一种项目上下文类型（先匹配先赢）：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>优先级</th>
+          <th>文件</th>
+          <th>搜索范围</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td><code>.hermes.md</code>、<code>HERMES.md</code></td>
+          <td>从 CWD 向上至 git 根目录</td>
+          <td>Hermes 原生项目配置</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td><code>AGENTS.md</code></td>
+          <td>仅 CWD（及子目录）</td>
+          <td>常见 agent 指令文件</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td><code>CLAUDE.md</code></td>
+          <td>仅 CWD</td>
+          <td>Claude Code 兼容性</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td><code>.cursorrules</code>、<code>.cursor/rules/*.mdc</code></td>
+          <td>仅 CWD</td>
+          <td>Cursor IDE 兼容性</td>
+      </tr>
+  </tbody>
+</table></div>
+<ul>
+<li><strong>项目上下文文件使用优先级系统</strong> —— 仅加载一种类型（第一个匹配优先）：<code>.hermes.md</code> → <code>AGENTS.md</code> → <code>CLAUDE.md</code> → <code>.cursorrules</code>。SOUL.md 始终独立加载。</li>
+<li><strong>AGENTS.md</strong> 是分层的：如果子目录也有 AGENTS.md，所有都会合并。</li>
+<li><strong>安全扫描</strong>：检查提示词注入模式（不可见 Unicode、&ldquo;忽略之前的指令&rdquo;、凭据窃取尝试）；</li>
+<li><strong>截断处理</strong>：使用 70/20 头部/尾部分割方式，加上截断标记，限制在 <code>context_file_max_chars</code> 个字符内。上限随模型上下文窗口缩放（20,000 字符下限，500K 上限）；<code>config.yaml</code> 中显式设置的 <code>context_file_max_chars</code> 始终优先生效。</li>
+<li><strong>剥离 YAML frontmatter</strong>：<code>.hermes.md</code> 的 frontmatter 会被移除（保留供未来配置覆盖使用）。</li>
+</ul>
+<p>关于 <code>SOUL.md</code> 和项目上下文文件的分工，本章后文会详细展开。</p>
+<p>详细代码位于<code> agent/prompt_builder.py</code>文件中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="c1"># 来自 agent/prompt_builder.py（简化版）</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">build_context_files_prompt</span><span class="p">(</span><span class="n">cwd</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">skip_soul</span><span class="o">=</span><span class="n">False</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cwd_path</span> <span class="o">=</span> <span class="ne">Path</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 优先级：先匹配者胜 —— 只加载一种项目上下文</span>
+</span></span><span class="line"><span class="cl">    <span class="n">project_context</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_load_hermes_md</span><span class="p">(</span><span class="n">cwd_path</span><span class="p">)</span>       <span class="c1"># 1. .hermes.md / HERMES.md（向上遍历到 git 根目录）</span>
+</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">_load_agents_md</span><span class="p">(</span><span class="n">cwd_path</span><span class="p">)</span>    <span class="c1"># 2. AGENTS.md（仅当前工作目录）</span>
+</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">_load_claude_md</span><span class="p">(</span><span class="n">cwd_path</span><span class="p">)</span>    <span class="c1"># 3. CLAUDE.md（仅当前工作目录）</span>
+</span></span><span class="line"><span class="cl">        <span class="ow">or</span> <span class="n">_load_cursorrules</span><span class="p">(</span><span class="n">cwd_path</span><span class="p">)</span>  <span class="c1"># 4. .cursorrules / .cursor/rules/*.mdc</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">sections</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">project_context</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">project_context</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># SOUL.md 来自 HERMES_HOME（独立于项目上下文）</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">skip_soul</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">soul_content</span> <span class="o">=</span> <span class="n">load_soul_md</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">soul_content</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">soul_content</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">sections</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;# 项目上下文</span><span class="se">\n\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;以下项目上下文文件已加载，应当遵循：</span><span class="se">\n\n</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">+</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sections</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="slot-9--10timestamp--session-id-与-platform-hint">Slot 9 &amp; 10：Timestamp / Session ID 与 Platform Hint
+</h4><ul>
+<li>
+<p><strong>时间戳</strong>：注入当前时间（如 <code>Current time: 2026-03-30T14:30:00-07:00</code>），让 Agent 具备时间感知能力，对 cron 调度、时效性判断等任务至关重要。</p>
+</li>
+<li>
+<p><strong>会话 ID</strong>：可选注入，用于追踪和调试。</p>
+</li>
+<li>
+<p><strong>平台提示</strong>：平台提示（上述第 10 层）是 Hermes 针对不同平台（如 Telegram、WhatsApp、Slack、CLI 等）注入的环境专属指令——例如「你正处于终端环境，请勿使用 Markdown」。内置默认值定义在 <code>PLATFORM_HINTS</code>（<code>agent/system_prompt.py</code>）中；插件注册的平台则通过平台注册表自行提供提示内容。</p>
+<p>管理员可在 <code>config.yaml</code> 中通过顶层 <code>platform_hints</code> 键，对单个平台的提示进行追加或替换，且不影响其他平台：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">platform_hints</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">whatsapp</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">append</span><span class="p">:</span><span class="w"> </span><span class="p">&gt;</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">      当需要表格输出时，请调用 table_formatting 技能，
+</span></span></span><span class="line"><span class="cl"><span class="sd">      而不是输出 Markdown 表格。</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">slack</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">replace</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;你位于 Slack 中。保持回复紧凑，避免使用宽表格。&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">telegram</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;优先发送简短消息；拆分较长的回答。&#34;</span><span class="w">   </span><span class="c"># 简写形式 = 追加</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>append</code> — 保留内置提示，并在其后追加额外文本。</li>
+<li><code>replace</code> — 完全替换内置提示。</li>
+<li>裸字符串 — 等同于 <code>append</code> 的简写。</li>
+<li>当同时存在 <code>append</code> 和 <code>replace</code> 时，<code>replace</code> 优先。</li>
+<li>格式错误的条目会被防御性地忽略，并回退到未修改的默认值，因此配置值错误不会导致提示词组装崩溃或跨平台泄露。</li>
+</ul>
+<p>覆盖规则在<strong>系统提示词构建阶段</strong>解析（包括会话启动，以及压缩重建时——因为压缩会重建提示词）。对于固定配置，其生成的提示具有字节级稳定性，与内置提示共存，不会破坏提示词缓存。</p>
+</li>
+</ul>
+<h3 id="622-仅-api-调用时添加的层">6.2.2 仅 API 调用时添加的层
+</h3><p>这部分内容被刻意地<em>不</em>作为缓存系统提示词的一部分持久化，在每次调用模型时临时附加。</p>
+<h4 id="slot-11personality-override个性覆盖层">Slot 11：Personality Override（个性覆盖层）
+</h4><p><code>/personality</code> 命令激活的临时预设。它不属于已缓存的系统 prompt 的持久部分，而是作为<strong>会话级覆盖层</strong>在运行时注入。这意味着：</p>
+<ul>
+<li>切换 personality 不会重建已缓存的系统前缀；</li>
+<li>Personality 的效果是&quot;叠加&quot;在 SOUL.md 基础语气之上的临时模式切换；</li>
+<li>新会话默认回到 SOUL.md 定义的基础身份。</li>
+</ul>
+<h4 id="slot-12tool-schemas工具模式定义">Slot 12：Tool Schemas（工具模式定义）
+</h4><p>在每次 API 调用前，<code>model_tools.py</code> 会收集当前启用的所有工具的 JSON Schema 描述，作为 <code>tools</code> 参数传入。这部分内容通常较长（尤其是启用大量工具集时），且可能因用户通过 <code>/tools</code> 命令开关工具而动态变化，因此不适合放入需要长期缓存的系统前缀中。</p>
+<h4 id="slot-13ephemeral-layers临时层">Slot 13：Ephemeral Layers（临时层）
+</h4><p>Ephemeral Layers（临时层）是 Hermes Prompt 系统中&quot;变&quot;的部分。它们刻意不作为已缓存系统 prompt 的一部分持久化，只在单次 API 调用时附加。</p>
+<p><strong>Ephemeral Layers 主要包括：</strong></p>
+<ul>
+<li><strong><code>ephemeral_system_prompt</code></strong>：通过环境变量 <code>HERMES_EPHEMERAL_SYSTEM_PROMPT</code> 传入的临时系统提示。适用于需要给某一轮次添加特殊指导，但不想永久修改系统提示的场景；</li>
+<li><strong>Prefill 消息</strong>：开发者或上游系统传入的前置提示，用于引导模型以特定格式开始回复；</li>
+<li><strong>Gateway 派生的会话上下文覆盖层</strong>：消息网关根据当前平台或用户状态动态生成的临时指导；</li>
+<li><strong>Honcho 动态召回</strong>：注入当前轮次用户消息的后续轮次 Honcho 召回内容（与 Slot 3 的 Honcho 静态块不同）；</li>
+<li><strong>上下文预算告警</strong>：当对话长度接近压缩阈值时，注入的提示模型注意上下文压力的消息；</li>
+<li><strong>迭代预算耗尽提示</strong>：当 Agent 达到 <code>max_turns</code> 上限时，注入要求模型收尾的提示，并允许一次宽限调用。</li>
+</ul>
+<p><code>pre_llm_call</code> 插件上下文也同样走 API 调用时路径：它被追加到当前轮次的<strong>用户消息</strong>中，而不会写入缓存的系统提示词。当多个插件返回上下文时，Hermes 会将这些上下文块拼接起来。</p>
+<p><strong>为什么分离出来</strong></p>
+<p>如果把这些临时内容也塞进已缓存的系统前缀，会带来两个问题：</p>
+<ol>
+<li><strong>缓存污染</strong>：每一轮都不同的内容会让整个系统前缀失去缓存价值；</li>
+<li><strong>语义混杂</strong>：临时告警、轮次特定指导与持久身份/记忆混在一起，会让系统提示词变得冗长且不稳定。</li>
+</ol>
+<p>通过将 Ephemeral Layers 分离到 API 调用阶段，Hermes 确保了：</p>
+<ul>
+<li>稳定前缀真正稳定，可以被高效缓存；</li>
+<li>临时指导灵活多变，不影响跨会话的缓存复用；</li>
+<li>系统提示词的语义结构清晰可维护。</li>
+</ul>
+<p>这种&quot;稳定前缀 + 临时后缀&quot;的分离，保持了稳定前缀对缓存的稳定性，是 Hermes Prompt 系统设计的精髓所在。</p>
+<h3 id="623-具体示例组装后的系统提示词">6.2.3 具体示例：组装后的系统提示词
+</h3><p>以下是所有层都存在时，最终系统提示词的简化视图（注释说明了各部分的来源）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl"># 第 1 层：代理身份（来自 ~/.hermes/SOUL.md）
+</span></span><span class="line"><span class="cl">你是 Hermes，由 Nous Research 创建的 AI 助手。
+</span></span><span class="line"><span class="cl">你是一位专家级软件工程师和研究员。
+</span></span><span class="line"><span class="cl">你重视正确性、清晰性和效率。
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 2 层：工具感知行为指导
+</span></span><span class="line"><span class="cl">你拥有跨会话的持久化记忆。使用记忆工具保存持久化的事实：
+</span></span><span class="line"><span class="cl">用户偏好、环境详情、工具特性以及稳定的约定。
+</span></span><span class="line"><span class="cl">记忆会在每一轮对话中注入，因此请保持其紧凑，
+</span></span><span class="line"><span class="cl">聚焦于将来仍然有用的事实。
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">当用户引用之前对话中的内容，或者你怀疑存在相关的跨会话上下文时，
+</span></span><span class="line"><span class="cl">请使用 session_search 来调取，不要让对方重复自己说过的话。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 工具使用强制要求（仅适用于 GPT/Codex 模型）
+</span></span><span class="line"><span class="cl">你必须使用工具来采取行动——不要仅仅描述你会做什么或计划做什么，
+</span></span><span class="line"><span class="cl">而不实际去执行。
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 3 层：Honcho 静态块（激活时）
+</span></span><span class="line"><span class="cl">[Honcho 个性/上下文数据]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 4 层：可选的系统消息（来自配置或 API）
+</span></span><span class="line"><span class="cl">[用户配置的系统消息覆盖]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 5 层：冻结的 MEMORY 快照
+</span></span><span class="line"><span class="cl">## 持久化记忆
+</span></span><span class="line"><span class="cl">- 用户偏好 Python 3.12，使用 pyproject.toml
+</span></span><span class="line"><span class="cl">- 默认编辑器是 nvim
+</span></span><span class="line"><span class="cl">- 正在进行项目 &#34;atlas&#34;，位于 ~/code/atlas
+</span></span><span class="line"><span class="cl">- 时区：US/Pacific
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 6 层：冻结的 USER 画像快照
+</span></span><span class="line"><span class="cl">## 用户画像
+</span></span><span class="line"><span class="cl">- 姓名：Alice
+</span></span><span class="line"><span class="cl">- GitHub：alice-dev
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 7 层：技能索引
+</span></span><span class="line"><span class="cl">## 技能（必读）
+</span></span><span class="line"><span class="cl">在回复之前，请浏览以下技能。如果某个技能明显匹配你的任务，
+</span></span><span class="line"><span class="cl">请使用 skill_view(name) 加载它，并遵循其指示。
+</span></span><span class="line"><span class="cl">...
+</span></span><span class="line"><span class="cl">&lt;available_skills&gt;
+</span></span><span class="line"><span class="cl">  software-development:
+</span></span><span class="line"><span class="cl">    - code-review: 结构化代码审查工作流
+</span></span><span class="line"><span class="cl">    - test-driven-development: TDD 方法论
+</span></span><span class="line"><span class="cl">  research:
+</span></span><span class="line"><span class="cl">    - arxiv: 搜索并总结 arXiv 论文
+</span></span><span class="line"><span class="cl">&lt;/available_skills&gt;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 8 层：上下文文件（来自项目目录）
+</span></span><span class="line"><span class="cl"># 项目上下文
+</span></span><span class="line"><span class="cl">以下项目上下文文件已加载，应当遵循：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">## AGENTS.md
+</span></span><span class="line"><span class="cl">这是 atlas 项目。使用 pytest 进行测试。主入口点是
+</span></span><span class="line"><span class="cl">src/atlas/main.py。提交前始终运行 `make lint`。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 9 层：时间戳 + 会话
+</span></span><span class="line"><span class="cl">当前时间：2026-03-30T14:30:00-07:00
+</span></span><span class="line"><span class="cl">会话：abc123
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 第 10 层：平台提示
+</span></span><span class="line"><span class="cl">你是一个 CLI AI Agent。尽量避免使用 markdown，
+</span></span><span class="line"><span class="cl">使用可在终端中渲染的简单文本。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="63-soulmdagent-的主要身份标识">6.3 SOUL.md：Agent 的主要身份标识
+</h2><p>Hermes Agent 的个性完全可自定义。<code>SOUL.md</code> 是<strong>主要身份标识</strong>——它是系统提示词（prompt）中的第一项内容，定义了 Agent 是谁。</p>
+<h3 id="631-什么是-soulmd">6.3.1 什么是 SOUL.md
+</h3><p><code>SOUL.md</code> 是一个存放在 <code>HERMES_HOME</code>（默认 <code>~/.hermes/</code>）中的持久角色文件。SOUL.md 是 Agent 的主要身份标识，它占据系统提示词的第 1 个槽位，<strong>完全替代</strong>硬编码的默认身份块。这意味着：</p>
+<ul>
+<li>编辑 <code>SOUL.md</code> 的效果，等同于重写 Agent 的&quot;自我介绍&quot;；</li>
+<li>它是<strong>每用户/每实例</strong>级别的身份标识，而不是每项目级别；</li>
+<li>它的内容原样注入，不会在周围添加任何包装语言。</li>
+</ul>
+<p>准确路径：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">~/.hermes/SOUL.md
+</span></span><span class="line"><span class="cl"># 或使用自定义主目录时：
+</span></span><span class="line"><span class="cl">$HERMES_HOME/SOUL.md
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Hermes 仅从 <code>HERMES_HOME</code> 加载 <code>SOUL.md</code>， 不会在当前工作目录中查找 <code>SOUL.md</code>。</p>
+<p><strong>此设计的原因：</strong></p>
+<p>这样可以保持个性的可预测性。如果 Hermes 从你启动它的任意目录加载 <code>SOUL.md</code>，你的个性可能会在不同项目之间意外改变。通过仅从 <code>HERMES_HOME</code> 加载，个性归属于 Hermes 实例本身。这也让用户更容易理解：&ldquo;编辑 <code>~/.hermes/SOUL.md</code> 来更改 Hermes 的默认个性。&rdquo;</p>
+<h3 id="632-自动初始化行为">6.3.2 自动初始化行为
+</h3><p>Hermes 在启动时会自动检查 <code>SOUL.md</code> 是否存在：</p>
+<ul>
+<li>如果<strong>不存在</strong>，Hermes 会自动创建一个初始文件（内容基于内置默认身份）；</li>
+<li>如果<strong>已存在</strong>，已有的用户 <code>SOUL.md</code> 文件不会被覆盖；</li>
+<li>如果 <code>SOUL.md</code> <strong>存在但为空/仅含空白/无法读取</strong>，Hermes 将回退到内置的默认身份</li>
+<li>如果 <code>SOUL.md</code> 有内容，该内容在经过安全扫描和截断处理后将原样注入。</li>
+<li>SOUL.md <strong>不会</strong>在上下文文件部分重复出现——它仅作为身份标识出现一次。</li>
+<li>当设置了 <code>skip_context_files</code>（如子 Agent 委托上下文），不会加载 <code>SOUL.md</code>，而是使用精简的默认身份。</li>
+</ul>
+<p>这使 <code>SOUL.md</code> 成为真正的每用户或每实例身份标识，而不仅仅是一个附加层。</p>
+<p>加载逻辑（简化版）如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 来自 agent/prompt_builder.py（简化版）</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">load_soul_md</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">soul_path</span> <span class="o">=</span> <span class="n">get_hermes_home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&#34;SOUL.md&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">soul_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    <span class="n">content</span> <span class="o">=</span> <span class="n">soul_path</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">content</span> <span class="o">=</span> <span class="n">_scan_context_content</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="s2">&#34;SOUL.md&#34;</span><span class="p">)</span>  <span class="c1"># 安全扫描</span>
+</span></span><span class="line"><span class="cl">    <span class="n">content</span> <span class="o">=</span> <span class="n">_truncate_content</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="s2">&#34;SOUL.md&#34;</span><span class="p">)</span>       <span class="c1"># 截断上限随模型上下文窗口缩放（20k 为下限）；配置覆盖优先</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">content</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="633-soulmd-应该写什么">6.3.3 SOUL.md 应该写什么
+</h3><p><code>SOUL.md</code> 的核心定位是<strong>持久的语气和个性指导</strong>。适合写入的内容包括：</p>
+<ul>
+<li><strong>语气</strong>：正式还是随意？热情还是冷静？</li>
+<li><strong>沟通风格</strong>：偏好多长回复？喜欢列表还是段落？</li>
+<li><strong>直接程度</strong>：应该委婉还是直截了当？</li>
+<li><strong>默认交互风格</strong>：主动提问还是等待指令？</li>
+<li><strong>风格上应避免的内容</strong>：比如讨厌空洞的寒暄、拒绝过度道歉；</li>
+<li><strong>如何处理不确定性、分歧或模糊情况</strong>：遇到不确定的信息时，是猜测还是明确承认不知道？</li>
+</ul>
+<p><strong>不适合</strong>写入 <code>SOUL.md</code> 的内容：</p>
+<ul>
+<li>一次性项目说明（&ldquo;这个项目的入口文件是 src/main.py&rdquo;）</li>
+<li>文件路径或端口配置</li>
+<li>代码库规范或技术栈要求</li>
+<li>临时工作流细节</li>
+</ul>
+<p>这些内容属于项目上下文文件（<code>AGENTS.md</code>、<code>.hermes.md</code>），而不是 <code>SOUL.md</code>。</p>
+<p>一个实用的判断规则：</p>
+<blockquote>
+<p>如果它应该随你到处适用，属于 <code>SOUL.md</code>；如果它属于某个项目，属于 <code>AGENTS.md</code>。</p>
+</blockquote>
+<h3 id="634-优质-soulmd-示例">6.3.4 优质 SOUL.md 示例
+</h3><p>一个好的 <code>SOUL.md</code> 应该：</p>
+<ul>
+<li><strong>跨上下文稳定</strong>：在不同上下文中保持稳定，无论你在写代码、查资料还是闲聊，这个身份都应该适用；</li>
+<li><strong>足够宽泛</strong>：适用于多种对话场景，不要窄到只能做某一类任务；</li>
+<li><strong>足够具体</strong>：能实质性地塑造语气，不要泛泛而谈&quot;你是一个有用的助手&quot;，要给出可操作的指导；</li>
+<li><strong>聚焦沟通与身份</strong>：而非特定任务的指令。</li>
+</ul>
+<p>以下是一个经过精心设计的 <code>SOUL.md</code> 示例，展示了如何定义一个务实的高级工程师人格：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gh"># Personality
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">You are a pragmatic senior engineer with strong taste.
+</span></span><span class="line"><span class="cl">You optimize for truth, clarity, and usefulness over politeness theater.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Style
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> Be direct without being cold
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Prefer substance over filler
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Push back when something is a bad idea
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Admit uncertainty plainly
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Keep explanations compact unless depth is useful
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## What to avoid
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> Sycophancy
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Hype language
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Repeating the user&#39;s framing if it&#39;s wrong
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Overexplaining obvious things
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Technical posture
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> Prefer simple systems over clever systems
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Care about operational reality, not idealized architecture
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Treat edge cases as part of the design, not cleanup
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="635-安全扫描机制">6.3.5 安全扫描机制
+</h3><p><code>SOUL.md</code> 在注入前会与其他上下文文件一样，接受<strong>提示词注入扫描</strong>。扫描器会检测以下风险模式：</p>
+<ul>
+<li>不可见 unicode 字符（如零宽空格、方向覆盖字符）；</li>
+<li>典型的 prompt 注入短语（&ldquo;ignore previous instructions&rdquo;、&ldquo;disregard the above&rdquo; 等）；</li>
+<li>凭据收集尝试（要求输出 API key、密码等）；</li>
+<li>数据外泄指令（要求将对话内容发送到外部 URL）。</li>
+</ul>
+<p>这意味着你不应将 <code>SOUL.md</code> 当作混入元指令的通道——它的目的始终是<strong>角色与语气定义</strong>，而非绕过系统安全机制。</p>
+<h3 id="636-soulmd-与-agentsmd-的分工">6.3.6 SOUL.md 与 AGENTS.md 的分工
+</h3><p>这是 Hermes 上下文系统中最容易混淆的概念之一，务必厘清：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>维度</th>
+          <th>SOUL.md</th>
+          <th>AGENTS.md</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>用途</strong></td>
+          <td>身份、语气、风格、沟通默认值</td>
+          <td>项目架构、编码规范、工具偏好、工作流</td>
+      </tr>
+      <tr>
+          <td><strong>范围</strong></td>
+          <td>全局（随用户到处适用）</td>
+          <td>项目级（仅对当前代码库生效）</td>
+      </tr>
+      <tr>
+          <td><strong>位置</strong></td>
+          <td><code>~/.hermes/SOUL.md</code></td>
+          <td>项目目录下的 <code>AGENTS.md</code></td>
+      </tr>
+      <tr>
+          <td><strong>系统提示词槽位</strong></td>
+          <td>Slot 1（Identity）</td>
+          <td>Slot 8（Context Files）</td>
+      </tr>
+      <tr>
+          <td><strong>生效方式</strong></td>
+          <td>每个会话自动加载</td>
+          <td>按优先级系统匹配加载</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>举个例子：</p>
+<ul>
+<li>你希望 Hermes 永远用中文回复你、不喜欢过度礼貌——写入 <code>SOUL.md</code>；</li>
+<li>你希望 Hermes 在这个 Python 项目中总是用 pytest 而不是 unittest——写入 <code>AGENTS.md</code>；</li>
+<li>你希望 Hermes 在操作 Kubernetes 时总是先检查当前 namespace——写入 <code>AGENTS.md</code>（或更优先的 <code>.hermes.md</code>）。</li>
+</ul>
+<h2 id="64-personality-个性-预设与-personality-切换">6.4 Personality (个性) 预设与 /personality 切换
+</h2><p><code>SOUL.md</code> 是你的持久默认个性，但在某些场景下，你可能需要临时切换到另一种沟通模式。这就是 Personality 预设的作用。</p>
+<p><code>/personality</code> 是会话级覆盖层，用于更改或补充当前系统提示词。</p>
+<h3 id="641-内置个性列表">6.4.1 内置个性列表
+</h3><p>Hermes 内置了 15 种可直接切换的个性预设：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>名称</th>
+          <th>描述</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>helpful</strong></td>
+          <td>友好的通用助手</td>
+      </tr>
+      <tr>
+          <td><strong>concise</strong></td>
+          <td>简短、直击要点的回复</td>
+      </tr>
+      <tr>
+          <td><strong>technical</strong></td>
+          <td>详尽、准确的技术专家</td>
+      </tr>
+      <tr>
+          <td><strong>creative</strong></td>
+          <td>创新、突破常规的思维</td>
+      </tr>
+      <tr>
+          <td><strong>teacher</strong></td>
+          <td>耐心的教育者，配有清晰示例</td>
+      </tr>
+      <tr>
+          <td><strong>kawaii</strong></td>
+          <td>可爱表达、闪光效果与热情</td>
+      </tr>
+      <tr>
+          <td><strong>catgirl</strong></td>
+          <td>带有猫咪表达方式的 Neko-chan，nya~</td>
+      </tr>
+      <tr>
+          <td><strong>pirate</strong></td>
+          <td>船长 Hermes，精通技术的海盗</td>
+      </tr>
+      <tr>
+          <td><strong>shakespeare</strong></td>
+          <td>充满戏剧张力的吟游诗人风格</td>
+      </tr>
+      <tr>
+          <td><strong>surfer</strong></td>
+          <td>超级冷静的冲浪者氛围</td>
+      </tr>
+      <tr>
+          <td><strong>noir</strong></td>
+          <td>硬派侦探叙事风格</td>
+      </tr>
+      <tr>
+          <td><strong>uwu</strong></td>
+          <td>极致可爱的 uwu 语气</td>
+      </tr>
+      <tr>
+          <td><strong>philosopher</strong></td>
+          <td>对每个问题深度沉思</td>
+      </tr>
+      <tr>
+          <td><strong>hype</strong></td>
+          <td>最大能量与热情！！！</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="642-如何切换个性">6.4.2 如何切换个性
+</h3><p>在 CLI 中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/personality           # 查看当前个性
+</span></span><span class="line"><span class="cl">/personality concise   # 切换到 concise 模式
+</span></span><span class="line"><span class="cl">/personality technical # 切换到 technical 模式
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在消息平台（Telegram、Discord 等）中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">/personality teacher
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这些覆盖层便于快速调整，但全局 <code>SOUL.md</code> 仍定义着 Hermes 的持久默认个性——除非覆盖层对其进行了实质性更改。</p>
+<h3 id="643-自定义个性配置">6.4.3 自定义个性配置
+</h3><p>除了内置预设，你还可以在 <code>~/.hermes/config.yaml</code> 的 <code>agent.personalities</code> 下定义自己的个性：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">agent</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">personalities</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">codereviewer</span><span class="p">:</span><span class="w"> </span><span class="p">&gt;</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">      You are a meticulous code reviewer. Identify bugs, security issues,
+</span></span></span><span class="line"><span class="cl"><span class="sd">      performance concerns, and unclear design choices. Be precise and constructive.</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">architect</span><span class="p">:</span><span class="w"> </span><span class="p">&gt;</span><span class="sd">
+</span></span></span><span class="line"><span class="cl"><span class="sd">      You are a systems architect. Focus on trade-offs, scalability,
+</span></span></span><span class="line"><span class="cl"><span class="sd">      and long-term maintainability. Ask clarifying questions before proposing solutions.</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>定义后，即可通过 <code>/personality codereviewer</code> 或 <code>/personality architect</code> 调用。</p>
+<h3 id="644-personality-与-soulmd-的协作关系">6.4.4 Personality 与 SOUL.md 的协作关系
+</h3><p>理解这两者的关系，是掌握 Hermes 个性系统的关键：</p>
+<ul>
+<li><strong>SOUL.md = 基础语气</strong>：持久、稳定、无处不在；</li>
+<li><strong>Personality = 临时模式切换</strong>：会话级、可覆盖、可随时取消。</li>
+</ul>
+<p>示例用法：</p>
+<ul>
+<li>保持务实的默认 SOUL，然后在辅导新人时使用 <code>/personality teacher</code>；</li>
+<li>保持简洁的 SOUL，然后在头脑风暴时使用 <code>/personality creative</code>；</li>
+<li>保持技术导向的 SOUL，然后在需要输出给非技术受众时使用 <code>/personality helpful</code>。</li>
+</ul>
+<p>Personality 预设作为<strong>可选的系统提示词覆盖层</strong>注入，它不会替换 SOUL.md，而是与其<strong>叠加</strong>。如果 Personality 的内容与 SOUL.md 有冲突，通常后注入的 Personality 指导会占上风——但这取决于具体 LLM 对重复指令的解析行为。因此，建议让 SOUL.md 保持宽泛的基础人设，让 Personality 负责具体的场景调性。</p>
+<h3 id="645-推荐工作流">6.4.5 推荐工作流
+</h3><p>一个强健的默认配置：</p>
+<ol>
+<li>在 <code>~/.hermes/SOUL.md</code> 中维护一个经过深思熟虑的全局 <code>SOUL.md</code>。</li>
+<li>将项目说明放在 <code>AGENTS.md</code> 中。</li>
+<li>仅在需要临时模式切换时使用 <code>/personality</code>。</li>
+</ol>
+<p>这样你将获得：</p>
+<ul>
+<li>稳定的语气.</li>
+<li>项目特定行为归属于正确位置。</li>
+<li>需要时的临时控制。</li>
+</ul>
+<h2 id="65-冻结快照机制为什么记忆在对话中不变">6.5 冻结快照机制：为什么记忆在对话中&quot;不变&quot;
+</h2><p>在前面章节中，我们提到 MEMORY 和 USER 槽位采用<strong>冻结快照</strong>模式。本节深入解释这一机制的设计动机和实际效果。</p>
+<h3 id="1冻结快照的工作方式">1、冻结快照的工作方式
+</h3><p>当 Hermes 启动一个新会话时：</p>
+<ol>
+<li>读取 <code>~/.hermes/memories/MEMORY.md</code> 和 <code>~/.hermes/memories/USER.md</code> 的当前内容；</li>
+<li>将内容分别注入 Slot 5 和 Slot 6；</li>
+<li><strong>将这一版本的系统提示词固定下来</strong>，作为后续所有轮次的系统前缀；</li>
+<li>在会话运行期间，即使 <code>memory</code> 工具写入了新的记忆到磁盘，已构建的系统提示词<strong>不会自动刷新</strong>。</li>
+</ol>
+<p>只有当以下情况发生时，系统提示词才会重建：</p>
+<ul>
+<li>用户显式执行 <code>/reset</code> 或开启新会话（<code>/new</code>）；</li>
+<li>Gateway 检测到相关配置变更（如压缩阈值、上下文长度）触发了透明重建；</li>
+<li>上下文压缩导致对话历史被重构，间接触发 prompt 重建。</li>
+</ul>
+<h3 id="2冻结机制的设计权衡">2、冻结机制的设计权衡
+</h3><p>你可能会问：如果我在对话中告诉 Agent &ldquo;记住我喜欢用 tab 而不是空格&rdquo;，为什么 Agent 在下一轮的系统提示词里看不到这条新记忆？</p>
+<p>答案是<strong>有意的设计取舍</strong>：</p>
+<ul>
+<li><strong>优点——缓存稳定性</strong>：系统前缀一旦构建，就可以在 Anthropic/OpenRouter 等平台的 prompt caching 机制中被标记为缓存边界。如果每轮都因为记忆更新而修改前缀，缓存会反复失效，导致：
+<ul>
+<li>Token 成本显著增加（系统提示词通常占输入 token 的 30%-50%）；</li>
+<li>API 延迟增加（需要重新传输大量文本）；</li>
+<li>提供商侧缓存命中率暴跌。</li>
+</ul>
+</li>
+<li><strong>优点——语义一致性</strong>：在同一对话中，Agent 对&quot;用户是谁&quot;的认知应当保持稳定。如果第 5 轮系统提示词说&quot;用户喜欢 Python&quot;，第 10 轮突然变成&quot;用户喜欢 Rust&quot;，而这两轮讨论的是同一个问题，Agent 可能会产生认知混乱。</li>
+<li><strong>缺点——延迟生效</strong>：新写入的记忆要到下一个会话才能作为系统提示词的一部分被全局感知。不过，在<strong>当前会话中</strong>，新记忆仍然可以通过以下方式被访问：
+<ul>
+<li><code>memory</code> 工具的读操作返回的是磁盘上的最新内容；</li>
+<li><code>session_search</code> 可以检索到当前对话中刚写入的信息；</li>
+<li>如果记忆内容被追加到对话历史的后续消息中，模型仍然可以看到。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3配置记忆限制">3、配置记忆限制
+</h3><p>可以在 <code>config.yaml</code> 中调整记忆相关的上限：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">memory</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">memory_enabled</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">user_profile_enabled</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">memory_char_limit</span><span class="p">:</span><span class="w"> </span><span class="m">2200</span><span class="w">   </span><span class="c"># ~800 tokens</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">user_char_limit</span><span class="p">:</span><span class="w"> </span><span class="m">1375</span><span class="w">     </span><span class="c"># ~500 tokens</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>超过上限的记忆在注入前会被截断。默认的字符限制是基于常见分词器的经验估算值，你可以根据实际使用的主模型上下文窗口大小进行调整。</p>
+<h2 id="66-如何自定义-prompt">6.6 如何自定义 Prompt
+</h2><p>Hermes 的设计哲学是：大多数用户应把 <code>agent/prompt_builder.py</code> 视为实现代码，而不是配置入口。推荐的自定义路径是修改 Hermes 已加载的 prompt 输入，而非直接编辑 Python 模板。</p>
+<h3 id="661-优先使用的自定义入口">6.6.1 优先使用的自定义入口
+</h3><ul>
+<li><code>~/.hermes/SOUL.md</code> — 用你自己的代理角色和常驻行为替换内置默认身份块。</li>
+<li><code>~/.hermes/MEMORY.md</code> 和 <code>~/.hermes/USER.md</code> — 提供持久化跨会话事实和用户画像数据。</li>
+<li>项目上下文文件，如 <code>.hermes.md</code>、<code>HERMES.md</code>、<code>AGENTS.md</code>、<code>CLAUDE.md</code> 或 <code>.cursorrules</code> — 注入仓库专属的工作规则。</li>
+<li>技能 — 封装可复用的工作流和参考，无需编辑核心提示词代码。</li>
+<li>可选的系统提示词配置 / API 覆盖 — 添加部署专属的指令文本。</li>
+<li>临时覆盖，如 <code>HERMES_EPHEMERAL_SYSTEM_PROMPT</code> 或预填充消息 — 添加仅限当前轮次的指导，不会成为缓存提示词前缀的一部分。</li>
+</ul>
+<h3 id="662-何时应该编辑核心代码">6.6.2 何时应该编辑核心代码
+</h3><p>仅当你<strong>刻意维护一个 fork</strong> 或<strong>向上游贡献行为变更</strong>时，才应编辑 <code>agent/prompt_builder.py</code>。该文件负责每个会话的 prompt 管道、缓存边界和注入顺序。直接编辑它是<strong>全局产品变更</strong>，而非针对单个用户的 prompt 自定义。</p>
+<p>简单的决策树：</p>
+<ul>
+<li>想要不同的助手身份？→ 编辑 <code>SOUL.md</code></li>
+<li>想要不同的仓库规则？→ 编辑项目上下文文件</li>
+<li>想要可复用的操作流程？→ 添加或修改 Skills</li>
+<li>想要改变 Hermes 为所有人组装 prompt 的方式？→ 修改 Python 代码并作为代码贡献提交。</li>
+</ul>
+<h2 id="67-本章小结">6.7 本章小结
+</h2><p>本章深入拆解了 Hermes Agent 的 Prompt 系统，从架构设计理念到具体实现细节，覆盖了以下核心知识点：</p>
+<ol>
+<li><strong>Prompt Builder 槽位模型</strong>：系统提示词由 10 个已缓存槽位（Identity → 工具行为 → Honcho → 可选系统消息 → MEMORY → USER → Skills → 上下文文件 → 时间戳 → 平台提示）和 3 个临时槽位（Personality → Tool Schemas → Ephemeral Layers）组成，按固定顺序拼装。</li>
+<li><strong>SOUL.md 身份文件</strong>：作为 Slot 1 的核心身份标识，<code>SOUL.md</code> 存放于 <code>~/.hermes/SOUL.md</code>，完全替换内置默认身份。它应聚焦于语气、风格和沟通默认值，而非项目特定指令。与 <code>AGENTS.md</code> 的分工原则是：随用户到处适用放 SOUL，随项目生效放 AGENTS。</li>
+<li><strong>Personality 预设系统</strong>：<code>/personality</code> 命令提供 15 种内置预设和自定义配置能力，作为会话级覆盖层临时切换沟通模式，不影响持久 SOUL.md 的基础人设。</li>
+<li><strong>冻结快照机制</strong>：MEMORY 和 USER 槽位在会话开始时读取并固定，中途的磁盘更新不会实时反映到系统提示词中。这既保护了 prompt cache 的稳定性，也保持了同一对话中的语义一致性。</li>
+<li><strong>Ephemeral Layers</strong>：预算告警、prefill、gateway 覆盖层等临时内容被刻意分离到 API 调用阶段，避免污染可缓存的系统前缀。</li>
+<li><strong>Prompt Cache 命中率</strong>：Hermes 自动为支持的提供商开启跨会话 prompt caching，通过精简稳定的 SOUL.md、批量更新记忆、渐进式技能披露等策略，可以显著降低长对话场景的 token 成本。</li>
+</ol>
+<p>掌握这些机制后，你就拥有了精确控制 Hermes Agent &ldquo;身份与行为逻辑&quot;的能力——既能定义它长期稳定的性格底色，又能在具体场景中灵活调整沟通模式，同时还能通过合理的 prompt 结构设计，让每一次 API 调用都更加经济高效。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/hermes-agent/">Hermes Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第5章 模型供应商与配置</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第2章 安装、配置与首次对话</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第3章 整体架构与核心组件</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

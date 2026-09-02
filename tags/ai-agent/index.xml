@@ -6,8 +6,15 @@
     <description>Recent content in AI Agent on Tiny 的技术博客</description>
     <generator>Hugo</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Tue, 03 Feb 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 06 Mar 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://tinyseeking.github.io/tags/ai-agent/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Microsoft 设计多智能体系统</title>
+      <link>https://tinyseeking.github.io/p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/</link>
+      <pubDate>Fri, 06 Mar 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/microsoft-%E8%AE%BE%E8%AE%A1%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E7%B3%BB%E7%BB%9F/</guid>
+      <description>&lt;h1 id=&#34;microsoft-设计多智能体系统&#34;&gt;Microsoft 设计多智能体系统&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;1-引言&#34;&gt;1. 引言&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;生成式人工智能正以企业技术领域罕见的速度，从概念验证试点转向关键业务负载。第一波项目通常只搭建单一的 “全能型” 智能体 —— 一个封装了提示工程、向量库与少量 API 连接器的大语言模型。这种模式适用于窄场景的 FAQ 机器人，但在真实企业约束下会迅速失效：&lt;/p&gt;</description>
+    </item>
     <item>
       <title>使用 LangChain 构建多智能体工作流</title>
       <link>https://tinyseeking.github.io/p/%E4%BD%BF%E7%94%A8-langchain-%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%99%BA%E8%83%BD%E4%BD%93%E5%B7%A5%E4%BD%9C%E6%B5%81/</link>

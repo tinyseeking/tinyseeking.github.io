@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="Hermes Agent是由 Nous Research构建的开源、自进化通用型 AI 智能体。它并非某个大语言模型的简单封装，也不是传统意义上的 IDE 插件，而是一套完整的 Agent Harness（智能体 Harness）——一个赋予 AI 模型自主思考、调用工具、记忆持久化、自我迭代进化、跨平台交互的底层运行时系统。">
+<title>Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念">
+<meta property='og:description' content="Hermes Agent是由 Nous Research构建的开源、自进化通用型 AI 智能体。它并非某个大语言模型的简单封装，也不是传统意义上的 IDE 插件，而是一套完整的 Agent Harness（智能体 Harness）——一个赋予 AI 模型自主思考、调用工具、记忆持久化、自我迭代进化、跨平台交互的底层运行时系统。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='hermes agent' /><meta property='article:published_time' content='2026-08-15T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-08-15T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念">
+<meta name="twitter:description" content="Hermes Agent是由 Nous Research构建的开源、自进化通用型 AI 智能体。它并非某个大语言模型的简单封装，也不是传统意义上的 IDE 插件，而是一套完整的 Agent Harness（智能体 Harness）——一个赋予 AI 模型自主思考、调用工具、记忆持久化、自我迭代进化、跨平台交互的底层运行时系统。"><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#11-hermes-agent-介绍">1.1 Hermes Agent 介绍</a>
+          <ol>
+            <li><a href="#111-hermes-agent是什么">1.1.1 Hermes Agent是什么</a></li>
+            <li><a href="#112-七条关键特性">1.1.2 七条关键特性</a></li>
+          </ol>
+        </li>
+        <li><a href="#12-为什么会有-hermes">1.2 为什么会有 Hermes</a>
+          <ol>
+            <li><a href="#121-当前-agent-工具的结构性问题">1.2.1 当前 Agent 工具的结构性问题</a></li>
+            <li><a href="#122-hermes-的核心理念">1.2.2 Hermes 的核心理念</a></li>
+            <li><a href="#123-与-openclaw--claude-code--opencode-的关系">1.2.3 与 OpenClaw / Claude Code / OpenCode 的关系</a></li>
+          </ol>
+        </li>
+        <li><a href="#13-五大核心特性概览">1.3 五大核心特性概览</a></li>
+        <li><a href="#14-hermes-与同类项目的对比">1.4 Hermes 与同类项目的对比</a></li>
+        <li><a href="#15-学完本教程你能做到什么">1.5 学完本教程你能做到什么</a></li>
+        <li><a href="#16-学习前的准备">1.6 学习前的准备</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/hermes-agent/" style="background-color: #2a9d8f; color: #fff;">
+                Hermes Agent 原理与实战
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC1%E7%AB%A0-hermes-agent-%E7%AE%80%E4%BB%8B%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5/">Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            Hermes Agent是由 Nous Research构建的开源、自进化通用型 AI 智能体。它并非某个大语言模型的简单封装，也不是传统意义上的 IDE 插件，而是一套完整的 Agent Harness（智能体 Harness）——一个赋予 AI 模型自主思考、调用工具、记忆持久化、自我迭代进化、跨平台交互的底层运行时系统。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-08-15T00:00:00Z'>2026年8月15日星期六</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 14 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#11-hermes-agent-介绍">1.1 Hermes Agent 介绍</a>
+          <ol>
+            <li><a href="#111-hermes-agent是什么">1.1.1 Hermes Agent是什么</a></li>
+            <li><a href="#112-七条关键特性">1.1.2 七条关键特性</a></li>
+          </ol>
+        </li>
+        <li><a href="#12-为什么会有-hermes">1.2 为什么会有 Hermes</a>
+          <ol>
+            <li><a href="#121-当前-agent-工具的结构性问题">1.2.1 当前 Agent 工具的结构性问题</a></li>
+            <li><a href="#122-hermes-的核心理念">1.2.2 Hermes 的核心理念</a></li>
+            <li><a href="#123-与-openclaw--claude-code--opencode-的关系">1.2.3 与 OpenClaw / Claude Code / OpenCode 的关系</a></li>
+          </ol>
+        </li>
+        <li><a href="#13-五大核心特性概览">1.3 五大核心特性概览</a></li>
+        <li><a href="#14-hermes-与同类项目的对比">1.4 Hermes 与同类项目的对比</a></li>
+        <li><a href="#15-学完本教程你能做到什么">1.5 学完本教程你能做到什么</a></li>
+        <li><a href="#16-学习前的准备">1.6 学习前的准备</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="hermes-agent-原理与实战第1章-hermes-agent-简介与核心理念">Hermes Agent 原理与实战——第1章 Hermes Agent 简介与核心理念
+</h1><h3 id="11-hermes-agent-介绍">1.1 Hermes Agent 介绍
+</h3><h4 id="111-hermes-agent是什么">1.1.1 Hermes Agent是什么
+</h4><p><strong>Hermes Agent</strong>（以下简称 Hermes）是由 <a class="link" href="https://nousresearch.com/"  target="_blank" rel="noopener"
+    >Nous Research</a> 构建的<strong>开源、自进化通用型 AI 智能体</strong>（Self-Improving AI Agent）。它并非某个大语言模型的简单封装，也不是传统意义上的 IDE 插件，而是一套完整的 <strong>Agent Harness（智能体 Harness）</strong>——一个赋予 AI 模型自主思考、调用工具、记忆持久化、自我迭代进化、跨平台交互的底层运行时系统。</p>
+<p>官方对其的定义：</p>
+<blockquote>
+<p>&ldquo;The self-improving AI agent built by Nous Research. It&rsquo;s the only agent with a built-in learning loop — it creates skills from experience, improves them during use, nudges itself to persist knowledge, searches its own past conversations, and builds a deepening model of who you are across sessions.&rdquo;</p>
+</blockquote>
+<p>翻译过来就是：**Hermes **是由Nous Research打造的可自我迭代优化的AI 智能体。<strong>它是目前唯一内置学习闭环的Agent</strong>：会在实操经验中自主创建技能（Skill）、并在使用过程中持续优化技能；主动触发将重要事实写入持久化记忆、检索历史会话记录，并在跨会话交互中不断完善对你的深度用户画像模型。它既能在 5 美元的 VPS 上运行，也能在 GPU 集群上运行；它不限定于你的笔记本——你可以一边在 Telegram 上跟它聊天，一边让它在云端 VM 上执行复杂任务。</p>
+<p>Hermes 采用 <strong>MIT 开源协议</strong>：
+<strong>仓库地址</strong>：<a class="link" href="https://github.com/NousResearch/hermes-agent"  target="_blank" rel="noopener"
+    >github.com/NousResearch/hermes-agent</a><br>
+<strong>官方文档</strong>：<a class="link" href="https://hermes-agent.nousresearch.com/docs/"  target="_blank" rel="noopener"
+    >hermes-agent.nousresearch.com/docs</a></p>
+<h4 id="112-七条关键特性">1.1.2 七条关键特性
+</h4><p>官方 README 给出了 Hermes 的七条关键特性：</p>
+<ol>
+<li><strong>真正的终端界面</strong>：完整的 TUI（文本用户界面），支持多行编辑、斜杠命令自动补全、对话历史浏览、随时打断/重定向、流式工具输出。</li>
+<li><strong>走到哪用到哪</strong>：对接Telegram、Discord、Slack、WhatsApp、Signal、企业微信、飞书、钉钉、Email、SMS、Home Assistant 等 <strong>20+ 平台</strong>，共享同一个 Gateway 进程；语音消息可转写、跨平台对话连续性。</li>
+<li><strong>闭环的学习能力</strong>：智能代理自主维护记忆库并定期唤醒上下文；复杂任务后自主创建技能；技能在使用过程中中自我改进；基于 FTS5 全文检索会话配合 LLM 摘要实现跨会话回溯；可选接入 Honcho 实现辩证式用户建模；技能格式兼容 <a class="link" href="https://agentskills.io/"  target="_blank" rel="noopener"
+    >agentskills.io</a> 开放标准。</li>
+<li><strong>内置定时调度</strong>：原生 Cron 调度器，结果可投递到任意平台；每日报告、夜间备份、周度审计都可以用自然语言描述、无人值守运行。</li>
+<li><strong>任务委托与并行</strong>：通过 <code>delegate_task</code> 启动多个隔离子代理并行工作；通过 <code>execute_code</code> 工具，模型可以编写 Python 脚本通过 RPC 直接调用 Hermes 的工具集，把多步流水线压缩成一次推理。</li>
+<li><strong>随处运行</strong>：<strong>6 种终端后端</strong>——<code>local</code>、<code>docker</code>、<code>ssh</code>、<code>daytona</code>、<code>modal</code>、<code>singularity</code>。Daytona 和 Modal 提供 Serverless 持久化——代理环境空闲时休眠、按需唤醒，空闲期间几乎零成本。</li>
+<li><strong>研究就绪</strong>：批量轨迹生成、轨迹压缩，可以直接用于训练下一代工具调用模型。</li>
+</ol>
+<h3 id="12-为什么会有-hermes">1.2 为什么会有 Hermes
+</h3><h4 id="121-当前-agent-工具的结构性问题">1.2.1 当前 Agent 工具的结构性问题
+</h4><p>如果你使用过 Cursor、Cline、Claude Code、Aider 等主流编程 Agent，一定会发现它们普遍存在几个结构性缺陷：</p>
+<ul>
+<li>
+<p><strong>第一，高度绑定 IDE 环境，且多数锁定单一模型服务商</strong>。Cursor 深度依赖 Anthropic 与 OpenAI，Claude Code 绑定 Claude 模型。即便部分工具允许手动切换模型，更换后交互稳定性、代码工具调用能力往往会出现不可控的衰减，导致开发者被禁锢在厂商封闭生态中，形成厂商锁定。</p>
+</li>
+<li>
+<p><strong>第二，缺乏持久记忆</strong>。每个新会话都从零开始。上周花了一个小时向 Agent 解释的复杂业务逻辑、项目架构约束、个人编码偏好，在新的会话窗口中全部清零，需要反复重新灌输上下文。</p>
+</li>
+<li>
+<p><strong>第三，学习不闭环</strong>。即便某些工具支持&quot;项目规则文件&quot;或&quot;Prompt Template&quot;，它们也都是用户手动维护的静态配置。模型本身不会从成功的经验中沉淀技能，不会主动调整行为模式，不会越用越&quot;懂&quot;你。</p>
+</li>
+<li>
+<p><strong>第四，无法远程运行</strong>。Agent 只能运行在打开 IDE 的那台电脑上，关闭电脑它就停止工作。想让 Agent 在后台持续执行任务，同时在手机上查看进度和交互，几乎是不可能的。</p>
+</li>
+<li>
+<p><strong>第五，多平台体验割裂</strong>。在 IDE 里是一个 Agent，在 Telegram 里是另一个 Bot，在 Slack 里又是一个 Webhook 服务。它们彼此互不知情、不共享记忆、不继承上下文，形成信息孤岛。</p>
+</li>
+</ul>
+<p>Hermes 的设计就是从根上解决这些问题。</p>
+<h4 id="122-hermes-的核心理念">1.2.2 Hermes 的核心理念
+</h4><p>理解 Hermes 的设计哲学，最关键的就是：不要把它当作&quot;一次性问答工具&quot;，而要把它看作一个<strong>长期运行、跨设备、跨平台、持续学习进化的智能体</strong>。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>核心问题</th>
+          <th>Hermes 的回答</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>怎么记住我？</td>
+          <td>写入 <code>MEMORY.md</code>（环境/约定）和 <code>USER.md</code>（用户画像），每次启动注入系统提示；可选 Honcho 做更深层用户建模</td>
+      </tr>
+      <tr>
+          <td>怎么沉淀经验？</td>
+          <td>自主创建 Skill（一段可复用的&quot;做某事的步骤说明&quot;），保存到 <code>~/.hermes/skills/</code>，下次匹配自动加载</td>
+      </tr>
+      <tr>
+          <td>怎么在不同地方都能用？</td>
+          <td>Gateway 单进程同时驱动 15+ 消息平台；CLI / API 服务器 / ACP IDE 协议三个本地入口</td>
+      </tr>
+      <tr>
+          <td>怎么不被某个模型卡住？</td>
+          <td>采用降级熔断链路：Provider 抽象 + Fallback 链 + Credential Pool；执行一行 <code>hermes model</code>命令即可快速切换 200 +模型</td>
+      </tr>
+      <tr>
+          <td>怎么不被某台机器卡住？</td>
+          <td>内置6种终端后端（terminal backend），可在本地、容器、远端 SSH、Daytona、Modal、Singularity 跑命令</td>
+      </tr>
+      <tr>
+          <td>怎么主动干活？</td>
+          <td>Cron 调度 + 自然语言任务，例如：&ldquo;每日上午 9 点抓取 Hacker News 资讯并推送至 Telegram&rdquo;</td>
+      </tr>
+      <tr>
+          <td>怎么和团队协作？</td>
+          <td>Kanban 多 Profile 协同 + Webhook + ACP协议，多个命名 Agent 通过 SQLite 共享状态</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>也就是说，Hermes 拓宽了 AI 助理的能力边界：不再局限于打开 IDE 才可用，而是做到全天候在线服务，跨设备、跨平台、跨会话上下文持续记忆与连贯执行。</p>
+<h4 id="123-与-openclaw--claude-code--opencode-的关系">1.2.3 与 OpenClaw / Claude Code / OpenCode 的关系
+</h4><ul>
+<li><strong>OpenClaw</strong>：项目基于 TS 开发，主打<strong>多平台网关调度 + 海量社区技能生态</strong>，无自主进化能力。Hermes 是其<strong>能力升级版</strong>，内置 <code>hermes claw migrate</code> 一键迁移命令，可完整迁移 OpenClaw 的记忆文件、人设、技能、API 密钥、多 Agent 配置等全量核心资产，生态高度兼容。</li>
+<li><strong>Claude Code</strong>：Anthropic 官方闭源工具，深度绑定 Claude 系列模型，核心优势是大型代码库深度解析与工程重构，主打专业编码场景。</li>
+<li><strong>OpenCode</strong>：轻量化底层 CLI 开源AI编码工具，主打极简终端代码操作，架构轻便、聚焦单一编码场景。</li>
+<li><strong>Hermes Agent 核心差异化</strong>：区别于另外三款工具，完整自进化学习闭环、Honcho 动态用户画像、FTS5+LLM 跨会话记忆摘要、强隔离并行子代理、多终端后端、多 Agent 团队协同等核心能力，定位是<strong>可长期成长的通用 Agent 运行时平台</strong>。</li>
+</ul>
+<p>它们之间可搭配组合使用，实操协作方案：<strong>Claude Code/OpenCode 负责专项编码工作，Hermes 承担长期记忆沉淀、自主进化、复杂任务自动化与多 Agent 团队调度</strong>，依托 MCP 协议实现互通。</p>
+<h3 id="13-五大核心特性概览">1.3 五大核心特性概览
+</h3><p>后续章节会深入剖析架构细节，这里先把 Hermes 五大最具差异化的能力做个全景预览，帮助您建立整体认知框架。</p>
+<p><strong>(1） 特性一：自学习闭环（Closed Learning Loop）</strong></p>
+<p>这是 Hermes 区别于绝大多数 Agent 的核心竞争力。它由四个互相啮合的组件构成：</p>
+<ul>
+<li><strong>Memory</strong>：通过 <code>memory</code> 工具读写 <code>~/.hermes/memories/MEMORY.md（约 800 token，记录环境约定与项目规范）</code>和 <code>USER.md</code>（约 500 token，记录用户画像与个人偏好）。系统提示在每次会话开始时将这些文件冻结成快照注入上下文，确保 Agent 始终&quot;记得&quot;你是谁、你们约定过什么。；</li>
+<li><strong>Skills</strong>：智能体在完成复杂任务后，可以把可复用的步骤、注意事项、验证方式写成 <code>SKILL.md</code>，保存到 <code>~/.hermes/skills/&lt;skill-name&gt;/</code> 目录。下次遇到同类问题时，系统会自动匹配并加载相关技能。</li>
+<li><strong>Session Search</strong>：所有历史会话都存在 SQLite + FTS5 中；通过 <code>session_search</code> 工具，Agent 可以搜索&quot;我上周怎么处理过 GraphQL schema 迁移的&quot;。系统会返回相关会话的摘要、关键工具调用，让结果更精炼。</li>
+<li><strong>Curator + Honcho</strong>：Curator 子系统会定期&quot;提示&quot;Agent 整理和压缩记忆，防止记忆文件无限膨胀。Honcho 则提供更高级的辩证式用户模型（Dialectic User Modeling），通过与用户的持续对话不断修正和深化用户画像，把用户画像维护得越来越准。</li>
+</ul>
+<p><strong>(2）特性二：模型与运行环境双解耦</strong></p>
+<p>一行命令切换模型：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes model              <span class="c1"># 交互式选择</span>
+</span></span><span class="line"><span class="cl">hermes config <span class="nb">set</span> model anthropic/claude-opus-4.6
+</span></span><span class="line"><span class="cl">hermes config <span class="nb">set</span> model openrouter/openai/gpt-5
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>支持的供应商极其广泛：Nous Portal、OpenRouter、Anthropic、OpenAI/Codex、Z.AI/GLM、Kimi/Moonshot（含中国区）、MiniMax（含中国区）、Alibaba DashScope（Qwen）、HuggingFace、KiloCode、OpenCode Zen/Go、DeepSeek、NVIDIA NIM、GitHub Copilot、Vercel AI Gateway、自定义 OpenAI-Compatible 端点（vLLM、SGLang、Ollama、LMStudio）等。</p>
+<p>在运行环境层面，Hermes 支持 6 种终端后端：可以让 Hermes 在<code>local</code>执行命令，也可以在 <code>docker</code> 沙箱、<code>ssh</code> 远端、<code>daytona</code> 云开发环境、<code>modal</code> 无服务器函数、<code>singularity</code> HPC 容器中跑同一组工具。</p>
+<p>一行命令切换终端：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">hermes config <span class="nb">set</span> terminal.backend docker
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这种双解耦设计意味着：你可以用最强的 Claude 模型做代码审查，同时让命令在 docker 的隔离沙箱中执行；或者在国内网络环境下使用 Kimi 模型，而计算任务跑在新加坡的 Modal 实例上。</p>
+<p><strong>(3）特性三：多平台网关（Gateway）</strong></p>
+<p><code>hermes gateway start</code> 启动一个进程，同时连接：Telegram、Discord、Slack、WhatsApp、Signal、Matrix、Mattermost、Email、SMS、企业微信、飞书、钉钉、QQ 机器人、Yuanbao、BlueBubbles、Webhooks、Open WebUI、Home Assistant 等。每个平台都有独立的 adapter，但共享同一个 Agent、同一份记忆、同一份技能。</p>
+<p>国内开发者最关心的几条平台：<strong>WeCom（企业微信）、Feishu（飞书）、DingTalk（钉钉）、Weixin（个人微信，配合 HermesClaw 桥接）、QQ Bot、Yuanbao</strong> 都已经原生支持。</p>
+<p><strong>(4）特性四：丰富的工具集与子代理</strong></p>
+<p>Hermes 自带 <strong>68 个内置工具</strong>，按 toolset 逻辑组织为 <strong>52 个工具集</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>类别</th>
+          <th>代表工具</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>文件操作</td>
+          <td><code>read_file</code>、<code>write_file</code>、<code>patch</code>、<code>search_files</code></td>
+          <td>读写、编辑、搜索项目文件</td>
+      </tr>
+      <tr>
+          <td>终端执行</td>
+          <td><code>terminal</code>、<code>process</code></td>
+          <td>执行 Shell 命令和管理进程</td>
+      </tr>
+      <tr>
+          <td>Web 搜索</td>
+          <td><code>web_search</code>、<code>web_extract</code></td>
+          <td>网络信息检索与页面内容提取</td>
+      </tr>
+      <tr>
+          <td>浏览器自动化</td>
+          <td><code>browser_navigate</code>、<code>browser_click</code>、<code>browser_screenshot</code> 等 10 个</td>
+          <td>覆盖导航、点击、表单、视觉、截图等</td>
+      </tr>
+      <tr>
+          <td>媒体处理</td>
+          <td><code>vision_analyze</code>、<code>image_generate</code>、<code>text_to_speech</code></td>
+          <td>图像分析、生成、语音合成</td>
+      </tr>
+      <tr>
+          <td>智能编排</td>
+          <td><code>todo</code>、<code>clarify</code>、<code>execute_code</code>、<code>delegate_task</code></td>
+          <td>任务管理、澄清、代码执行、子代理委派</td>
+      </tr>
+      <tr>
+          <td>记忆与检索</td>
+          <td><code>memory</code>、<code>session_search</code></td>
+          <td>记忆读写、历史会话检索</td>
+      </tr>
+      <tr>
+          <td>自动化与投递</td>
+          <td><code>cronjob</code>、<code>send_message</code></td>
+          <td>定时任务与消息投递</td>
+      </tr>
+      <tr>
+          <td>第三方集成</td>
+          <td><code>ha_*</code>（Home Assistant）、动态 <code>mcp-&lt;server&gt;</code> 工具、<code>rl_*</code>（RL 训练）</td>
+          <td>智能家居、MCP 协议、RL 训练</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>特别值得关注的：</p>
+<ul>
+<li>
+<p><code>delegate_task</code> 工具让 Agent 可以并行启动多个子代理处理独立分支，默认并发运行 3 个子 Agent（可配置）。</p>
+</li>
+<li>
+<p><code>execute_code</code> 则允许模型直接编写 Python 脚本，通过 RPC 调用 Hermes 的工具集，将多步流水线压缩为一次 LLM 推理调用——这被称为&quot;程序化工具调用（Programmatic Tool Calling）&quot;。</p>
+</li>
+</ul>
+<p><strong>(5） 特性五：内置 Cron + Kanban + Webhook——自动化&quot;操作系统&quot;</strong></p>
+<ul>
+<li>
+<p><strong>Cron 定时任务</strong></p>
+<p>原生 cron 调度器，用自然语言或标准 cron 表达式安排周期/一次性任务，执行结果可投递到任意消息平台：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 自然语言创建定时任务</span>
+</span></span><span class="line"><span class="cl">hermes cron add <span class="s2">&#34;每天早 9 点扫 Hacker News Top 10，发到 Telegram&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 标准 cron 表达式</span>
+</span></span><span class="line"><span class="cl">hermes cron add --expression <span class="s2">&#34;0 2 * * 1&#34;</span> --task <span class="s2">&#34;weekly-db-backup&#34;</span> --platform email
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>Kanban 任务板</strong></p>
+<p>基于 SQLite 的多 Profile 任务板系统。多个命名 Agent（如 dispatcher、researcher、writer、reviewer）可以通过任务板协作，每个任务都是一行可被人类和其它 Agent 读写的记录。这种设计使得 Hermes 可以充当一个小型&quot;Ops 团队&quot;的协调中枢。</p>
+</li>
+<li>
+<p><strong>Webhook 事件入口</strong></p>
+<p>Gateway 暴露 webhook 入口，你可以让 GitHub PR 事件触发&quot;PR Review Agent&quot;，让 Stripe 支付事件触发&quot;客户告知 Agent&quot;，让 Prometheus 告警触发&quot;故障排查 Agent&quot;。</p>
+</li>
+</ul>
+<h3 id="14-hermes-与同类项目的对比">1.4 Hermes 与同类项目的对比
+</h3><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>维度</th>
+          <th>Cursor / Cline</th>
+          <th>Claude Code</th>
+          <th>Aider</th>
+          <th><strong>OpenClaw</strong></th>
+          <th><strong>Hermes Agent</strong></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>形态</td>
+          <td>IDE 插件</td>
+          <td>CLI / IDE</td>
+          <td>CLI</td>
+          <td>Gateway + CLI + 50+ 消息平台</td>
+          <td><strong>CLI + 多平台 Bot + API + ACP</strong></td>
+      </tr>
+      <tr>
+          <td>模型自由度</td>
+          <td>较高</td>
+          <td>仅 Claude</td>
+          <td>较高</td>
+          <td>极高（任意 LLM + 本地 Ollama）</td>
+          <td><strong>极高（多提供商 + 本地 Ollama）</strong></td>
+      </tr>
+      <tr>
+          <td>持久记忆</td>
+          <td>有限 / 项目规则</td>
+          <td>无原生</td>
+          <td>无原生</td>
+          <td>MEMORY.md分层文件记忆</td>
+          <td><strong>MEMORY.md + USER.md + Honcho 辩证用户建模</strong></td>
+      </tr>
+      <tr>
+          <td>自创建技能</td>
+          <td>否</td>
+          <td>否</td>
+          <td>否</td>
+          <td>依赖 ClawHub 商店手动安装技能，任务完成后无自生成新技能</td>
+          <td><strong>任务后自动创建、使用中迭代优化</strong></td>
+      </tr>
+      <tr>
+          <td>跨会话检索</td>
+          <td>否</td>
+          <td>否</td>
+          <td>否</td>
+          <td>BM25 + 向量混合检索，无 LLM 摘要压缩</td>
+          <td><strong>FTS5 全文检索 + LLM 会话摘要回溯</strong></td>
+      </tr>
+      <tr>
+          <td>远程后端</td>
+          <td>否</td>
+          <td>否</td>
+          <td>否</td>
+          <td>本地 / Docker / 基础 SSH</td>
+          <td><strong>local/docker/ssh/daytona/modal/ singularity 共 6 种终端后端</strong></td>
+      </tr>
+      <tr>
+          <td>多消息平台</td>
+          <td>否</td>
+          <td>否</td>
+          <td>否</td>
+          <td>20 + 海外主流 IM，国内适配薄弱</td>
+          <td><strong>20 + 原生海外平台 + 国内 IM 兼容适配</strong></td>
+      </tr>
+      <tr>
+          <td>Cron 自动化</td>
+          <td>否</td>
+          <td>否</td>
+          <td>否</td>
+          <td>原生 Cron 定时任务、Webhook 触发</td>
+          <td><strong>原生 Cron + Kanban 看板调度 + Webhook 联动</strong></td>
+      </tr>
+      <tr>
+          <td>子代理并行</td>
+          <td>有限支持</td>
+          <td>支持</td>
+          <td>否</td>
+          <td>单体架构为主，多 Agent 隔离性弱</td>
+          <td><strong>delegate_task 委派 + Kanban 多配置集并行，进程级故障隔离</strong></td>
+      </tr>
+      <tr>
+          <td>协议互通</td>
+          <td>MCP</td>
+          <td>MCP</td>
+          <td>否（可作为 MCP Server）</td>
+          <td>MCP</td>
+          <td>**MCP + ACP（Agent Client Protocol ,智能体客户端协议） **</td>
+      </tr>
+      <tr>
+          <td>开源协议</td>
+          <td>闭源</td>
+          <td>闭源</td>
+          <td>Apache</td>
+          <td>MIT</td>
+          <td><strong>MIT</strong></td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>选型建议：</strong></p>
+<ul>
+<li><strong>选 Cursor / Cline</strong>：如果你 90% 的需求是在 IDE 里写代码、改 Bug，且习惯图形化界面。</li>
+<li><strong>选 Claude Code</strong>：如果你深度依赖 Claude 模型，需要企业级代码审查与 SOC2 合规，且不介意闭源生态锁定。</li>
+<li><strong>选 Aider</strong>：如果你熟悉终端工作流，需要轻量、快速的编码辅助，且偏好 Apache 开源协议。</li>
+<li><strong>选 OpenClaw</strong>：如果你需要一个简单、稳定、7×24 在线的消息网关，且以海外平台为主。</li>
+<li><strong>选 Hermes</strong>：如果你需要<strong>一个会成长、跨平台、跨设备、可自动化的长期助理</strong>——它不一定在单次编码体验上胜过 Claude Code，但它是唯一把&quot;持久记忆 + 自学习 + 多平台 + 多后端 + 开源&quot;作为一等公民的完整运行时。</li>
+</ul>
+<p>Hermes 的差异化竞争力不在&quot;单点 IDE 体验&quot;，而在&quot;作为长期 Agent 运行时的整体性&quot;。如果你的目标是：</p>
+<ul>
+<li>想用 <strong>任意大模型</strong>（包括国内 Kimi、MiniMax、GLM、DeepSeek等）做一个 24/7 在线、跨平台、有记忆的助理；</li>
+<li>希望它<strong>自己沉淀经验</strong>，下次同类问题更聪明；</li>
+<li>希望它<strong>跑在云端</strong>，你的笔记本一关它依然在工作；</li>
+<li>希望它<strong>对接 IM / 邮件 / SMS / Webhook / Home Assistant / 企业微信 /钉钉/飞书</strong>等；</li>
+<li>同时还希望保留<strong>完整可控、可定制、开源 MIT</strong> 的底盘；</li>
+</ul>
+<p>那么 Hermes 是目前开源生态中唯一的架构最完整的选项。</p>
+<h3 id="15-学完本教程你能做到什么">1.5 学完本教程你能做到什么
+</h3><p>学完本教程后，你将能够：</p>
+<ol>
+<li><strong>理解 Hermes 的架构与核心组件</strong>，能根据需要在 CLI、Gateway、API、ACP、批处理等入口之间切换。</li>
+<li><strong>完成完整的安装与初始化</strong>：包括选择供应商、配置 API Key、调试 <code>hermes doctor</code>、迁移旧 OpenClaw。</li>
+<li><strong>熟练使用 CLI/TUI</strong>：所有重要的斜杠命令、键位、会话管理、checkpoint/rollback、profile 切换。</li>
+<li><strong>配置多模型与故障切换</strong>：理解 <code>chat_completions</code> / <code>codex_responses</code> / <code>anthropic_messages</code> 三种 API 模式，配 fallback 链、credential pool、provider routing，掌握上下文压缩与缓存优化。</li>
+<li><strong>管理工具与终端后端</strong>：按平台启用/禁用 toolset，让 Agent 在 docker / ssh / daytona / modal 中跑命令。</li>
+<li><strong>设计 Prompt 与上下文工程</strong>：编写 <code>SOUL.md</code> 身份文件、切换 personality 预设、使用 <code>@file</code> / <code>@folder</code> / <code>@git-diff</code> / <code>@url</code> 上下文引用、管理自动加载的项目上下文文件。</li>
+<li><strong>构建闭环学习</strong>：写记忆、读记忆、创建/启用/分享技能、管理 Skills Hub、用 session_search 检索过去，接入 Honcho / Mem0 等外部记忆后端。</li>
+<li><strong>接入 MCP</strong>：配置本地 stdio 与远程 HTTP MCP server ，按 server 过滤工具。</li>
+<li><strong>搭建多平台 Gateway</strong>：上线 Telegram、Discord、Slack、企业微信、飞书、钉钉、Email、Webhook。</li>
+<li><strong>设计 Cron 自动化与长期任务编排</strong>：每日简报机器人、GitHub PR Review Agent、定时巡检脚本，用 <code>/goal</code> 设定持久目标并追踪状态。</li>
+<li><strong>使用语音、视觉、浏览器、子代理、Kanban</strong>：使用 Hermes 搭建一个&quot;小型 ops 团队&quot;。</li>
+<li><strong>扩展生命周期与可视化</strong>：编写 Event Hooks、启动 Web Dashboard 监控 Token 与成本、定制皮肤主题。</li>
+<li><strong>写自己的 Plugin / Memory Provider / Context Engine / Platform Adapter</strong>，并把它打包分发。</li>
+<li><strong>安全加固与生产运维</strong>：危险命令白名单、容器隔离、DM Pairing、Credential 安全透传、性能调优与生产部署。</li>
+<li><strong>结合批处理、RL 环境、Trajectory 做模型训练数据生成</strong>：把 Hermes 用作研究工具。</li>
+</ol>
+<h3 id="16-学习前的准备">1.6 学习前的准备
+</h3><ul>
+<li><strong>基本的 Linux/macOS shell 使用</strong>（ bash/zsh 基础语法，环境变量配置、文件权限、进程查看、cron 概念）</li>
+<li><strong>Python 3.11+</strong>（Hermes 默认通过 <code>uv</code> 自动装好）</li>
+<li><strong>提前准备好至少一个可用的大模型服务商密钥（如 Claude、OpenAI、通义千问、DeepSeek 等），用于 Hermes 初始化对接模型。或Ollama、vLLM 等本地私有化部署大模型，实现离线调用。</strong></li>
+<li><strong>硬件</strong>：本地 macOS/Linux/WSL2（window环境）/Termux（Android）都支持。Windows 原生也支持（除 Dashboard PTY 终端外，其余功能均可原生运行）。</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/hermes-agent/">Hermes Agent</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC6%E7%AB%A0-prompt-%E7%B3%BB%E7%BB%9Fsoul.md-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E4%B8%AA%E6%80%A7/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第6章 Prompt 系统、SOUL.md 与身份个性</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC4%E7%AB%A0-cli-tui-profile-%E4%B8%8E%E4%BC%9A%E8%AF%9D%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第4章 CLI &amp;TUI &amp; Profile 与会话管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC5%E7%AB%A0-%E6%A8%A1%E5%9E%8B%E4%BE%9B%E5%BA%94%E5%95%86%E4%B8%8E%E9%85%8D%E7%BD%AE/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第5章 模型供应商与配置</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC2%E7%AB%A0-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%A6%96%E6%AC%A1%E5%AF%B9%E8%AF%9D/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第2章 安装、配置与首次对话</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/hermes-agent-%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98%E7%AC%AC3%E7%AB%A0-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Hermes Agent 原理与实战——第3章 整体架构与核心组件</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
