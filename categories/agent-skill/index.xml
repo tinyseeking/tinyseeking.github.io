@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Skill 从入门到精通 on Tiny 的技术博客</title>
+    <link>https://tinyseeking.github.io/categories/agent-skill/</link>
+    <description>Recent content in Skill 从入门到精通 on Tiny 的技术博客</description>
+    <generator>Hugo</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Wed, 08 Apr 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://tinyseeking.github.io/categories/agent-skill/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析</title>
+      <link>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/</link>
+      <pubDate>Wed, 08 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/</guid>
+      <description>&lt;h1 id=&#34;skill-从入门到精通第四章-anthropic-官方skill解析skill-creator-skill-解析&#34;&gt;Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;4117-skill-creator-skill-解析skill-开发评估与优化&#34;&gt;4.1.17 skill-creator Skill 解析—Skill 开发、评估与优化&#xD;&#xA;&lt;/h2&gt;&lt;h3 id=&#34;一技能概述&#34;&gt;一、技能概述&#xD;&#xA;&lt;/h3&gt;&lt;p&gt;&lt;code&gt;skill-creator&lt;/code&gt; 是 Anthropic 官方推出的&lt;strong&gt;元技能（Meta-Skill）&lt;/strong&gt;，即用来创建 Skill 的 Skill——用于从创建、评估、优化到打包分发Skill的全流程。涵盖技能开发全生命周期：&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析</title>
+      <link>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/</guid>
+      <description>&lt;h1 id=&#34;skill-从入门到精通第四章-anthropic-官方skill解析doc-coauthoring-skill-解析&#34;&gt;Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析&#xD;&#xA;&lt;/h1&gt;&lt;h3 id=&#34;doc-coauthoring-skill-解析文档协同创作&#34;&gt;doc-coauthoring Skill 解析—文档协同创作&#xD;&#xA;&lt;/h3&gt;&lt;h4 id=&#34;一技能概述&#34;&gt;一、技能概述&#xD;&#xA;&lt;/h4&gt;&lt;p&gt;&lt;code&gt;doc-coauthoring&lt;/code&gt; 是 Anthropic 官方发布的&lt;strong&gt;结构化文档协同写作 Skill&lt;/strong&gt;，核心定位是：通过三阶段工作流（Context Gathering → Refinement &amp;amp; Structure → Reader Testing），将用户隐性的领域知识高效转化为对读者有效的高质量结构化文档。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析</title>
+      <link>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/</link>
+      <pubDate>Tue, 07 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/</guid>
+      <description>&lt;h1 id=&#34;skill-从入门到精通第四章-anthropic-官方skill解析pptx-skill-解析&#34;&gt;Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析&#xD;&#xA;&lt;/h1&gt;&lt;h3 id=&#34;pptx-skill-解析演示文稿创建与编辑&#34;&gt;pptx Skill 解析—演示文稿创建与编辑&#xD;&#xA;&lt;/h3&gt;&lt;h4 id=&#34;一技能概述&#34;&gt;一、技能概述&#xD;&#xA;&lt;/h4&gt;&lt;p&gt;&lt;code&gt;PPTX&lt;/code&gt; Skill 是 Anthropic 官方 Claude Code 的 Office 文档处理技能之一，专精于 &lt;code&gt;.pptx&lt;/code&gt; 文件的&lt;strong&gt;读取、编辑、创建&lt;/strong&gt;三大场景。其架构核心为&lt;strong&gt;双路径工作流&lt;/strong&gt;：&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析</title>
+      <link>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/</link>
+      <pubDate>Mon, 06 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/</guid>
+      <description>&lt;h1 id=&#34;skill-从入门到精通第四章-anthropic-官方skill解析pdf-skill-解析&#34;&gt;Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析&#xD;&#xA;&lt;/h1&gt;&lt;h3 id=&#34;pdf-skill解析pdf处理&#34;&gt;pdf Skill解析—PDF处理&#xD;&#xA;&lt;/h3&gt;&lt;h4 id=&#34;一技能概述&#34;&gt;一、技能概述&#xD;&#xA;&lt;/h4&gt;&lt;p&gt;PDF Skill 是 Anthropic 官方 Agent Skills 体系中负责 PDF 全生命周期处理的专业技能。覆盖：&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Skill 从入门到精通——第三章 Skills 使用及管理</title>
+      <link>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/</link>
+      <pubDate>Sun, 05 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/</guid>
+      <description>&lt;h1 id=&#34;skill-从入门到精通第三章-skills-使用及管理&#34;&gt;Skill 从入门到精通——第三章 Skills 使用及管理&#xD;&#xA;&lt;/h1&gt;&lt;blockquote&gt;&#xA;&lt;p&gt;&lt;strong&gt;学习目标&lt;/strong&gt;：从零创建你的第一个智能体 Skill ，并在 Anthropic Code 中体验其运行效果。掌握 Skills 的实际使用方法，能够独立使用、定制和部署、管理 Skills。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Skill 从入门到精通——第二章 Skills 规范详解</title>
+      <link>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/</link>
+      <pubDate>Fri, 03 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/</guid>
+      <description>&lt;h1 id=&#34;skill-从入门到精通第二章-skills-规范详解&#34;&gt;Skill 从入门到精通——第二章 Skills 规范详解&#xD;&#xA;&lt;/h1&gt;&lt;p&gt;本文详细介绍 Agent Skills（智能体技能）完整格式规范；并使用官方&lt;code&gt;skills-ref&lt;/code&gt;工具验证，确保符合规范。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Skill 从入门到精通——第一章 Skills 认知与工作原理</title>
+      <link>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/</link>
+      <pubDate>Wed, 01 Apr 2026 00:00:00 +0000</pubDate>
+      <guid>https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/</guid>
+      <description>&lt;h2 id=&#34;skill-从入门到精通第一章-skills-认知与工作原理&#34;&gt;Skill 从入门到精通——第一章 Skills 认知与工作原理&#xD;&#xA;&lt;/h2&gt;&lt;blockquote&gt;&#xA;&lt;p&gt;&lt;strong&gt;学习目标&lt;/strong&gt;：理解 Skills 的核心概念、演进背景和工作原理，明确其核心价值与应用场景，为后续开发奠定理论基础。&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;h3 id=&#34;11-背景与演进&#34;&gt;1.1 背景与演进&#xD;&#xA;&lt;/h3&gt;&lt;h4 id=&#34;11-大模型应用开发的三大痛点&#34;&gt;1.1 大模型应用开发的三大痛点&#xD;&#xA;&lt;/h4&gt;&lt;p&gt;大语言模型（LLM）快速发展后，智能体（Agent）的基础能力得到显著提升，但实际落地开发中，智能体往往缺乏可靠完成工作所需的上下文信息，也没有标准化的能力支撑。开发者与大语言模型（LLM）协作时，长期面临以下三大挑战：&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

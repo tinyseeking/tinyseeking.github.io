@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="理解 Skills 的核心概念、演进背景和工作原理，明确其核心价值与应用场景，为后续开发奠定理论基础。">
+<title>Skill 从入门到精通——第一章 Skills 认知与工作原理</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Skill 从入门到精通——第一章 Skills 认知与工作原理">
+<meta property='og:description' content="理解 Skills 的核心概念、演进背景和工作原理，明确其核心价值与应用场景，为后续开发奠定理论基础。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Skill' /><meta property='article:published_time' content='2026-04-01T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-04-01T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="Skill 从入门到精通——第一章 Skills 认知与工作原理">
+<meta name="twitter:description" content="理解 Skills 的核心概念、演进背景和工作原理，明确其核心价值与应用场景，为后续开发奠定理论基础。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#skill-从入门到精通第一章-skills-认知与工作原理">Skill 从入门到精通——第一章 Skills 认知与工作原理</a>
+      <ol>
+        <li><a href="#11-背景与演进">1.1 背景与演进</a>
+          <ol>
+            <li><a href="#11-大模型应用开发的三大痛点">1.1 大模型应用开发的三大痛点</a></li>
+            <li><a href="#12-从-prompt-到-skills-的演进路径">1.2 从 Prompt 到 Skills 的演进路径</a></li>
+          </ol>
+        </li>
+        <li><a href="#12-什么是-skills">1.2 什么是 Skills？</a>
+          <ol>
+            <li><a href="#121-官方定义">1.2.1 官方定义</a></li>
+            <li><a href="#122-核心组成">1.2.2 核心组成</a></li>
+          </ol>
+        </li>
+        <li><a href="#13-skills-工作原理">1.3 Skills 工作原理</a>
+          <ol>
+            <li><a href="#131-三阶段渐进式加载架构">1.3.1 三阶段渐进式加载架构</a></li>
+            <li><a href="#132-完整生命周期流程">1.3.2 完整生命周期流程</a></li>
+            <li><a href="#133-关键机制">1.3.3 关键机制</a></li>
+          </ol>
+        </li>
+        <li><a href="#14-与prompttoolsragmcpsubagent-对比">1.4 与Prompt/Tools/RAG/MCP/SubAgent 对比</a></li>
+        <li><a href="#15-skills-核心价值">1.5 Skills 核心价值</a></li>
+        <li><a href="#16-skill-适用场景">1.6 Skill 适用场景</a>
+          <ol>
+            <li><a href="#1-高频重复任务">1. 高频重复任务</a></li>
+            <li><a href="#2-标准化专业任务">2. 标准化专业任务</a></li>
+            <li><a href="#3-团队协作任务">3. 团队协作任务</a></li>
+            <li><a href="#4-复杂多步骤任务">4. 复杂多步骤任务</a></li>
+          </ol>
+        </li>
+        <li><a href="#思考问题">思考问题</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414134938978.png" width="1070" height="531" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第一章 Skills 认知与工作原理" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/agent-skill/" style="background-color: #2a9d8f; color: #fff;">
+                Skill 从入门到精通
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/">Skill 从入门到精通——第一章 Skills 认知与工作原理</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            理解 Skills 的核心概念、演进背景和工作原理，明确其核心价值与应用场景，为后续开发奠定理论基础。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-04-01T00:00:00Z'>2026年4月1日星期三</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 21 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#skill-从入门到精通第一章-skills-认知与工作原理">Skill 从入门到精通——第一章 Skills 认知与工作原理</a>
+      <ol>
+        <li><a href="#11-背景与演进">1.1 背景与演进</a>
+          <ol>
+            <li><a href="#11-大模型应用开发的三大痛点">1.1 大模型应用开发的三大痛点</a></li>
+            <li><a href="#12-从-prompt-到-skills-的演进路径">1.2 从 Prompt 到 Skills 的演进路径</a></li>
+          </ol>
+        </li>
+        <li><a href="#12-什么是-skills">1.2 什么是 Skills？</a>
+          <ol>
+            <li><a href="#121-官方定义">1.2.1 官方定义</a></li>
+            <li><a href="#122-核心组成">1.2.2 核心组成</a></li>
+          </ol>
+        </li>
+        <li><a href="#13-skills-工作原理">1.3 Skills 工作原理</a>
+          <ol>
+            <li><a href="#131-三阶段渐进式加载架构">1.3.1 三阶段渐进式加载架构</a></li>
+            <li><a href="#132-完整生命周期流程">1.3.2 完整生命周期流程</a></li>
+            <li><a href="#133-关键机制">1.3.3 关键机制</a></li>
+          </ol>
+        </li>
+        <li><a href="#14-与prompttoolsragmcpsubagent-对比">1.4 与Prompt/Tools/RAG/MCP/SubAgent 对比</a></li>
+        <li><a href="#15-skills-核心价值">1.5 Skills 核心价值</a></li>
+        <li><a href="#16-skill-适用场景">1.6 Skill 适用场景</a>
+          <ol>
+            <li><a href="#1-高频重复任务">1. 高频重复任务</a></li>
+            <li><a href="#2-标准化专业任务">2. 标准化专业任务</a></li>
+            <li><a href="#3-团队协作任务">3. 团队协作任务</a></li>
+            <li><a href="#4-复杂多步骤任务">4. 复杂多步骤任务</a></li>
+          </ol>
+        </li>
+        <li><a href="#思考问题">思考问题</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h2 id="skill-从入门到精通第一章-skills-认知与工作原理">Skill 从入门到精通——第一章 Skills 认知与工作原理
+</h2><blockquote>
+<p><strong>学习目标</strong>：理解 Skills 的核心概念、演进背景和工作原理，明确其核心价值与应用场景，为后续开发奠定理论基础。</p>
+</blockquote>
+<h3 id="11-背景与演进">1.1 背景与演进
+</h3><h4 id="11-大模型应用开发的三大痛点">1.1 大模型应用开发的三大痛点
+</h4><p>大语言模型（LLM）快速发展后，智能体（Agent）的基础能力得到显著提升，但实际落地开发中，智能体往往缺乏可靠完成工作所需的上下文信息，也没有标准化的能力支撑。开发者与大语言模型（LLM）协作时，长期面临以下三大挑战：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">痛点</th>
+          <th style="text-align: left">具体表现</th>
+          <th style="text-align: left">核心影响</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>上下文窗口限制</strong></td>
+          <td style="text-align: left">长对话场景下，模型性能会出现衰减，关键业务信息易被挤出上下文范围</td>
+          <td style="text-align: left">输出结果质量下降，需反复提示模型，补充关键信息，效率低下</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>重复性指令消耗</strong></td>
+          <td style="text-align: left">每次与模型对话，都需重复描述任务规范、输出格式、业务要求等核心内容</td>
+          <td style="text-align: left">大量浪费 Token 资源，直接导致开发成本显著上升</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>领域知识碎片化</strong></td>
+          <td style="text-align: left">提示词工程难以沉淀和复用，团队内部的领域知识无法有效共享和传承</td>
+          <td style="text-align: left">开发效率参差不齐，知识传递成本高，团队协作效率低下</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>案例分析</strong>：某开发团队需要生成 API 文档，每次与模型交互时，都需要重复输入以下提示：</p>
+<ul>
+<li>“请使用 Markdown 格式输出文档”</li>
+<li>“文档需包含请求参数、响应示例、错误码”</li>
+<li>“严格遵循 OpenAPI 3.0 规范编写”</li>
+<li>“所有文档内容均使用中文呈现”</li>
+</ul>
+<p>据统计，单次输入这些重复性提示，就会消耗 500+ Token，长期下来不仅造成资源浪费，还直接导致开发成本上升；其次是<strong>上下文窗口限制</strong>：当进行长对话时，模型性能会逐步衰减，之前提示的 OpenAPI 3.0 规范、参数格式等关键信息，容易被后续内容挤出上下文，导致输出的文档出现格式混乱、规范不符的问题，需要开发者反复补充提示；最后是<strong>领域知识碎片化</strong>：团队内不同成员生成 API 文档时，提示词的侧重点不同，有的遗漏错误码规范，有的忽略格式要求，且这些提示词无法沉淀复用，新成员接手时需要重新摸索，团队知识传递效率低、协作成本高。</p>
+<p>Anthropic 提出了Skills（技能） 正为解决了这一问题：其核心作用是让智能体能够按需加载<strong>流程化知识（包含指令、领域知识、脚本和资源）</strong>，以及企业、团队和用户专属的上下文信息。通过让智能体装配各类技能，可以根据当前任务动态扩展自身能力。</p>
+<h4 id="12-从-prompt-到-skills-的演进路径">1.2 从 Prompt 到 Skills 的演进路径
+</h4><p>随着 AI 应用开发技术的持续迭代，大模型能力构建已从早期简单的提示词工程，逐步走向标准化、可复用、可编排的结构化 Skills 体系。其技术演进路径如下图所示：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260413110629252.png"
+	width="1460"
+	height="687"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260413110629252_hu_85793a0afc070c4d.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260413110629252_hu_fbc834d2b73bbca2.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260413110629252"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="212"
+		data-flex-basis="510px"
+	
+></p>
+<p>按时间线梳理核心技术、特点与局限如下：</p>
+<ol>
+<li><strong>2020-2022：Zero-shot/Few-shot（提示词工程）</strong>
+<ul>
+<li>核心：仅依靠 Prompt 引导大模型直接生成输出，无需额外依赖。</li>
+<li>特点：实现简单，无外部工具或数据依赖。。</li>
+<li>局限：提示具有临时性，难以维护和复用；模型幻觉问题严重；不具备外部工具调用能力。</li>
+</ul>
+</li>
+<li><strong>2022-2023：RAG（检索增强生成）</strong>
+<ul>
+<li>核心：先检索外部知识库中的相关信息，再基于检索结果生成精准回答。</li>
+<li>特点：缓解幻觉，支持私有数据接入，提升回答的准确性。</li>
+<li>局限：检索精度受限于向量库与召回算法、延迟高，仅解决信息获取，无执行能力。</li>
+</ul>
+</li>
+<li><strong>2023-2024：Tools/Function Calling（工具调用）</strong>
+<ul>
+<li>核心：大模型可自主调用外部工具/API（如计算器、搜索引擎、数据库接口等），完成超出文本生成的任务。</li>
+<li>特点：突破大模型“仅生成文本”的局限，实现“感知-决策-执行”的闭环。</li>
+<li>局限：单一功能调用，无统一标准，不同模型适配成本高，缺乏知识封装。</li>
+</ul>
+</li>
+<li><strong>2024 年 11 月：MCP（模型上下文协议）</strong>
+<ul>
+<li>核心：通过标准化协议，实现大模型与工具、数据源的统一连接，打破工具集成的碎片化困境。</li>
+<li>特点：降低工具集成成本，实现模型与工具的解耦，支持跨模型、跨平台复用。</li>
+<li>局限：仅解决工具连接的标准化问题，仍缺乏对结构化知识的封装与复用能力。</li>
+</ul>
+</li>
+<li><strong>2025 年 10 月 - 至今：Skills（结构化技能包）</strong>
+<ul>
+<li>核心：将知识、工具、流程封装为可复用、可执行的Skill（技能）单元。</li>
+<li>特点：采用结构化封装方式，支持技能编排与渐进式加载（按需加载，降低模型上下文压力），可实现复杂任务的自动化执行。</li>
+<li>局限：技术仍在快速迭代，相关生态体系正在持续完善中。</li>
+</ul>
+</li>
+</ol>
+<p><strong>各阶段对比</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">阶段</th>
+          <th style="text-align: left">核心特征</th>
+          <th style="text-align: left">优势</th>
+          <th style="text-align: left">局限</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>Zero-shot</strong></td>
+          <td style="text-align: left">直接提示，无需示例引导</td>
+          <td style="text-align: left">简单直接，无额外操作成本</td>
+          <td style="text-align: left">复杂任务表现差，幻觉严重</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Few-shot</strong></td>
+          <td style="text-align: left">提供少量示例，引导模型输出</td>
+          <td style="text-align: left">提升特定任务的输出质量</td>
+          <td style="text-align: left">示例占用上下文空间，难以复用</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>RAG</strong></td>
+          <td style="text-align: left">动态检索外部相关知识</td>
+          <td style="text-align: left">知识更新及时，缓解幻觉</td>
+          <td style="text-align: left">检索精度不稳定，无执行能力</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Tools</strong></td>
+          <td style="text-align: left">模型可自主调用外部函数</td>
+          <td style="text-align: left">扩展能力强，突破文本生成局限</td>
+          <td style="text-align: left">单一功能调用，无统一标准，模型适配成本高，缺乏知识封装</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>MCP</strong></td>
+          <td style="text-align: left">标准化工具连接协议</td>
+          <td style="text-align: left">跨平台兼容，降低集成成本</td>
+          <td style="text-align: left">仅解决连接问题，仍缺乏对结构化知识的封装与复用能力</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>Skills</strong></td>
+          <td style="text-align: left">结构化知识包，渐进式加载</td>
+          <td style="text-align: left">Token 利用高效，可复用性强</td>
+          <td style="text-align: left">需一定学习成本，生态待完善</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>这五者的递进关系可以清晰总结为：</p>
+<ul>
+<li><strong>Prompt</strong> 是对模型的自然语言指令，负责告诉模型 “要做什么（任务描述 + 输出格式 + 行为约束）”，是最原始的意图表达；</li>
+<li><strong>RAG</strong> 是外部知识的动态注入机制，负责为模型提供 “实时、准确、可溯源的外部信息”，解决模型知识过时与幻觉问题；</li>
+<li><strong>Tool</strong> 是模型可调用的底层执行能力，是一段确定性可执行代码或接口，相同输入永远给出确定输出；</li>
+<li><strong>MCP</strong> 是能力的标准化接入与发现协议，统一了模型与工具、数据源的连接方式，让不同的 LLM 能便捷发现、调度和调用 Tool；</li>
+<li><strong>Skills</strong> 则是在以上能力之上，将<strong>Prompt 指令、RAG 知识、Tool 工具链、执行流程</strong>整体封装而成的结构化、可复用、可编排的技能单元，供智能体按需加载，是面向复杂业务场景的最终可落地能力形态。</li>
+</ul>
+<h3 id="12-什么是-skills">1.2 什么是 Skills？
+</h3><h4 id="121-官方定义">1.2.1 官方定义
+</h4><p>根据 Anthropic 官方定义：</p>
+<blockquote>
+<p><strong>Agent Skills</strong> 是一种<strong>模块化能力单元</strong>，用于扩展智能体（如 Claude）的功能。每个技能都会封装：执行指令、元数据、可选资源（脚本、模板、领域知识等）；当场景匹配时，模型会<strong>自动调用对应的技能</strong>来完成特定任务，让智能体更专业、更可控、更贴近实际业务需求。</p>
+</blockquote>
+<p>Agent skills  的定义：</p>
+<blockquote>
+<p><strong>Agent Skills</strong> 是一种轻量、开放的格式，用于通过专业知识与工作流扩展 AI 智能体的能力。它是由指令、脚本和资源组成的文件夹，智能体可发现并使用它们，更准确、高效地完成任务。</p>
+<p><strong>Skills</strong> 的核心是一个包含 <strong>SKILL.md</strong> 文件的文件夹。该文件（<strong>SKILL.md</strong> ）包含元数据（至少包含名称和描述）以及指导智能体如何执行特定任务的指令。同时技能还可附带脚本、模板与参考资料等扩展内容。</p>
+</blockquote>
+<p>综上，<strong>Skills 的本质</strong>：是一套<strong>可插拔、可复用、可组合的模块化专业能力封装</strong>。它将指令、脚本和资源打包为以 <strong><code>SKILL.md</code></strong> 为核心的标准化文件夹，作为智能体的<strong>行为规范层</strong>，支持<strong>按需加载、自动触发</strong>，以可复用的方式教会智能体稳定、专业的完成特定任务—— 无论是遵循企业品牌规范撰写文档、使用组织内部工作流分析数据，还是实现自动化个人任务。</p>
+<p>可以类比理解为：Skills 就像是给智能体准备的一套标准化<strong>岗位操作手册与工具包</strong>，就如为新团队成员准备的入职指南。</p>
+<blockquote>
+<p>Skills 格式最初由Anthropic研发。</p>
+<p>2025 年10月16日，Anthropic 随 Claude 及 Claude Code 正式推出 Claude Skills 功能，首次定义了包含 SKILL.md、脚本与资源文件的结构化 Skill 目录规范，初期仅作为 Claude 专属的能力扩展机制。</p>
+<p>2025 年 12 月 18 日，Anthropic 将其进一步标准化为跨平台开放标准，并正式更名为 Agent Skills，同步在 agentskills.io 官网，面向全生态开放贡献。目前该标准已成为通用智能体技能规范，被 OpenAI Codex、Cursor、GitHub Copilot、openClaw 等多款智能体产品与平台广泛采用。</p>
+</blockquote>
+<h4 id="122-核心组成">1.2.2 核心组成
+</h4><p>Skill 是一个<strong>必须包含 <code>SKILL.md</code> 的标准化文件夹</strong>，一个完整的 Skill 由SKILL.md（结构化指令）、资源文件、可执行脚本三个核心部分组成，可表示为：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Skill = SKILL.md（必须）+ 资源文件（可选）+ 可执行脚本（可选）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Skill 文件夹的标准目录结构如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">skill-name/
+</span></span><span class="line"><span class="cl">├── SKILL.md          # 必需：技能元数据 + 执行逻辑指令
+</span></span><span class="line"><span class="cl">├── scripts/          # 可选：可执行脚本、代码片段
+</span></span><span class="line"><span class="cl">├── references/       # 可选：参考文档、领域知识、说明文档
+</span></span><span class="line"><span class="cl">├── assets/           # 可选：模板、图片、配置文件、静态资源
+</span></span><span class="line"><span class="cl">└── ...               # 可选：其它自定义文件/目录
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>1. SKILL.md（结构化指令）</strong></p>
+<p><code>SKILL.md</code> 是 Skill 的<strong>核心入口与唯一必选文件</strong>，用于定义技能的元数据、触发条件与完整执行逻辑，指导智能体如何执行特定任务的指令。包含：</p>
+<ul>
+<li>元数据（YAML Frontmatter）：包含技能名称、描述、版本、兼容性、标签等基础信息，用于语义匹配与识别。</li>
+<li>主指令（Markdown）：描述技能用途、适用场景、执行步骤、行为约束、输出规范等核心内容，是指导智能体执行任务的核心指令。</li>
+</ul>
+<p>最简单的技能，就是一个包含 <code>SKILL.md</code> 文件的目录。该文件必须以 <strong>YAML 前置信息</strong>开头，包含必填元数据：名称与描述。启动时，智能体会将所有已安装技能的名称与描述预加载到系统提示中。</p>
+<p>一个简单的skill文件示例如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414065402554.png"
+	width="1170"
+	height="687"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414065402554_hu_3b3ec63d5e9cc2bc.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414065402554_hu_7a87c211c9a9e0da.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260414065402554"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="170"
+		data-flex-basis="408px"
+	
+></p>
+<p><strong>2.  资源文件（References &amp; Assets）</strong></p>
+<p>资源文件用于为技能执行提供<strong>领域知识、结构化模板、格式规范、素材与示例支撑</strong>，支持按需加载，有效提升智能体执行准确性与输出质量。所有文件与目录均为可选。</p>
+<p>常见文件：</p>
+<ul>
+<li><code>FORMS.md</code>：结构化输入规范，统一用户或系统的输入格式，减少歧义。</li>
+<li><code>REFERENCE.md</code>：领域知识、技术说明、API 文档等，为技能执行提供权威依据。</li>
+</ul>
+<p>常见目录包括：</p>
+<ul>
+<li><code>references/</code>：存放扩展参考资料、技术文档、白皮书、行业规范等领域知识。</li>
+<li><code>templates/</code>：存放代码、文案、报告等标准化模板，确保输出格式统一。</li>
+<li><code>schemas/</code>：数据结构定义目录，存放 JSON Schema 等格式校验文件，用于格式校验与解析。</li>
+<li><code>assets/</code>：存放静态资源目录，包含图片、配置文件、多媒体素材等。</li>
+<li><code>examples/</code>：存放输入输出示例、典型场景与最佳实践，辅助模型理解执行逻辑。</li>
+</ul>
+<p><strong>3. 可执行脚本（Scripts）</strong></p>
+<p>用于<strong>封装复杂或重复性逻辑</strong>，实现自动化执行逻辑。通过外部执行降低模型推理负担。脚本文件放在<code>/scripts</code>目录下。</p>
+<p>常见脚本类型：</p>
+<ul>
+<li>validate.py：输入验证脚本，校验输入是否符合规范。</li>
+<li>generate.py：代码、文档生成脚本，自动化完成重复性生成任务。</li>
+<li>deploy.sh：部署、更新、环境初始化脚本。。</li>
+<li>其它工具脚本：根据技能需求定制，如数据清洗、格式转换、接口调用、结果后处理等。</li>
+</ul>
+<h3 id="13-skills-工作原理">1.3 Skills 工作原理
+</h3><h4 id="131-三阶段渐进式加载架构">1.3.1 三阶段渐进式加载架构
+</h4><p>Skills 的核心优势在于其独特的渐进式加载机制，通过分阶段、按需加载内容，实现 Token 资源的高效利用，避免无效 Token 消耗，其整体加载架构如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414095520547.png"
+	width="787"
+	height="750"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414095520547_hu_3975fcb315342643.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414095520547_hu_445259377e19981.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260414095520547"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="104"
+		data-flex-basis="251px"
+	
+></p>
+<p>该架构的核心设计理念为<strong>渐进式披露（Progressive Disclosure）</strong>，将 Skill 加载拆分为三个层级，严格遵循“按需加载”原则，避免一次性加载冗余内容，具体层级说明如下：</p>
+<p><strong>L1 元数据层（Metadata，元数据）</strong>：仅包含 name（技能名称）和 description（技能描述）两个核心字段，单 Skill 元数据消耗约 100 tokens。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: pdf-processing
+</span></span><span class="line"><span class="cl">description: 从 PDF 文件提取文本与表格、填写表单、合并文档。处理 PDF 文件或用户提及 PDF、表单、文档提取时使用。
+</span></span><span class="line"><span class="cl">---
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Agent 在系统提示词中加载该层级内容，核心作用是判断当前请求“是否需要调用该 Skill”，是 Skill 筛选的核心依据。这种轻量化方式可安装大量技能且不占用上下文，Agent 仅知晓技能存在及使用时机。</p>
+<p><strong>L2 指令层（SKILL.md，主指令）</strong>：<code>SKILL.md</code> 完整主体文件，该文件中定义了领域知识、工作流、最佳实践与指引。</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414100939237.png"
+	width="821"
+	height="524"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414100939237_hu_d4184b4333550139.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414100939237_hu_cb28b4718463c22.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260414100939237"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="156"
+		data-flex-basis="376px"
+	
+></p>
+<p>当你的请求匹配技能描述时，Agent 通过 bash 从文件系统读取 <code>SKILL.md</code>，此时该内容才进入上下文窗口（单文件 Token 量通常 &lt;5k）。</p>
+<p><strong>L3 资源层（Resources，辅助资源）</strong>：可选的辅助支撑资源，如：参考文档、可执行脚本、模板文件、素材等。 此类资源仅在被主指令中引用时才读取并执行，未引用时不占用任何 Token。</p>
+<p>随着技能复杂度提升，单一 <code>SKILL.md</code> 可能无法容纳全部上下文，或部分内容仅在特定场景适用。此时，技能可在目录中打包额外文件，并在 <code>SKILL.md</code> 中引用。如下图 PDF 技能中，<code>SKILL.md</code> 引用了另外两个文件（<code>reference.md</code> 和 <code>forms.md</code>），与核心 <code>SKILL.md</code> 一同打包。将表单填写说明移至独立文件 <code>forms.md</code>，可以让技能核心保持精简，同时智能体只会在填写表单时读取 <code>forms.md</code>。</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414101748907.png"
+	width="1151"
+	height="752"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414101748907_hu_bfd19682cc678492.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414101748907_hu_8ea747b0f463e460.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260414101748907"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="153"
+		data-flex-basis="367px"
+	
+></p>
+<p>技能还可以包含代码，供 Agent 根据任务需要自主作为工具执行。</p>
+<p>在PDF 技能中包含一段预编写的 Python 脚本，可读取 PDF 并提取所有表单字段。Agent 可以直接运行该脚本，<strong>无需将脚本或 PDF 加载到上下文，只有执行后的结果会被加入上下文</strong>。且由于代码是确定性的，整个流程稳定可复现。</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414103817064.png"
+	width="1146"
+	height="612"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414103817064_hu_9648099997f8603a.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414103817064_hu_5837111343887ad6.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260414103817064"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="187"
+		data-flex-basis="449px"
+	
+></p>
+<p><strong>架构设计思路</strong>：Skill 设计遵循“分层加载、按需调用”原则，不应将所有规则、资源一次性注入 LLM 上下文，而应类比操作系统加载动态链接库（DLL）的机制，仅在需要时加载对应层级的内容，兼顾响应速度与执行准确性。</p>
+<p>综上，Skills 通过<strong>渐进式披露</strong>机制实现上下文的高效管理，其核心流程可概括为三个关键步骤：</p>
+<ol>
+<li><strong>发现</strong>：系统启动时，Agent 仅加载所有可用 Skill 的元数据（name + description），仅保留“判断技能是否与任务相关”所需的最小信息，降低初始上下文负载。</li>
+<li><strong>激活</strong>：当用户任务与某一 Skill 的 description 语义匹配度达到阈值时，Agent 触发该 Skill 的激活，将其完整 SKILL.md 中的主指令加载至 LLM 上下文。</li>
+<li><strong>执行</strong>：Agent 遵循主指令中的步骤执行任务，过程中根据需求，按需加载引用的资源文件或运行打包的可执行脚本，完成任务闭环。</li>
+</ol>
+<p>该设计的核心价值的是，既保证 Agent 对用户请求的快速响应（初始加载内容少、Token 消耗低），又能在执行过程中按需获取足够的上下文信息，确保任务执行的准确性和完整性。</p>
+<p>各阶段加载的时机及Token消耗如下：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: center">等级</th>
+          <th style="text-align: center">加载时机</th>
+          <th style="text-align: center">Token 消耗</th>
+          <th style="text-align: center">内容</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center"><strong>L1：元数据</strong></td>
+          <td style="text-align: center">始终（启动时）</td>
+          <td style="text-align: center">每个技能约 100 Token</td>
+          <td style="text-align: center">SKILL.md 的YAML前置信息中的 <code>name</code> 和 <code>description</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>L2：指令</strong></td>
+          <td style="text-align: center">技能被触发时</td>
+          <td style="text-align: center">5000 Token 以内</td>
+          <td style="text-align: center">SKILL.md 正文（包含指令与指引）</td>
+      </tr>
+      <tr>
+          <td style="text-align: center"><strong>L3：资源</strong></td>
+          <td style="text-align: center">按需</td>
+          <td style="text-align: center">几乎无限制</td>
+          <td style="text-align: center">通过 bash 执行的打包文件，内容不加载到上下文</td>
+      </tr>
+  </tbody>
+</table></div>
+<h4 id="132-完整生命周期流程">1.3.2 完整生命周期流程
+</h4><p>Skills 从接收用户请求，到最终返回执行结果，整个生命周期流程如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414134938978.png"
+	width="1070"
+	height="531"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414134938978_hu_634cc905de43aa33.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414134938978_hu_dc84bab7ef47490a.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260414134938978"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="201"
+		data-flex-basis="483px"
+	
+></p>
+<p>每个阶段的详细说明：</p>
+<ol>
+<li><strong>初始状态：</strong>
+<ul>
+<li>用户输入自然语言任务指令（示例：<code>帮我生成一份技术文档模板</code>）。</li>
+<li>Agent 构建初始上下文，包含系统提示词、所有已加载 Skill 的元数据（名称 + 描述），以及用户用户初始消息。</li>
+</ul>
+</li>
+<li><strong>匹配并加载SKILL.md ：</strong>
+<ul>
+<li>Agent 对所有已加载 Skill 的 <code>description</code> 字段进行语义检索，计算与用户请求的相关性，筛选出相关性最高的 Skill（支持多个 Skill 协同调用，比如一个任务需要“生成模板+格式校验”两个技能）。</li>
+<li>匹配成功后，Agent 执行<code>bash: read pdf-skill/SKILL.md（示例）</code>，加载对应 Skill 目录下的完整 <code>SKILL.md</code>，并将其指令注入上下文，作为模型执行任务的标准化操作规范。</li>
+</ul>
+</li>
+<li><strong>Agent 按需加载附加文件：</strong>
+<ul>
+<li>Agent 依据 <code>SKILL.md</code> 中的引用关系，仅加载当前任务必需的资源文件，未被引用的资源不加载，实现 Token 高效利用（避免浪费 Token）。</li>
+<li>按需调用 <code>scripts/</code> 目录下的脚本，完成自动化操作（如数据解析、格式校验、外部调用）。
+<ul>
+<li>脚本代码本身不进入模型上下文，不占用 Token；</li>
+<li>仅将脚本执行后的标准输出（执行结果）注入上下文；</li>
+<li>若执行异常，仅将结构化错误信息传入上下文，供 Agent 决策重试或调整执行步骤。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>结果返回：</strong>
+<ul>
+<li>
+<p>整合上下文信息（指令、资源、脚本输出），生成符合要求的最终回复。</p>
+</li>
+<li>
+<p>根据任务需求，可能触发后续 Skill 调用，实现复杂任务的多步骤协同完成。</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>示例：下图展示了用户消息触发技能时，上下文窗口的动态变化过程。</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414112655138.png"
+	width="1161"
+	height="639"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414112655138_hu_6a3ee7f863b1a99a.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%80%E7%AB%A0-skills-%E8%AE%A4%E7%9F%A5%E4%B8%8E%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86/images/image-20260414112655138_hu_3265ff371c7ee21.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260414112655138"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="181"
+		data-flex-basis="436px"
+	
+></p>
+<p>图示说明：</p>
+<ol>
+<li>默认状态：系统提示与技能元数据已预加载</li>
+<li>Agent 通过 bash 读取 SKILL.md 触发技能</li>
+<li>Agent 按需读取额外打包文件（如 FORMS.md）</li>
+<li>Agent 继续执行任务</li>
+</ol>
+<p>这种动态加载确保只有相关的技能内容占用上下文窗口。</p>
+<h4 id="133-关键机制">1.3.3 关键机制
+</h4><p><strong>1. 未引用文件零 Token 消耗</strong></p>
+<p>这是 Skills 最核心的 Token 优化机制，可最大限度降低上下文压力，具体示例如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">resources/
+</span></span><span class="line"><span class="cl">├── guide.md          # 未被引用 → 0 Token
+</span></span><span class="line"><span class="cl">├── templates/
+</span></span><span class="line"><span class="cl">│   └── template.md   # 未被引用 → 0 Token
+</span></span><span class="line"><span class="cl">└── examples/
+</span></span><span class="line"><span class="cl">    └── example.md    # 被 Instructions 引用 → 按需加载
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>与传统方式对比：</p>
+<ul>
+<li>传统 RAG：检索 Top-K 相关文档，全部加载进上下文，即使部分内容与当前任务无关，也会消耗 Token。</li>
+<li>Skills：仅加载主指令明确引用的资源，未引用资源不占用任何 Token，极大提升 Token 利用效率。</li>
+</ul>
+<p><strong>2. 脚本执行不占用上下文</strong></p>
+<p>Scripts 的执行遵循特殊规则，避免复杂逻辑占用上下文空间，具体说明如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">scripts/
+</span></span><span class="line"><span class="cl">├── validate.py       # 执行时：代码不进入上下文
+</span></span><span class="line"><span class="cl">├── generate.py       # 输出结果：仅标准输出入窗
+</span></span><span class="line"><span class="cl">└── deploy.sh         # 错误信息：仅 stderr 入窗
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>核心好处：</p>
+<ul>
+<li>复杂逻辑（如数据处理、代码生成）由脚本执行，不消耗模型上下文空间，降低上下文压力。</li>
+<li>脚本执行具有确定性，可避免模型重复生成相同代码，提升执行效率。</li>
+<li>支持长时间运行任务（如批量处理数据），不影响模型正常响应。</li>
+</ul>
+<h3 id="14-与prompttoolsragmcpsubagent-对比">1.4 与Prompt/Tools/RAG/MCP/SubAgent 对比
+</h3><p>为了更好地理解 Skills 的定位，明确其与同类技术的核心差异、适用场景及协同关系，本节将 Skills 与 Prompt、Tools、RAG、MCP、SubAgent 进行详细对比，帮助开发者快速区分各类技术的边界与应用价值。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th><strong>维度</strong></th>
+          <th><strong>Tools</strong></th>
+          <th><strong>RAG</strong></th>
+          <th><strong>MCP</strong></th>
+          <th><strong>SubAgent</strong></th>
+          <th><strong>Skills</strong></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>定位</strong></td>
+          <td>单一功能调用（底层原子能力）</td>
+          <td>知识检索增强（动态知识补充）</td>
+          <td>工具连接协议（通用连接层）</td>
+          <td>专用独立任务执行体</td>
+          <td>完整任务工作流（可复用专业能力包）</td>
+      </tr>
+      <tr>
+          <td><strong>内容</strong></td>
+          <td>函数定义、调用逻辑（单一操作实现）</td>
+          <td>向量化的文档片段（动态检索数据源）</td>
+          <td>工具描述 + 连接配置（标准化连接规范）</td>
+          <td>系统提示 + 工具权限 + 独立上下文配置（专用执行体定义）</td>
+          <td>指令 + 文档 + 代码 + 模板（完整流程封装）</td>
+      </tr>
+      <tr>
+          <td><strong>触发方式</strong></td>
+          <td>模型自主决策调用（单一操作触发）</td>
+          <td>基于向量相似度检索（知识需求触发）</td>
+          <td>手动调用或模型决策（连接需求触发）</td>
+          <td>模型自动委派或手动显式调用（隔离任务触发）</td>
+          <td>基于描述的语义匹配（任务需求触发）</td>
+      </tr>
+      <tr>
+          <td><strong>Token 效率</strong></td>
+          <td>中（需加载工具定义，单次调用占用 Token）</td>
+          <td>低（检索结果不稳定、冗余度高，占用大量 Token）</td>
+          <td>中（每个 MCP 连接需占用固定上下文 Token）</td>
+          <td>中（独立上下文需占用固定 Token，隔离执行不影响主会话）</td>
+          <td><strong>高（渐进式加载，可节省 50-70% Token）</strong></td>
+      </tr>
+      <tr>
+          <td><strong>适用场景</strong></td>
+          <td>通用工具调用（如计算器、API 调用、文件读取）</td>
+          <td>大规模知识库问答、动态知识查询（如行业报告检索）</td>
+          <td>外部系统连接（如数据库、API、CRM 对接）</td>
+          <td>隔离型专业任务、并行处理、权限管控（如只读代码审查）</td>
+          <td>标准化、可复用的专业任务（如 API 文档生成、安全审计）</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>关键对比</strong>：</p>
+<ol>
+<li>
+<p><strong>Skills vs prompt:</strong></p>
+<ul>
+<li><strong>Prompt</strong>：一次性、临时、对话式、响应式，执行行为受对话上下文影响大，稳定性差，仅适用于快速临时请求。</li>
+<li><strong>Skills</strong>：<strong>持久化、模块化的专业能力包</strong>，支持 Git 版本管理、可跨对话/跨代理共享，执行行为高度一致、可审计，是 Prompt 的工程化升级，适用于标准化专业任务。</li>
+</ul>
+</li>
+<li>
+<p><strong>Skills vs RAG</strong>：</p>
+<ul>
+<li>核心差异：RAG 核心是“动态检索知识”，解决模型知识更新与幻觉问题；Skills 核心是“带执行能力的结构化知识”，解决任务标准化与复用问题。</li>
+<li>场景区分：RAG 适合大规模、动态变化的知识库问答场景；Skills 适合标准化、流程固定的专业任务场景。</li>
+<li>协同关系：两者可互补使用，Skill 内部可集成 RAG 能力，动态获取最新外部知识，打破 Skills 自身知识固定的局限，提升技能的灵活性与时效性。</li>
+</ul>
+</li>
+<li>
+<p><strong>Skills vs Tools</strong>：</p>
+<ul>
+<li>核心差异：Tools 是底层功能调用，聚焦单一操作（如“调用计算器”“读取文件”）；Skills 是上层工作流封装（如“生成 API 文档”），聚焦完整任务（如“生成 API 文档”“完成代码审查”），明确“如何一步步做好”。</li>
+<li>协同关系：一个 Skill 可整合多个 Tools，通过脚本编排，将多个单一操作串联起来，完成复杂多步骤任务，让底层工具发挥更大的实际价值。</li>
+</ul>
+</li>
+<li>
+<p><strong>Skills vs MCP</strong>：</p>
+<ul>
+<li>MCP（Model Context Protocol，模型上下文协议）是 AI 与外部系统之间的通用连接层，核心解决工具、数据源连接的标准化问题，无需为每个外部系统单独开发集成方案。</li>
+<li>核心分工：MCP 负责“连接外部工具与数据”，让 Agent 能访问外部资源（如数据库、Google Drive）；Skills 负责“封装领域知识与任务流程”，教 Agent 如何规范、高效地使用这些资源完成任务，两者互补协同。</li>
+<li>协同关系：Skill 可调用 MCP 连接的外部工具，借助 MCP 的标准化连接能力扩展自身操作边界；MCP 也可暴露 Skill 能力，实现 Agent 整体能力的快速扩展。</li>
+</ul>
+<p>形象类比：MCP 相当于专业厨房：提供工具、食材和设备，实现基础的资源访问。Skills 相当于菜谱，提供一步步的操作指引，教你如何利用资源创造有价值的成果。</p>
+</li>
+<li>
+<p><strong>Skills vs SubAgent：</strong></p>
+<ul>
+<li>SubAgent（子代理）是拥有独立上下文窗口、自定义系统提示和特定工具权限的专用 AI 助手，核心定位是“独立任务执行体”，聚焦于隔离式、专业化的任务处理，可独立完成离散任务并将结果返回给主代理。</li>
+<li>Skills 核心是“可复用的专业能力包”，无独立上下文，可被多个 Agent 或 SubAgent 调用，聚焦于流程标准化与能力复用，不负责任务的隔离执行和权限管控。</li>
+<li>核心区别：用 SubAgent 实现“带特定权限和上下文的独立任务执行”，用 Skills 传授“任何 Agent/SubAgent 都能用的专业知识与流程”；Skill 是可移植、可复用的能力组件，SubAgent 是为特定工作流量身定制的执行体。</li>
+<li>协同关系：两者可协同使用，SubAgent 可调用 Skills 获得标准化的专业能力，提升自身任务执行的规范性；Skills 可借助 SubAgent 实现任务的隔离执行与并行处理，提升任务效率；当多个 SubAgent 需要共享同一套专业流程（如安全审计规范）时，应创建 Skill，而非在每个 SubAgent 中重复内置逻辑，降低维护成本。</li>
+</ul>
+</li>
+</ol>
+<p>复杂智能体系统的最佳实践：采用“MCP 负责连接 + Skills 负责流程 + SubAgent 负责任务隔离”的组合架构，搭配 RAG 补充动态知识、Tools 提供底层操作，实现高效、稳定、可扩展的 AI 工作流。</p>
+<h3 id="15-skills-核心价值">1.5 Skills 核心价值
+</h3><p>Skills 的推出，精准解决了大模型应用开发中“<strong>上下文窗口限制、重复性指令消耗、领域知识无有效共享</strong>”三大核心痛点，它让智能体能够按需加载流程化知识，以及企业、团队和用户专属的上下文信息，无需冗余操作，同时实现知识沉淀与能力复用。其核心价值主要体现在以下三个方面：</p>
+<p><strong>1. 渐进式披露（Progressive Disclosure）：破解 Token 浪费与上下文溢出难题</strong></p>
+<p>Skills 采用渐进式披露机制，通过按需分阶段加载内容，仅保留必要信息，避免全量加载无关内容造成的 Token 浪费和上下文冗余，具体流程如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">阶段 1：元数据扫描（~50-100 tokens/Skill）
+</span></span><span class="line"><span class="cl">    ↓ 用户请求语义匹配
+</span></span><span class="line"><span class="cl">阶段 2：完整指令加载（SKILL.md，通常 &lt;5K tokens）
+</span></span><span class="line"><span class="cl">    ↓ 引用资源标识
+</span></span><span class="line"><span class="cl">阶段 3：按需资源加载（References/Scripts，零 Token 直到引用）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>2. 标准化复用（Standardized Reusability）：解决领域知识碎片化问题</strong></p>
+<p>实现跨项目、跨团队的知识沉淀与高效复用：</p>
+<ul>
+<li>对个人：一次编写，可在多个任务、多个项目中重复使用，提升个人开发效率。</li>
+<li>对团队：可将内部沉淀的最佳实践、业务规范、数据处理流程、安全审计规则等，统一封装为 Skills，实现知识的集中沉淀与共享，减少沟通与重复开发成本。</li>
+<li>对社区：形成开源生态，开发者可共享、迭代各类场景的技能包，推动技术持续优化。</li>
+<li>对兼容智能体：支持技能后，终端用户可直接使用Skill为智能体赋予开箱即用的新能力。</li>
+</ul>
+<p><strong>3. 专属化适配（Customized Adaptation）：突破通用模型的场景局限</strong></p>
+<p>通用大模型往往脱离具体业务场景，难以适配企业、团队及个人的个性化需求，而 Skills 支持灵活封装专属上下文信息，可根据不同场景的实际需求定制适配，以及针对领域任务定制能力，让智能体真正贴合业务落地场景。</p>
+<p>主要体现在三个维度，覆盖不同使用场景：</p>
+<ul>
+<li><strong>企业级适配</strong>：将企业内部的业务流程、数据规范、权限规则等专属知识，封装到 Skills 中，针对领域任务定制能力，让智能体贴合企业实际业务场景，例如企业内部报表生成、客户服务规范执行等。</li>
+<li><strong>团队级适配</strong>：可结合团队分工与技术标准，定制专属 Skills，例如前端开发规范、后端调试流程等，确保智能体输出的结果符合团队的工作习惯和技术要求，提升团队协作效率。</li>
+<li><strong>用户级适配</strong>：个人可根据自身使用习惯，封装个性化流程，例如常用工具调用组合、文档格式化规范、等，让智能体成为贴合个人工作方式的专属助手，进一步提升个人工作效率。</li>
+</ul>
+<p>Skills 精准对标大模型应用开发的三大痛点，以渐进式披露优化 Token 消耗、解决上下文溢出问题，以标准化复用沉淀知识、提升协作效率，以专属化适配贴合多元场景、<strong>突破通用模型局限，能为智能体提供领域专属能力，将通用智能体转变为专业智能体，实现更稳定、专业的完成特定任务</strong>。</p>
+<h3 id="16-skill-适用场景">1.6 Skill 适用场景
+</h3><p>Skills 具备<strong>结构化封装、可复用、可共享、支持渐进式加载与脚本编排</strong>的特点，使其在四类工程场景中价值最突出：</p>
+<h4 id="1-高频重复任务">1. 高频重复任务
+</h4><p>这类任务流程固定、需求重复、频繁执行，Skills 可一次性封装，避免重复提示，提升效率：</p>
+<p>典型场景：</p>
+<ul>
+<li>
+<p>代码审查、代码规范检查、代码格式化</p>
+</li>
+<li>
+<p>自动化生成单元测试、接口测试用例</p>
+</li>
+<li>
+<p>固定格式周报、会议纪要、分析简报生成</p>
+</li>
+<li>
+<p>重复型数据提取、格式转换、内容清洗</p>
+</li>
+<li>
+<p>数据分析报告生成、数据可视化</p>
+</li>
+</ul>
+<h4 id="2-标准化专业任务">2. 标准化专业任务
+</h4><p>这类任务有明确行业规范、企业标准或合规要求，Skills 可封装标准流程，确保输出一致性：</p>
+<p>典型场景：</p>
+<ul>
+<li>
+<p>按企业特定规范生成业务代码（如符合企业编码规范）</p>
+</li>
+<li>
+<p>遵循固定模板的合同、合规文件、审计报告</p>
+</li>
+<li>
+<p>标准化的数据处理和转换（字段映射、格式校验、指标计算）</p>
+</li>
+<li>
+<p>固定结构的技术方案、PRD、架构图说明</p>
+</li>
+<li>
+<p>安全审查、漏洞描述、修复建议标准化输出</p>
+</li>
+</ul>
+<h4 id="3-团队协作任务">3. 团队协作任务
+</h4><p>这类任务需要团队统一口径、复用最佳实践的场景，Skills 可实现知识沉淀与共享资产。</p>
+<p>典型场景：</p>
+<ul>
+<li>
+<p>共享团队通用代码模板、项目脚手架</p>
+</li>
+<li>
+<p>统一代码评审标准、优化规则、命名规范</p>
+</li>
+<li>
+<p>团队内部工具 / SDK / 私有 API 的用法封装</p>
+</li>
+<li>
+<p>新人入职常用任务自动化（环境说明、流程指引）</p>
+</li>
+<li>
+<p>统一对外输出风格（文档、文案、技术回复）</p>
+</li>
+</ul>
+<h4 id="4-复杂多步骤任务">4. 复杂多步骤任务
+</h4><p>这类任务需要多阶段推理、多工具协同、多轮执行的复杂任务，Skill 支持内部逻辑编排，实现端到端自动化。</p>
+<p>典型场景：</p>
+<ul>
+<li>数据获取 → 清洗 → 分析 → 可视化 → 报告输出</li>
+<li>日志检索 → 异常识别 → 根因分析 → 解决方案生成</li>
+<li>数据库查询 → 结果校验 → 报表生成 → 通知推送</li>
+<li>需求拆解 → 接口定义 → 代码生成 → 用例编写</li>
+<li>多工具联动任务（如代码提交 + 构建检查 + 部署提醒）</li>
+</ul>
+<h3 id="思考问题">思考问题
+</h3><ol>
+<li>在你的工作场景中，有哪些重复性任务适合使用 Skills 来解决？</li>
+<li>对比 RAG、MCP 和 Skills，它们的区别，及在什么情况下应该选择哪种技术？</li>
+</ol>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/skill/">Skill</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462.png" width="1383" height="819" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #3f474f80 0%, #f3fafeC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339.png" width="1678" height="849" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #bbd4db80 0%, #022556C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/images/image-20260425153556852.png" width="1315" height="763" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #23449880 0%, #fafbfdC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552.png" width="1114" height="809" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #1163fd80 0%, #f9f9f9C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Skill 从入门到精通——第三章 Skills 使用及管理</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

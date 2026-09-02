@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="本文详细介绍 Agent Skills（智能体技能）完整格式规范；并使用官方`skills-ref`工具验证，确保符合规范。">
+<title>Skill 从入门到精通——第二章 Skills 规范详解</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Skill 从入门到精通——第二章 Skills 规范详解">
+<meta property='og:description' content="本文详细介绍 Agent Skills（智能体技能）完整格式规范；并使用官方`skills-ref`工具验证，确保符合规范。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Skill' /><meta property='article:published_time' content='2026-04-03T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-04-03T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="Skill 从入门到精通——第二章 Skills 规范详解">
+<meta name="twitter:description" content="本文详细介绍 Agent Skills（智能体技能）完整格式规范；并使用官方`skills-ref`工具验证，确保符合规范。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#1-目录结构规范">1. 目录结构规范</a></li>
+    <li><a href="#2-skillmd-文件格式">2. SKILL.md 文件格式</a>
+      <ol>
+        <li><a href="#21-前置元数据frontmatter">2.1 前置元数据（Frontmatter）</a></li>
+        <li><a href="#22-字段详细规则">2.2 字段详细规则</a>
+          <ol>
+            <li><a href="#221-name技能唯一标识">2.2.1 name（技能唯一标识）</a></li>
+            <li><a href="#222-description技能描述">2.2.2 description（技能描述）</a></li>
+            <li><a href="#223-license许可证">2.2.3 license（许可证）</a></li>
+            <li><a href="#224-compatibility环境兼容说明">2.2.4 compatibility（环境兼容说明）</a></li>
+            <li><a href="#225-metadata扩展元数据">2.2.5 metadata（扩展元数据）</a></li>
+            <li><a href="#226-allowed-tools允许调用的工具实验性">2.2.6 allowed-tools（允许调用的工具，实验性）</a></li>
+          </ol>
+        </li>
+        <li><a href="#23-完整配置示例">2.3 完整配置示例</a></li>
+      </ol>
+    </li>
+    <li><a href="#3-markdown-正文执行指令">3. Markdown 正文（执行指令）</a>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#推荐结构">推荐结构</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#4-添加附件资源">4. 添加附件资源</a>
+      <ol>
+        <li><a href="#references"><code>references/</code></a></li>
+        <li><a href="#scripts"><code>scripts/</code></a></li>
+      </ol>
+    </li>
+    <li><a href="#5-文件引用">5. 文件引用</a></li>
+    <li><a href="#6-核心设计原则">6. 核心设计原则</a>
+      <ol>
+        <li><a href="#一渐进式披露">(一)、渐进式披露</a></li>
+        <li><a href="#二可组合性">(二)、可组合性</a></li>
+        <li><a href="#三可移植性">(三)、可移植性</a></li>
+      </ol>
+    </li>
+    <li><a href="#7-验证">7. 验证</a>
+      <ol>
+        <li><a href="#71-安装skills-ref-工具">7.1 安装<code>skills-ref</code> 工具</a>
+          <ol>
+            <li><a href="#步骤一环境准备">步骤一、环境准备</a></li>
+            <li><a href="#步骤二获取代码">步骤二、获取代码</a></li>
+            <li><a href="#步骤三分系统安装pip-uv-二选一">步骤三、分系统安装（pip /uv 二选一）</a></li>
+            <li><a href="#步骤四验证安装成功">步骤四、验证安装成功</a></li>
+            <li><a href="#步骤五核心用法cli--python-api">步骤五、核心用法（CLI + Python API）</a></li>
+          </ol>
+        </li>
+        <li><a href="#72-使用-skills-ref-工具验证">7.2 使用 <code>skills-ref</code> 工具验证</a></li>
+        <li><a href="#总结">总结</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260414065402554.png" width="1170" height="687" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第二章 Skills 规范详解" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/agent-skill/" style="background-color: #2a9d8f; color: #fff;">
+                Skill 从入门到精通
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/">Skill 从入门到精通——第二章 Skills 规范详解</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            本文详细介绍 Agent Skills（智能体技能）完整格式规范；并使用官方`skills-ref`工具验证，确保符合规范。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-04-03T00:00:00Z'>2026年4月3日星期五</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 12 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#1-目录结构规范">1. 目录结构规范</a></li>
+    <li><a href="#2-skillmd-文件格式">2. SKILL.md 文件格式</a>
+      <ol>
+        <li><a href="#21-前置元数据frontmatter">2.1 前置元数据（Frontmatter）</a></li>
+        <li><a href="#22-字段详细规则">2.2 字段详细规则</a>
+          <ol>
+            <li><a href="#221-name技能唯一标识">2.2.1 name（技能唯一标识）</a></li>
+            <li><a href="#222-description技能描述">2.2.2 description（技能描述）</a></li>
+            <li><a href="#223-license许可证">2.2.3 license（许可证）</a></li>
+            <li><a href="#224-compatibility环境兼容说明">2.2.4 compatibility（环境兼容说明）</a></li>
+            <li><a href="#225-metadata扩展元数据">2.2.5 metadata（扩展元数据）</a></li>
+            <li><a href="#226-allowed-tools允许调用的工具实验性">2.2.6 allowed-tools（允许调用的工具，实验性）</a></li>
+          </ol>
+        </li>
+        <li><a href="#23-完整配置示例">2.3 完整配置示例</a></li>
+      </ol>
+    </li>
+    <li><a href="#3-markdown-正文执行指令">3. Markdown 正文（执行指令）</a>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#推荐结构">推荐结构</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#4-添加附件资源">4. 添加附件资源</a>
+      <ol>
+        <li><a href="#references"><code>references/</code></a></li>
+        <li><a href="#scripts"><code>scripts/</code></a></li>
+      </ol>
+    </li>
+    <li><a href="#5-文件引用">5. 文件引用</a></li>
+    <li><a href="#6-核心设计原则">6. 核心设计原则</a>
+      <ol>
+        <li><a href="#一渐进式披露">(一)、渐进式披露</a></li>
+        <li><a href="#二可组合性">(二)、可组合性</a></li>
+        <li><a href="#三可移植性">(三)、可移植性</a></li>
+      </ol>
+    </li>
+    <li><a href="#7-验证">7. 验证</a>
+      <ol>
+        <li><a href="#71-安装skills-ref-工具">7.1 安装<code>skills-ref</code> 工具</a>
+          <ol>
+            <li><a href="#步骤一环境准备">步骤一、环境准备</a></li>
+            <li><a href="#步骤二获取代码">步骤二、获取代码</a></li>
+            <li><a href="#步骤三分系统安装pip-uv-二选一">步骤三、分系统安装（pip /uv 二选一）</a></li>
+            <li><a href="#步骤四验证安装成功">步骤四、验证安装成功</a></li>
+            <li><a href="#步骤五核心用法cli--python-api">步骤五、核心用法（CLI + Python API）</a></li>
+          </ol>
+        </li>
+        <li><a href="#72-使用-skills-ref-工具验证">7.2 使用 <code>skills-ref</code> 工具验证</a></li>
+        <li><a href="#总结">总结</a></li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="skill-从入门到精通第二章-skills-规范详解">Skill 从入门到精通——第二章 Skills 规范详解
+</h1><p>本文详细介绍 Agent Skills（智能体技能）完整格式规范；并使用官方<code>skills-ref</code>工具验证，确保符合规范。</p>
+<hr>
+<h2 id="1-目录结构规范">1. 目录结构规范
+</h2><p>一个独立技能对应一个目录，<strong>必须包含 <code>SKILL.md</code></strong>，其余为可选扩展目录。</p>
+<p>标准的 Skill 目录结构如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">skill-name/
+</span></span><span class="line"><span class="cl">├── SKILL.md          # 必需：技能元数据 + 执行逻辑指令
+</span></span><span class="line"><span class="cl">├── scripts/          # 可选：可执行脚本、代码片段
+</span></span><span class="line"><span class="cl">│   ├── validate.py   # 输入验证脚本
+</span></span><span class="line"><span class="cl">│   └──  generate.py  # 代码/文档生成脚本
+</span></span><span class="line"><span class="cl">├── references/       # 可选：参考文档、领域知识、说明文档
+</span></span><span class="line"><span class="cl">│   ├── api-guide.md  # 示例：API指南
+</span></span><span class="line"><span class="cl">│   └── examples/     # 示例：使用案例目录
+</span></span><span class="line"><span class="cl">├── assets/           # 可选：模板、图片、配置文件、静态资源
+</span></span><span class="line"><span class="cl">└── ...               # 其他自定义文件/目录
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>必需 vs 可选文件</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>文件/目录</th>
+          <th>必需</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>SKILL.md</code></td>
+          <td>✅</td>
+          <td>核心文件，包含元数据和主指令</td>
+      </tr>
+      <tr>
+          <td><code>scripts/</code></td>
+          <td>❌</td>
+          <td>可执行脚本、代码片段</td>
+      </tr>
+      <tr>
+          <td><code>references/</code></td>
+          <td>❌</td>
+          <td>各类参考资源，领域知识、说明文档，按需加载</td>
+      </tr>
+      <tr>
+          <td>assets/</td>
+          <td>❌</td>
+          <td>可选：模板、图片、配置文件、静态资源</td>
+      </tr>
+  </tbody>
+</table></div>
+<hr>
+<h2 id="2-skillmd-文件格式">2. SKILL.md 文件格式
+</h2><p><code>SKILL.md</code> 文件必须包含 YAML Frontmatter （YAML 前置元信息），其后紧跟 Markdown 正文内容：</p>
+<ul>
+<li>顶部为 YAML 元数据，用 <code>---</code> 包裹</li>
+<li>下方为 Markdown 格式的执行指令</li>
+</ul>
+<h3 id="21-前置元数据frontmatter">2.1 前置元数据（Frontmatter）
+</h3><p>SKILL.md 的 YAML Frontmatter 包含以下字段：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="o">---</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># ===== 必需字段 =====</span>
+</span></span><span class="line"><span class="cl"><span class="n">name</span><span class="p">:</span> <span class="n">skill</span><span class="o">-</span><span class="n">identifier</span>               <span class="c1"># 唯一标识（kebab-case）</span>
+</span></span><span class="line"><span class="cl"><span class="n">description</span><span class="p">:</span> <span class="s2">&#34;明确功能、触发条件和排除场景&#34;</span>  <span class="c1"># 关键！决定触发准确率</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ===== 推荐字段 =====</span>
+</span></span><span class="line"><span class="cl"><span class="n">license</span><span class="p">:</span> <span class="n">MIT</span>                         <span class="c1"># 开源协议名称或许可证文件路径  </span>
+</span></span><span class="line"><span class="cl"><span class="n">compatibility</span><span class="p">:</span>                       <span class="c1"># 兼容平台声明</span>
+</span></span><span class="line"><span class="cl">  <span class="o">-</span> <span class="n">claude</span><span class="o">.</span><span class="n">ai</span>                        <span class="c1"># Web 界面</span>
+</span></span><span class="line"><span class="cl">  <span class="o">-</span> <span class="n">claude</span><span class="o">-</span><span class="n">code</span>                      <span class="c1"># 终端工具</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># ===== 可选字段 =====</span>
+</span></span><span class="line"><span class="cl"><span class="n">allowed</span><span class="o">-</span><span class="n">tools</span><span class="p">:</span>                       <span class="c1"># 能力边界控制</span>
+</span></span><span class="line"><span class="cl">  <span class="o">-</span> <span class="n">read</span>
+</span></span><span class="line"><span class="cl">  <span class="o">-</span> <span class="n">write</span>
+</span></span><span class="line"><span class="cl">  <span class="o">-</span> <span class="n">bash</span>
+</span></span><span class="line"><span class="cl"><span class="n">metadata</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">url</span><span class="p">:</span> <span class="n">example</span><span class="o">.</span><span class="n">org</span>
+</span></span><span class="line"><span class="cl">  <span class="n">author</span><span class="p">:</span> <span class="n">example</span><span class="o">-</span><span class="n">org</span>
+</span></span><span class="line"><span class="cl">  <span class="n">version</span><span class="p">:</span> <span class="s2">&#34;1.0&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">---</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>字段详解</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>字段</th>
+          <th>必需</th>
+          <th>说明</th>
+          <th>示例</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>name</code></td>
+          <td>✅</td>
+          <td>技能名称，唯一标识(kebab-case)，1–64 字符；仅小写字母、数字、连字符；不可首尾连字符；不可连续 <code>--</code>；必须与目录名一致</td>
+          <td><code>api-doc-generator</code></td>
+      </tr>
+      <tr>
+          <td><code>description</code></td>
+          <td>✅</td>
+          <td>描述，1–1024 字符；非空；需清晰描述功能与适用场景，智能体根据该描述判断是否使用该技能。</td>
+          <td><code>&quot;Generates API docs...&quot;</code></td>
+      </tr>
+      <tr>
+          <td><code>license</code></td>
+          <td>❌</td>
+          <td>开源协议名称或许可证文件路径</td>
+          <td>MIT</td>
+      </tr>
+      <tr>
+          <td><code>compatibility</code></td>
+          <td>❌</td>
+          <td>1–500 字符；说明环境要求（目标产品、依赖包、系统、网络访问等）</td>
+          <td>需要安装 git、docker、jq；及具备网络访问</td>
+      </tr>
+      <tr>
+          <td><code>allowed-tools</code></td>
+          <td>❌</td>
+          <td>允许使用的工具，空格分隔；实验性字段，平台支持程度不一</td>
+          <td><code>[read, write]</code></td>
+      </tr>
+      <tr>
+          <td><code>metadata</code></td>
+          <td>❌</td>
+          <td>自定义键值对，用于作者、版本、标签等扩展信息</td>
+          <td>url: example-org</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>以上六个字段为 <strong>Agent Skills 官方规范</strong> 定义的标准字段，可通过官方验证工具 <code>skills-ref</code> 直接校验通过。</p>
+<p>部分支持技能的智能体还支持 <code>tags</code>、<code>version</code>、<code>author</code>、<code>agent</code> 等扩展字段，建议统一收纳在 <code>metadata</code> 中配置，以保证规范兼容性。</p>
+<h3 id="22-字段详细规则">2.2 字段详细规则
+</h3><h4 id="221-name技能唯一标识">2.2.1 name（技能唯一标识）
+</h4><p>必填的 <code>name</code> 字段需满足：</p>
+<ul>
+<li>长度为 1-64 个字符</li>
+<li>仅可包含 Unicode 小写字母（<code>a-z</code>）和连字符（<code>-</code>）</li>
+<li>不能以连字符（<code>-</code>）开头或结尾</li>
+<li>不能包含连续的连字符（<code>--</code>）</li>
+<li>必须与<strong>上级目录名称完全一致</strong></li>
+</ul>
+<p><strong>有效示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">name: pdf-processing
+</span></span><span class="line"><span class="cl">name: data-analysis
+</span></span><span class="line"><span class="cl">name: code-review
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>无效示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">name: PDF-Processing   # 大写字母不允许
+</span></span><span class="line"><span class="cl">name: -pdf             # 不能以连字符开头
+</span></span><span class="line"><span class="cl">name: pdf--processing  # 连续连字符非法
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h4 id="222-description技能描述">2.2.2 description（技能描述）
+</h4><p><code>description</code> 为必填字段，需满足：</p>
+<ul>
+<li>长度为 1-1024 个字符</li>
+<li>需同时描述技能的功能和使用场景，最佳实践为：<strong>功能 + 触发场景 + 关键词</strong></li>
+<li>智能体将依据该描述判断是否启用当前技能，因此描述应具体、明确，避免模糊笼统</li>
+</ul>
+<p><strong>优秀示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># ✅ 好的描述 - 具体、包含触发条件和排除场景
+</span></span><span class="line"><span class="cl">description: &#34;从 PDF 提取文本与表格、填写表单、合并多页 PDF。适用于用户需要处理 PDF、文档解析、表单填写等场景。&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>不佳示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># ❌ 差的描述 - 模糊、缺乏具体触发条件
+</span></span><span class="line"><span class="cl">description: &#34;处理 PDF 相关事宜&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h4 id="223-license许可证">2.2.3 license（许可证）
+</h4><p><code>license</code> 为可选字段，需满足：</p>
+<ul>
+<li>用于指定该技能适用的许可证</li>
+<li>建议保持简洁（可填写许可证名称，或打包的许可证文件名）</li>
+</ul>
+<p><strong>示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">license: 专有许可证。完整条款见 LICENSE.txt 文件
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h4 id="224-compatibility环境兼容说明">2.2.4 compatibility（环境兼容说明）
+</h4><p><code>compatibility</code> 为可选字段，需满足：</p>
+<ul>
+<li>若提供，长度需为 1-500 个字符</li>
+<li>仅当技能有特定环境要求时才需要填写，普通工具类技能可省略。</li>
+<li>可说明目标产品、所需系统包、网络访问需求等</li>
+</ul>
+<p><strong>示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">compatibility: 适用于 Claude Code（或同类产品）
+</span></span><span class="line"><span class="cl">compatibility: 需要安装 git、docker、jq，且需具备互联网访问权限
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>注：大多数技能无需填写 <code>compatibility</code> 字段。</p>
+<hr>
+<h4 id="225-metadata扩展元数据">2.2.5 metadata（扩展元数据）
+</h4><p><code>metadata</code> 为可选字段，自由键值对，用于配置扩展信息。</p>
+<p>需满足：</p>
+<ul>
+<li>由字符串键映射到字符串值的字典</li>
+<li>客户端可用于存储 Agent Skills 规范未定义的额外属性</li>
+<li>建议键名具备一定唯一性，避免意外冲突</li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">metadata:
+</span></span><span class="line"><span class="cl">  url: example.org
+</span></span><span class="line"><span class="cl">  author: example-org
+</span></span><span class="line"><span class="cl">  version: &#34;1.0&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h4 id="226-allowed-tools允许调用的工具实验性">2.2.6 allowed-tools（允许调用的工具，实验性）
+</h4><p>空格分隔，声明该技能允许调用的内置 / 外部工具。</p>
+<p><code>allowed-tools</code> 为可选字段：</p>
+<ul>
+<li>以空格分隔的预授权工具列表，这些工具允许被该技能调用。</li>
+<li>属于实验性字段，不同智能体实现对该字段的支持程度可能不同。</li>
+</ul>
+<p><strong>示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">allowed</span><span class="o">-</span><span class="n">tools</span><span class="p">:</span> <span class="n">Bash</span><span class="p">(</span><span class="n">git</span><span class="p">:</span><span class="o">*</span><span class="p">)</span> <span class="n">Bash</span><span class="p">(</span><span class="n">jq</span><span class="p">:</span><span class="o">*</span><span class="p">)</span> <span class="n">Read</span> <span class="n">Write</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h3 id="23-完整配置示例">2.3 完整配置示例
+</h3><p><strong>最简合法示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: pdf-processing
+</span></span><span class="line"><span class="cl">description: 用于 PDF 文本提取、表单填写与文档合并。
+</span></span><span class="line"><span class="cl">---
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>完整示例：</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="o">---</span>
+</span></span><span class="line"><span class="cl"><span class="n">name</span><span class="p">:</span> <span class="n">pdf</span><span class="o">-</span><span class="n">processing</span>
+</span></span><span class="line"><span class="cl"><span class="n">description</span><span class="p">:</span> <span class="err">从</span> <span class="n">PDF</span> <span class="err">文件中提取文本、表格，填写表单并合并文档。适用于用户上传</span> <span class="n">PDF</span><span class="err">、需要解析或编辑</span> <span class="n">PDF</span> <span class="err">的场景。</span>
+</span></span><span class="line"><span class="cl"><span class="n">version</span><span class="p">:</span> <span class="s2">&#34;1.0&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="n">license</span><span class="p">:</span> <span class="n">Apache</span><span class="o">-</span><span class="mf">2.0</span>
+</span></span><span class="line"><span class="cl"><span class="n">compatibility</span><span class="p">:</span> <span class="err">需要</span> <span class="n">Python</span> <span class="err">及</span> <span class="n">PyPDF2</span> <span class="err">环境</span>
+</span></span><span class="line"><span class="cl"><span class="n">metadata</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">url</span><span class="p">:</span> <span class="n">example</span><span class="o">-</span><span class="n">org</span>
+</span></span><span class="line"><span class="cl"><span class="n">allowed</span><span class="o">-</span><span class="n">tools</span><span class="p">:</span> <span class="n">Bash</span> <span class="n">Python</span> <span class="n">Read</span> <span class="n">Write</span>
+</span></span><span class="line"><span class="cl"><span class="o">---</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h2 id="3-markdown-正文执行指令">3. Markdown 正文（执行指令）
+</h2><p>前置元数据之后，使用 Markdown 格式编写技能的具体执行指令，<strong>无格式限制</strong>。你可以编写任何有助于智能体高效完成任务的内容，但建议结构清晰。</p>
+<p>推荐结构：</p>
+<ul>
+<li>分步执行说明</li>
+<li>输入输出示例</li>
+<li>常见边缘情况处理方案</li>
+</ul>
+<blockquote>
+<p>提示：智能体在决定激活某技能时，才会加载完整 <code>SKILL.md</code>。若文件内容较长，建议将部分内容拆分到 <code>references/</code> 或 <code>scripts/</code>等附件文件中，避免占用过多上下文 Token。</p>
+</blockquote>
+<h4 id="推荐结构">推荐结构
+</h4><p>适配以下模板编写技能，将方括号中的内容替换为你的具体信息。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: your-skill
+</span></span><span class="line"><span class="cl">description: [你的技能描述]
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## overview
+</span></span></span><span class="line"><span class="cl">[简要说明本技能的核心作用、适用场景与预期效果]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 执行步骤
+</span></span></span><span class="line"><span class="cl"><span class="k">1.</span> [步骤1：输入解析与校验]
+</span></span><span class="line"><span class="cl">   [...可写明脚本执行命令]
+</span></span><span class="line"><span class="cl"><span class="k">2.</span> [步骤2：核心逻辑执行与资源调用]
+</span></span><span class="line"><span class="cl"><span class="k">3.</span> [步骤3：结果加工与格式整理]
+</span></span><span class="line"><span class="cl"><span class="k">4.</span> [步骤4：输出返回与状态记录]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 输入输出示例
+</span></span></span><span class="line"><span class="cl"><span class="gu">### 输入格式
+</span></span></span><span class="line"><span class="cl">[示例输入内容或结构]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### 输出格式
+</span></span></span><span class="line"><span class="cl">[示例输出内容或结构]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 边缘情况处理
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> 情况1：[输入缺失/格式错误] → 处理方案：[具体应对逻辑]
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 情况2：[调用失败/超时无返回] → 处理方案：[具体应对逻辑]
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 情况3：[结果为空/不符合预期] → 处理方案：[具体应对逻辑]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 约束与注意事项
+</span></span></span><span class="line"><span class="cl">[执行限制、权限要求、安全规则、禁用行为等]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 预期输出结果
+</span></span></span><span class="line"><span class="cl">Expected output：[描述成功执行后的结果]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>一个简单的标准<code>SKILL.md</code>示例如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260414065402554.png"
+	width="1170"
+	height="687"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260414065402554_hu_3b3ec63d5e9cc2bc.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260414065402554_hu_7a87c211c9a9e0da.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260414065402554"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="170"
+		data-flex-basis="408px"
+	
+></p>
+<h2 id="4-添加附件资源">4. 添加附件资源
+</h2><p>当技能说明内容较多、或仅适用于特定场景时，不建议全部写在单个 <code>Skill.md</code> 中，可在技能目录下新增文件进行拆分。例如可创建 <code>REFERENCE.md</code> 存放补充说明与参考信息，并在 <code>Skill.md</code> 中进行引用，便于智能体在执行技能时自行判断读取，实现按需加载，减少不必要的上下文占用。</p>
+<p>技能目录用于组织代码、文档与资源，通常包含以下目录：</p>
+<h3 id="references"><code>references/</code>
+</h3><p><code>references/</code>目录用于存放智能体执行任务时可查阅的补充参考资料，如技术文档、白皮书、行业规范等领域知识，实现内容拆分与按需加载。</p>
+<p>其它常见目录还包括：</p>
+<ul>
+<li><code>templates/</code>：存放代码、文案、报告等标准化模板，确保输出格式统一。</li>
+<li><code>schemas/</code>：数据结构定义，存放 JSON Schema 等格式校验文件，用于格式校验与解析。</li>
+<li><code>assets/</code>：存放静态资源，包含图片、配置文件、多媒体素材等。</li>
+<li><code>examples/</code>：存放输入输出示例、典型场景与最佳实践，辅助模型理解执行逻辑。</li>
+</ul>
+<p>建议每个参考文件只聚焦单一主题，保持内容精简。智能体将按需加载这些文件，文件越小，占用的上下文 Token 越少。</p>
+<h3 id="scripts"><code>scripts/</code>
+</h3><p>``scripts/`目录用于存放智能体可直接调用执行的脚本与代码文件。</p>
+<p>建议遵循以下规范：</p>
+<ul>
+<li>尽量做到自包含，如需外部依赖需明确声明；</li>
+<li>提供清晰、友好的错误提示与返回信息；</li>
+<li>对边界场景、异常输入具备稳健处理能力。</li>
+</ul>
+<p>支持的语言由运行智能体的环境决定，常见包括 Python、Bash、JavaScript 等。</p>
+<p>在 <code>SKILL.md</code> 中列出所有可用脚本，让智能体知晓其存在。请使用相对于技能目录根路径的相对路径来引用文件。智能体会自动解析这些路径 —— 无需使用绝对路径。</p>
+<p>SKILL.md 引用脚本示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl"><span class="gu">## 可用脚本
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **<span class="sb">`scripts/validate.sh`</span>** — 校验配置文件
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **<span class="sb">`scripts/process.py`</span>** — 处理输入数据
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>随后指导智能体运行这些脚本。</p>
+<hr>
+<h2 id="5-文件引用">5. 文件引用
+</h2><p>在技能内部需要引用它文件时，必须在 <code>SKILL.md</code> 中明确声明引用关系，且<strong>统一使用相对于当前技能根目录的相对路径</strong>，禁止使用绝对路径或外部 URL。</p>
+<p>示例（在 SKILL.md 中）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">详情请参阅[<span class="nt">参考指南</span>](<span class="na">references/REFERENCE.md</span>)。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">运行提取脚本：
+</span></span><span class="line"><span class="cl">```bash
+</span></span><span class="line"><span class="cl">python scripts/extract.py
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>如在anthropic 官方pdf技能中，引用<code>reference.md</code>及<code>forms.md</code>。将表单填写说明移至独立文件 <code>forms.md</code>，可以让技能核心保持精简，同时 智能体只会在填写表单时读取 <code>forms.md</code>。</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260415220635000.png"
+	width="1173"
+	height="755"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260415220635000_hu_5d1dbe26cd9728cc.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260415220635000_hu_37dfdf45113ce9b7.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260415220635000"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="155"
+		data-flex-basis="372px"
+	
+></p>
+<p>建议引用路径保持扁平，尽量控制在 <code>SKILL.md</code> 下一级目录，避免深层嵌套与复杂引用链。</p>
+<hr>
+<h2 id="6-核心设计原则">6. 核心设计原则
+</h2><h3 id="一渐进式披露">(一)、渐进式披露
+</h3><p>为优化上下文 Token 使用效率，Agent Skills 采用<strong>采用三级分层加载、渐进式披露</strong>机制：</p>
+<ol>
+<li>
+<p><strong>元数据层（启动加载）</strong></p>
+<p>智能体启动时，仅加载所有技能的 <code>name</code>（技能名称）和 <code>description</code>（技能描述）至系统提示，大小控制在约 100 Token。该层仅用于智能体快速判断技能适用场景，无需加载技能全部内容，大幅降低初始上下文占用。</p>
+</li>
+<li>
+<p><strong>执行指令层（SKILL.md 正文，激活加载）</strong></p>
+<p>技能被选中激活时，才加载完整 <code>SKILL.md</code> 正文。建议正文控制在 5000 Token 以内、行数不超过 500 行。</p>
+</li>
+<li>
+<p><strong>资源文件层（按需加载）</strong></p>
+<p><code>scripts/</code>、<code>references/</code>、<code>assets/</code> 等附件文件仅在实际需要时加载，不占用初始上下文。</p>
+</li>
+</ol>
+<p>原则：将技能核心执行逻辑、关键操作指令放在 <code>SKILL.md</code>正文；详细说明、参考资料、辅助脚本等非核心内容，需拆分至独立附件文件，通过“按需加载”机制调用。该模式可最大限度减少 Token 消耗，同时保留专业的领域能力。</p>
+<h3 id="二可组合性">(二)、可组合性
+</h3><p>智能体支持同时加载多个技能，因此开发的技能应能与其它技能兼容协作，而非假设自身是唯一可用的功能。</p>
+<h3 id="三可移植性">(三)、可移植性
+</h3><p>技能需具备良好的可移植性，实现“一次创建、多平台复用”：单个 <code>Skill</code> 创建完成后，可直接应用于所有支持 <code>Skill</code> 机制的智能体及相关平台，无需额外修改核心代码，仅需保证目标运行环境支持该技能所需的依赖项（如脚本运行环境、工具依赖等）即可。</p>
+<h2 id="7-验证">7. 验证
+</h2><p>可使用<code>Agent Skills</code> 官方提供的 <code>skills-ref</code> 工具对技能目录进行规范校验：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">skills-ref validate ./my-skill
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>校验内容包括：</p>
+<ul>
+<li><code>SKILL.md</code> 中 Frontmatter 语法与必填字段完整性；</li>
+<li><code>name</code> 字段命名规范、长度与格式约束；</li>
+<li>技能目录名与 <code>name</code> 字段一致性检查；</li>
+<li>整体结构是否符合 Agent Skills 规范要求。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">官方说明：该工具仅用于个人验证，不建议生产环境使用，协议 Apache 2.0。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="71-安装skills-ref-工具">7.1 安装<code>skills-ref</code> 工具
+</h3><h4 id="步骤一环境准备">步骤一、环境准备
+</h4><ul>
+<li>已安装 <strong>Python 3.8+</strong></li>
+<li>可选：安装 <strong>uv</strong>（更快的包管理器，<code>pip install uv</code>）</li>
+<li>终端：macOS/Linux 用终端；Windows 用 PowerShell 或 CMD</li>
+</ul>
+<hr>
+<h4 id="步骤二获取代码">步骤二、获取代码
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/agentskills/agentskills.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> agentskills/skills-ref
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="步骤三分系统安装pip-uv-二选一">步骤三、分系统安装（pip /uv 二选一）
+</h4><h5 id="1-macos--linux-系统">1. macOS / Linux 系统
+</h5><p>方式 A：pip 安装</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 创建 Python 虚拟环境，目录名为 .venv</span>
+</span></span><span class="line"><span class="cl">python -m venv .venv
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 激活虚拟环境（macOS/Linux 专用命令）</span>
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/bin/activate
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 以可编辑模式安装当前项目（skills-ref）及其依赖</span>
+</span></span><span class="line"><span class="cl">pip install -e .
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>方式 B：uv 安装（更快）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 使用 uv 快速创建虚拟环境并安装所有依赖</span>
+</span></span><span class="line"><span class="cl">uv sync
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 激活虚拟环境</span>
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> .venv/bin/activate
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h5 id="2-windows-系统">2. Windows 系统
+</h5><p><strong>方式 A：pip 安装</strong></p>
+<p><strong>PowerShell</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 创建虚拟环境</span>
+</span></span><span class="line"><span class="cl">python -m venv .venv
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 在 PowerShell 中激活虚拟环境</span>
+</span></span><span class="line"><span class="cl">.venv<span class="se">\S</span>cripts<span class="se">\A</span>ctivate.ps1
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装项目依赖</span>
+</span></span><span class="line"><span class="cl">pip install -e .
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>若提示脚本禁止：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 为当前用户允许运行本地脚本，解决 PowerShell 执行策略限制</span>
+</span></span><span class="line"><span class="cl">Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>Command Prompt (CMD)</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 创建虚拟环境</span>
+</span></span><span class="line"><span class="cl">python -m venv .venv
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 在 CMD 中激活虚拟环境</span>
+</span></span><span class="line"><span class="cl">.venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate.bat
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装项目依赖</span>
+</span></span><span class="line"><span class="cl">pip install -e .
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>方式 B：uv 安装（Windows）</strong></p>
+<p>powershell</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># uv 一键创建环境+安装依赖</span>
+</span></span><span class="line"><span class="cl">uv sync
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 激活虚拟环境</span>
+</span></span><span class="line"><span class="cl">.venv<span class="se">\S</span>cripts<span class="se">\A</span>ctivate.ps1
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h4 id="步骤四验证安装成功">步骤四、验证安装成功
+</h4><p>激活虚拟环境后执行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看 skills-ref 命令帮助，检查是否安装成功</span>
+</span></span><span class="line"><span class="cl">skills-ref --help
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>出现命令说明即安装完成。</p>
+<p>window 10 环境显示如下：
+<img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416095749180.png"
+	width="1238"
+	height="316"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416095749180_hu_ec7b06164ec8f2c.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416095749180_hu_d467fcb90cfc01be.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260416095749180"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="391"
+		data-flex-basis="940px"
+	
+></p>
+<h4 id="步骤五核心用法cli--python-api">步骤五、核心用法（CLI + Python API）
+</h4><h5 id="cli-命令命令行方式">CLI 命令（命令行方式）
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 验证技能</span>
+</span></span><span class="line"><span class="cl">skills-ref validate path/to/skill
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 读取技能元数据（输出 JSON）</span>
+</span></span><span class="line"><span class="cl">skills-ref read-properties path/to/skill
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 为 Agent 提示词生成 &lt;available_skills&gt; 格式 XML</span>
+</span></span><span class="line"><span class="cl">skills-ref to-prompt path/to/skill-a path/to/skill-b
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="python-api">Python API
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="c1"># 导入路径处理工具</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">skills_ref</span> <span class="kn">import</span> <span class="n">validate</span><span class="p">,</span> <span class="n">read_properties</span><span class="p">,</span> <span class="n">to_prompt</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 验证技能目录是否合法（检查格式、缺失字段等）</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># my-skill 是你的技能文件夹路径，可自行修改</span>
+</span></span><span class="line"><span class="cl"><span class="n">problems</span> <span class="o">=</span> <span class="n">validate</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&#34;my-skill&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="n">problems</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Validation errors:&#34;</span><span class="p">,</span> <span class="n">problems</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 读取技能的元信息（名称、描述、参数等）</span>
+</span></span><span class="line"><span class="cl"><span class="n">props</span> <span class="o">=</span> <span class="n">read_properties</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&#34;my-skill&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Skill: </span><span class="si">{</span><span class="n">props</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">props</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 为多个技能生成可直接给 AI 使用的提示词</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 支持传入多个技能路径：skill-a、skill-b 可替换成真实路径</span>
+</span></span><span class="line"><span class="cl"><span class="n">prompt</span> <span class="o">=</span> <span class="n">to_prompt</span><span class="p">([</span><span class="n">Path</span><span class="p">(</span><span class="s2">&#34;skill-a&#34;</span><span class="p">),</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&#34;skill-b&#34;</span><span class="p">)])</span>
+</span></span><span class="line"><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="72-使用-skills-ref-工具验证">7.2 使用 <code>skills-ref</code> 工具验证
+</h3><p>这里我们使用Anthropic 官方公布的<code>brand-guidelines </code>skill 来验证测试：</p>
+<p>新建<code>brand-guidelines</code>目录，在该目录下新建SKILL.md文件， 内容如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: brand-guidelines
+</span></span><span class="line"><span class="cl">description: Applies Anthropic&#39;s official brand colors and typography to any sort of artifact that may benefit from having Anthropic&#39;s look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.
+</span></span><span class="line"><span class="cl">license: Complete terms in LICENSE.txt
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gh"># Anthropic Brand Styling
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Overview
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">To access Anthropic&#39;s official brand identity and style resources, use this skill.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gs">**Keywords**</span>: branding, corporate identity, visual identity, post-processing, styling, brand colors, typography, Anthropic brand, visual formatting, visual design
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Brand Guidelines
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### Colors
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gs">**Main Colors:**</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Dark: <span class="sb">`#141413`</span> - Primary text and dark backgrounds
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Light: <span class="sb">`#faf9f5`</span> - Light backgrounds and text on dark
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Mid Gray: <span class="sb">`#b0aea5`</span> - Secondary elements
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Light Gray: <span class="sb">`#e8e6dc`</span> - Subtle backgrounds
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gs">**Accent Colors:**</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Orange: <span class="sb">`#d97757`</span> - Primary accent
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Blue: <span class="sb">`#6a9bcc`</span> - Secondary accent
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Green: <span class="sb">`#788c5d`</span> - Tertiary accent
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### Typography
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **Headings**: Poppins (with Arial fallback)
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **Body Text**: Lora (with Georgia fallback)
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **Note**: Fonts should be pre-installed in your environment for best results
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Features
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### Smart Font Application
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Applies Poppins font to headings (24pt and larger)
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Applies Lora font to body text
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Automatically falls back to Arial/Georgia if custom fonts unavailable
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Preserves readability across all systems
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### Text Styling
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Headings (24pt+): Poppins font
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Body text: Lora font
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Smart color selection based on background
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Preserves text hierarchy and formatting
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### Shape and Accent Colors
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Non-text shapes use accent colors
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Cycles through orange, blue, and green accents
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Maintains visual interest while staying on-brand
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Technical Details
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### Font Management
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Uses system-installed Poppins and Lora fonts when available
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Provides automatic fallback to Arial (headings) and Georgia (body)
+</span></span><span class="line"><span class="cl"><span class="k">-</span> No font installation required - works with existing system fonts
+</span></span><span class="line"><span class="cl"><span class="k">-</span> For best results, pre-install Poppins and Lora fonts in your environment
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### Color Application
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Uses RGB color values for precise brand matching
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Applied via python-pptx&#39;s RGBColor class
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Maintains color fidelity across different systems
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在<code>brand-guidelines</code>同级目录中，开启命令行窗口，执行命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 验证技能是否符合格式规范</span>
+</span></span><span class="line"><span class="cl">skills-ref validate brand-guidelines/SKILL.md
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416111055012.png"
+	width="1038"
+	height="62"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416111055012_hu_b782beacbcd5f69c.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416111055012_hu_5385946e137649e1.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260416111055012"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1674"
+		data-flex-basis="4018px"
+	
+></p>
+<p>当格式不符合规范时（如元数据中额外添加的<code>tags</code>字段，但这在有些智能体是支持的）：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416111003199.png"
+	width="1268"
+	height="236"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416111003199_hu_95bf5f53f895d808.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416111003199_hu_ccb8efe72a9f0c17.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260416111003199"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="537"
+		data-flex-basis="1289px"
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 读取技能元数据（输出 JSON）</span>
+</span></span><span class="line"><span class="cl">skills-ref read-properties brand-guidelines/SKILL.md
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416110702192.png"
+	width="1444"
+	height="184"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416110702192_hu_7f4a8a60072b204f.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416110702192_hu_25909dac21e40706.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260416110702192"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="784"
+		data-flex-basis="1883px"
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 为 Agent 提示词生成 &lt;available_skills&gt; 格式 XML</span>
+</span></span><span class="line"><span class="cl">skills-ref to-prompt brand-guidelines/SKILL.md
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416110732056.png"
+	width="1438"
+	height="290"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416110732056_hu_64cd26e0f7a3eb94.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260416110732056_hu_cf1ccc7d2c4d7e33.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260416110732056"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="495"
+		data-flex-basis="1190px"
+	
+></p>
+<h3 id="总结">总结
+</h3><ol>
+<li>一个标准 Agent Skill 表现为一个目录，核心是必须包含规范的 <code>SKILL.md</code>，其中 <code>name</code> 和 <code>description</code> 为必填元数据且格式严格约束。</li>
+<li>技能采用渐进式加载设计，通过拆分代码、文档、资源到对应目录，实现上下文高效利用。</li>
+<li>开发完成后可使用 <code>skills-ref validate</code> 进行格式校验，确保技能符合规范、可被平台正常识别与加载。</li>
+</ol>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/skill/">Skill</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462.png" width="1383" height="819" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #3f474f80 0%, #f3fafeC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339.png" width="1678" height="849" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #bbd4db80 0%, #022556C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/images/image-20260425153556852.png" width="1315" height="763" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #23449880 0%, #fafbfdC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552.png" width="1114" height="809" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #1163fd80 0%, #f9f9f9C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Skill 从入门到精通——第三章 Skills 使用及管理</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

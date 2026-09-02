@@ -1,0 +1,3187 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="skill-creator是 Anthropic 官方推出的**元技能（Meta-Skill）**，即用来创建 Skill 的 Skill——用于从创建、评估、优化到打包分发Skill的全流程。涵盖技能开发全生命周期：">
+<title>Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析">
+<meta property='og:description' content="skill-creator是 Anthropic 官方推出的**元技能（Meta-Skill）**，即用来创建 Skill 的 Skill——用于从创建、评估、优化到打包分发Skill的全流程。涵盖技能开发全生命周期：">
+<meta property='og:url' content='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Skill' /><meta property='article:published_time' content='2026-04-08T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-04-08T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析">
+<meta name="twitter:description" content="skill-creator是 Anthropic 官方推出的**元技能（Meta-Skill）**，即用来创建 Skill 的 Skill——用于从创建、评估、优化到打包分发Skill的全流程。涵盖技能开发全生命周期："><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#4117-skill-creator-skill-解析skill-开发评估与优化">4.1.17 skill-creator Skill 解析—Skill 开发、评估与优化</a>
+      <ol>
+        <li><a href="#一技能概述">一、技能概述</a></li>
+        <li><a href="#二项目文件结构">二、项目文件结构</a></li>
+        <li><a href="#三整体流程">三、整体流程</a></li>
+        <li><a href="#四skillmd-结构概览">四、SKILL.md 结构概览</a></li>
+        <li><a href="#五核心工作流详细">五、核心工作流详细</a>
+          <ol>
+            <li><a href="#1工作流一从零创建-skill">1、工作流一：从零创建 Skill</a></li>
+            <li><a href="#2工作流二运行和评估测试eval-iterate-loop">2、工作流二：运行和评估测试（Eval-Iterate Loop）</a></li>
+            <li><a href="#3工作流三迭代改进技能">3、工作流三：迭代改进技能</a></li>
+            <li><a href="#3工作流四描述优化trigger-optimization">3、工作流四：描述优化（Trigger Optimization）</a></li>
+            <li><a href="#4工作流五盲比较">4、工作流五：盲比较</a></li>
+          </ol>
+        </li>
+        <li><a href="#六核心机制解析">六、核心机制解析</a>
+          <ol>
+            <li><a href="#1progressive-disclosure渐进式披露">1、Progressive Disclosure（渐进式披露）</a></li>
+            <li><a href="#2总体哲学">2、总体哲学</a></li>
+            <li><a href="#3沟通风格指南人性化设计的典范">3、沟通风格指南（人性化设计的典范）</a></li>
+            <li><a href="#4多代理协作架构">4、多代理协作架构</a></li>
+            <li><a href="#5盲测比较的方法论">5、盲测比较的方法论</a></li>
+            <li><a href="#6反过拟合机制">6、反过拟合机制</a></li>
+            <li><a href="#7数据流与-schema-约束">7、数据流与 Schema 约束</a></li>
+            <li><a href="#8scripts--自动化脚本详解">8、scripts/ —— 自动化脚本详解</a></li>
+            <li><a href="#9评测与迭代系统evals-与-eval-viewer">9、评测与迭代系统：evals/ 与 eval-viewer/</a></li>
+          </ol>
+        </li>
+        <li><a href="#七完整执行流程与数据流转">七、完整执行流程与数据流转</a>
+          <ol>
+            <li><a href="#1完整执行流程">1、完整执行流程</a></li>
+            <li><a href="#2数据流转生命周期">2、数据流转生命周期</a></li>
+          </ol>
+        </li>
+        <li><a href="#八设计通用启示">八、设计通用启示</a></li>
+        <li><a href="#九使用示例">九、使用示例</a>
+          <ol>
+            <li><a href="#场景-a从零创建-skill"><strong>场景 A：从零创建 Skill</strong></a></li>
+            <li><a href="#场景-b改进现有-skill"><strong>场景 B：改进现有 Skill</strong></a></li>
+            <li><a href="#场景-c量化评估-skill-效果"><strong>场景 C：量化评估 Skill 效果</strong></a></li>
+            <li><a href="#场景-d优化-skill-触发率"><strong>场景 D：优化 Skill 触发率</strong></a></li>
+            <li><a href="#场景-e打包分发"><strong>场景 E：打包分发</strong></a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462.png" width="1383" height="819" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/agent-skill/" style="background-color: #2a9d8f; color: #fff;">
+                Skill 从入门到精通
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            skill-creator是 Anthropic 官方推出的**元技能（Meta-Skill）**，即用来创建 Skill 的 Skill——用于从创建、评估、优化到打包分发Skill的全流程。涵盖技能开发全生命周期：
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-04-08T00:00:00Z'>2026年4月8日星期三</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 42 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#4117-skill-creator-skill-解析skill-开发评估与优化">4.1.17 skill-creator Skill 解析—Skill 开发、评估与优化</a>
+      <ol>
+        <li><a href="#一技能概述">一、技能概述</a></li>
+        <li><a href="#二项目文件结构">二、项目文件结构</a></li>
+        <li><a href="#三整体流程">三、整体流程</a></li>
+        <li><a href="#四skillmd-结构概览">四、SKILL.md 结构概览</a></li>
+        <li><a href="#五核心工作流详细">五、核心工作流详细</a>
+          <ol>
+            <li><a href="#1工作流一从零创建-skill">1、工作流一：从零创建 Skill</a></li>
+            <li><a href="#2工作流二运行和评估测试eval-iterate-loop">2、工作流二：运行和评估测试（Eval-Iterate Loop）</a></li>
+            <li><a href="#3工作流三迭代改进技能">3、工作流三：迭代改进技能</a></li>
+            <li><a href="#3工作流四描述优化trigger-optimization">3、工作流四：描述优化（Trigger Optimization）</a></li>
+            <li><a href="#4工作流五盲比较">4、工作流五：盲比较</a></li>
+          </ol>
+        </li>
+        <li><a href="#六核心机制解析">六、核心机制解析</a>
+          <ol>
+            <li><a href="#1progressive-disclosure渐进式披露">1、Progressive Disclosure（渐进式披露）</a></li>
+            <li><a href="#2总体哲学">2、总体哲学</a></li>
+            <li><a href="#3沟通风格指南人性化设计的典范">3、沟通风格指南（人性化设计的典范）</a></li>
+            <li><a href="#4多代理协作架构">4、多代理协作架构</a></li>
+            <li><a href="#5盲测比较的方法论">5、盲测比较的方法论</a></li>
+            <li><a href="#6反过拟合机制">6、反过拟合机制</a></li>
+            <li><a href="#7数据流与-schema-约束">7、数据流与 Schema 约束</a></li>
+            <li><a href="#8scripts--自动化脚本详解">8、scripts/ —— 自动化脚本详解</a></li>
+            <li><a href="#9评测与迭代系统evals-与-eval-viewer">9、评测与迭代系统：evals/ 与 eval-viewer/</a></li>
+          </ol>
+        </li>
+        <li><a href="#七完整执行流程与数据流转">七、完整执行流程与数据流转</a>
+          <ol>
+            <li><a href="#1完整执行流程">1、完整执行流程</a></li>
+            <li><a href="#2数据流转生命周期">2、数据流转生命周期</a></li>
+          </ol>
+        </li>
+        <li><a href="#八设计通用启示">八、设计通用启示</a></li>
+        <li><a href="#九使用示例">九、使用示例</a>
+          <ol>
+            <li><a href="#场景-a从零创建-skill"><strong>场景 A：从零创建 Skill</strong></a></li>
+            <li><a href="#场景-b改进现有-skill"><strong>场景 B：改进现有 Skill</strong></a></li>
+            <li><a href="#场景-c量化评估-skill-效果"><strong>场景 C：量化评估 Skill 效果</strong></a></li>
+            <li><a href="#场景-d优化-skill-触发率"><strong>场景 D：优化 Skill 触发率</strong></a></li>
+            <li><a href="#场景-e打包分发"><strong>场景 E：打包分发</strong></a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="skill-从入门到精通第四章-anthropic-官方skill解析skill-creator-skill-解析">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析
+</h1><h2 id="4117-skill-creator-skill-解析skill-开发评估与优化">4.1.17 skill-creator Skill 解析—Skill 开发、评估与优化
+</h2><h3 id="一技能概述">一、技能概述
+</h3><p><code>skill-creator</code> 是 Anthropic 官方推出的<strong>元技能（Meta-Skill）</strong>，即用来创建 Skill 的 Skill——用于从创建、评估、优化到打包分发Skill的全流程。涵盖技能开发全生命周期：</p>
+<ul>
+<li><strong>从零创建新 Skill</strong>：从零引导用户明确使用意图、编写 <code>SKILL.md</code> 规范、组织目录结构。</li>
+<li><strong>评估</strong>：通过子代理并行执行测试用例、量化评分结果。</li>
+<li><strong>迭代改进</strong>：通过测试→评估→反馈→修改的循环，迭代优化技能内容，持续提升 Skill 的质量。</li>
+<li><strong>描述优化</strong>：通过触发率评估 + 自动改进循环优化 description 字段，提升技能触发准确性。</li>
+<li><strong>打包分发</strong>：将技能目录一键封装为 <code>.skill</code> 格式安装包，便捷部署复用。</li>
+</ul>
+<p>该技能通过&quot;创建 → 测试 → 评估 → 改进 → 重复迭代&quot;的循环流程，将 Skill 的创建过程从&quot;手工编写 Markdown&quot;升级为&quot;<strong>可测试、可衡量、可迭代改进的工程化流程</strong>&quot;。</p>
+<p><strong>触发场景：</strong> 用户表达&quot;创建技能&quot;、&ldquo;优化 Skill 描述&rdquo;、&ldquo;评估技能效果&rdquo;、&ldquo;改进现有技能&rdquo;、“打包技能”等意图时自动激活。</p>
+<h3 id="二项目文件结构">二、项目文件结构
+</h3><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">skill-creator/
+</span></span><span class="line"><span class="cl">├── SKILL.md                          # 核心指令文件，完整工作流指令
+</span></span><span class="line"><span class="cl">├── LICENSE.txt                       # 许可证
+</span></span><span class="line"><span class="cl">├── agents/                           # 子代理指令
+</span></span><span class="line"><span class="cl">│   ├── analyzer.md                   # 事后分析代理：盲比较结果归因 + benchmark基准模式分析
+</span></span><span class="line"><span class="cl">│   ├── comparator.md                 # 盲比较代理：对 A/B 输出进行无偏见质量裁决
+</span></span><span class="line"><span class="cl">│   └── grader.md                     # 评分代理：对断言进行 PASS/FAIL 判定，并评判 eval 本身
+</span></span><span class="line"><span class="cl">├── assets/
+</span></span><span class="line"><span class="cl">│   └── eval_review.html              # 触发率评估集审核模板（用户编辑后导出）
+</span></span><span class="line"><span class="cl">├── eval-viewer/
+</span></span><span class="line"><span class="cl">│   ├── generate_review.py            # 评估查看器生成器：扫描workspace、嵌入数据、启动HTTP服务
+</span></span><span class="line"><span class="cl">│   └── viewer.html                   # 查看器前端模板
+</span></span><span class="line"><span class="cl">├── references/
+</span></span><span class="line"><span class="cl">│   └── schemas.md                    # JSON Schema 定义
+</span></span><span class="line"><span class="cl">└── scripts/                          # 可执行脚本集
+</span></span><span class="line"><span class="cl">    ├── __init__.py                   # 空包初始化
+</span></span><span class="line"><span class="cl">    ├── aggregate_benchmark.py        # 基准聚合：从 grading.json 计算 mean/stddev/delta
+</span></span><span class="line"><span class="cl">    ├── generate_report.py            # HTML 报告生成：为描述优化循环输出可视化
+</span></span><span class="line"><span class="cl">    ├── improve_description.py        # 描述优化：基于 eval 结果调用 Claude 生成改进描述
+</span></span><span class="line"><span class="cl">    ├── package_skill.py              # 打包器：验证 + 压缩为 `.skill` 分发文件（ZIP 格式）
+</span></span><span class="line"><span class="cl">    ├── quick_validate.py             # 快速校验：YAML frontmatter 合法性、命名规范、长度限制
+</span></span><span class="line"><span class="cl">    ├── run_eval.py                   # 触发评估：通过 `claude -p` 测试 description 触发准确率
+</span></span><span class="line"><span class="cl">    ├── run_loop.py                   # 优化主循环：train/test 拆分评估 + 多轮迭代 + 自动报告
+</span></span><span class="line"><span class="cl">    └── utils.py                      # 共享工具：解析frontmatter 的 name/description
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>各目录说明：</strong></p>
+<ul>
+<li>
+<p><code>agents/</code>  ：用于存放特定子代理指令。定义了三个子代理：事后分析代理、盲比较代理和评分代理；当 Claude 需要进行评估、对比、分析时，会读取这些文件来获得专业指导。</p>
+</li>
+<li>
+<p><code>assets/</code>：存放模板文件、图标、字体等静态资源。</p>
+</li>
+<li>
+<p><code>eval-viewer/</code>： 可视化工具。面向人类用户的可视化窗口，将枯燥的 JSON 评测数据转化为直观的网页界面，让用户可以方便地查看输出、对比结果、留下反馈。</p>
+</li>
+<li>
+<p><code>references/</code>：存放按需加载的参考文档。目前仅有一个文件 <code>schemas.md</code>，它定义了 skill-creator 中所有 JSON 数据结构的 Schema。</p>
+</li>
+<li>
+<p><code>scripts/  </code>：存放可执行的脚本代码。所有需要确定性执行（deterministic execution）的自动化任务都封装为脚本，而不是让 AI 自由发挥。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>脚本</th>
+          <th>功能</th>
+          <th>核心依赖</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>run_loop.py</code></td>
+          <td><strong>主循环编排器</strong>：编排&quot;评估→改进描述→重新评估&quot;的完整循环</td>
+          <td>run_eval.py, improve_description.py</td>
+      </tr>
+      <tr>
+          <td><code>run_eval.py</code></td>
+          <td>运行触发评估测试：检测 Skill 描述是否能被正确触发</td>
+          <td><code>claude -p</code> CLI</td>
+      </tr>
+      <tr>
+          <td><code>improve_description.py</code></td>
+          <td>调用 Claude 来自动改进 Skill 描述</td>
+          <td><code>claude -p</code> CLI</td>
+      </tr>
+      <tr>
+          <td><code>aggregate_benchmark.py</code></td>
+          <td>将多次运行的评分数据聚合为统计汇总</td>
+          <td>grading.json 文件</td>
+      </tr>
+      <tr>
+          <td><code>generate_report.py</code></td>
+          <td>从 run_loop 的输出生成可视化 HTML 报告</td>
+          <td>优化循环输出</td>
+      </tr>
+      <tr>
+          <td><code>package_skill.py</code></td>
+          <td>将 Skill 目录打包为 <code>.skill</code> 文件（zip 格式）</td>
+          <td>quick_validate.py</td>
+      </tr>
+      <tr>
+          <td><code>quick_validate.py</code></td>
+          <td>快速校验 Skill 文件格式合规性</td>
+          <td>SKILL.md</td>
+      </tr>
+      <tr>
+          <td><code>utils.py</code></td>
+          <td>共享工具函数（解析 SKILL.md frontmatter）</td>
+          <td>—</td>
+      </tr>
+  </tbody>
+</table></div>
+</li>
+</ul>
+<h3 id="三整体流程">三、整体流程
+</h3><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462.png"
+	width="1383"
+	height="819"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462_hu_e4a753389a3bc0aa.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462_hu_efc943fe0c09901c.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260527083109462"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="168"
+		data-flex-basis="405px"
+	
+></p>
+<p>整体工作流程如下：</p>
+<ol>
+<li><strong>需求捕获</strong> ：从零引导用户明确意图、能力边界、触发场景、确定输出格式。</li>
+<li><strong>创建Skill</strong> ：编写 <code>SKILL.md</code> 规范（含 YAML frontmatter + 指令主体），组织目录结构，准备辅助资源；编写2-3 条测试用例。</li>
+<li><strong>运行测试</strong>： 并行启动 with_skill 和 without_skill 两组子 Agent（A/B 测试） →  利用等待时间起草量化断言 → 捕获 timing 数据 。</li>
+<li><strong>评估与集合汇总</strong>： Grader 评分 → 聚合基准数据 → Analyzer 分析 → 生成 Eval Viewer。</li>
+<li><strong>用户反馈</strong>：用户在浏览器中评审 → 收集用户反馈feedback.json。</li>
+<li><strong>迭代改进</strong>： 分析用户反馈 + 量化数据 → 重写 SKILL.md→ 新迭代运行（新<code>iteration-N+1/</code>目录）→ 重复直到：用户满意 / 无新增feedback  / 无明显进展。</li>
+<li><strong>盲评对比</strong>：并行运行两个 Skill 版本 → 输出 A / B  → 盲评打分（读取agents/comparator.md） → Post-hoc Analyzer（事后归因分析） → 输出可落地改进建议。(当用户问如&quot;新版本真的更好吗？&ldquo;时执行)</li>
+<li><strong>优化描述</strong>： 生成触发评估查询（ 生成 20 条 should-trigger + should-not-trigger）→ 用户审核（增删、修正） → 运行优化循环（python -m scripts.run_loop，迭代上限5轮：数据集拆分60% 训练集 / 40% 测试集→并行评估 → 失败归因 → 生成新 description） → 从JSON输出中获取<code>best_description</code>并更新技能描述。</li>
+<li><strong>打包发布</strong>： 调用 scripts.package_skill 打包 → 输出 .skill 文件。</li>
+</ol>
+<h3 id="四skillmd-结构概览">四、SKILL.md 结构概览
+</h3><p>SKILL.md 是 Skill 的<strong>唯一必需文件</strong>，是理解 Skill 设计的最佳范本。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: skill-creator                          # 【元数据】Skill标识符
+</span></span><span class="line"><span class="cl">description: Create new skills...           # 【元数据】触发机制（最重要！）
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gh"># Skill Creator                              # 【正文】标题
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 总体介绍                                  # 【正文】哲学与流程
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Communicating with the user               # 【正文】沟通风格指南
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Creating a skill                          # 【正文】创建流程
+</span></span></span><span class="line"><span class="cl">  ### Capture Intent                          # 捕捉意图
+</span></span><span class="line"><span class="cl">  ### Interview and Research                  # 调研访谈
+</span></span><span class="line"><span class="cl">  ### Write the SKILL.md                      # 编写指南
+</span></span><span class="line"><span class="cl">    #### Anatomy of a Skill                  # 目录结构
+</span></span><span class="line"><span class="cl">    #### Progressive Disclosure                # 渐进式披露
+</span></span><span class="line"><span class="cl">    #### Principle of Lack of Surprise         # 安全原则
+</span></span><span class="line"><span class="cl">    #### Writing Patterns                    # 写作模式
+</span></span><span class="line"><span class="cl">  ### Test Cases                              # 编写2-3条实际场景的测试用例，进入下一步运行评测
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Running and evaluating test cases         # 【正文】评测执行
+</span></span></span><span class="line"><span class="cl">  ### Step 1: Spawn all runs                 # 并行启动
+</span></span><span class="line"><span class="cl">  ### Step 2: Draft assertions               # 起草断言
+</span></span><span class="line"><span class="cl">  ### Step 3: Capture timing                 # 捕获计时
+</span></span><span class="line"><span class="cl">  ### Step 4: Grade, aggregate, launch       # 评分聚合
+</span></span><span class="line"><span class="cl">  ### What the user sees                     # 用户视角
+</span></span><span class="line"><span class="cl">  ### Step 5: Read feedback                  # 读取用户反馈
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Improving the skill                       # 【正文】改进循环
+</span></span></span><span class="line"><span class="cl">  ### How to think about improvements        # 改进哲学
+</span></span><span class="line"><span class="cl">  ### The iteration loop                     # 迭代流程
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Advanced: Blind comparison                # 【正文】盲测对比
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Description Optimization                  # 【正文】描述优化
+</span></span></span><span class="line"><span class="cl">  ### Step 1: Generate trigger evals         # 生成触发评测
+</span></span><span class="line"><span class="cl">  ### Step 2: Review with user               # 用户审查
+</span></span><span class="line"><span class="cl">  ### Step 3: Run optimization loop          # 运行优化循环
+</span></span><span class="line"><span class="cl">  ### Step 4: Apply result                   # 应用结果
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Claude.ai-specific instructions           # 【正文】Claude.ai平台适配
+</span></span></span><span class="line"><span class="cl"><span class="gu">## Cowork-Specific Instructions              # 【正文】Cowork平台适配
+</span></span></span><span class="line"><span class="cl"><span class="gu">## Reference files                           # 【正文】参考文件索引
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="五核心工作流详细">五、核心工作流详细
+</h3><h4 id="1工作流一从零创建-skill">1、工作流一：从零创建 Skill
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[用户] &#34;帮我创建一个处理 CSV 数据清洗的技能&#34;
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">[skill-creator] 触发
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ├──► 1. Capture Intent（捕捉意图）
+</span></span><span class="line"><span class="cl">    │       └── 确认 4 个核心问题：
+</span></span><span class="line"><span class="cl">    │           - 这个技能应让 Claude 做什么？
+</span></span><span class="line"><span class="cl">    │           - 何时触发？（用户表述关键词）
+</span></span><span class="line"><span class="cl">    │           - 期望输出格式？
+</span></span><span class="line"><span class="cl">    │           - 是否需要测试用例验证技能是否有效？
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ├──► 2. Interview &amp; Research（访谈和研究）
+</span></span><span class="line"><span class="cl">    │       ├── 主动询问边界情况（edge cases）、输入/输出格式、示例文件、成功标准和依赖关系
+</span></span><span class="line"><span class="cl">    │       ├── 检查可用 MCP（如需要搜索文档）
+</span></span><span class="line"><span class="cl">    │       └── 并行调研（通过子代理subagent）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ├──► 3. Write SKILL.md （编写SKILL.md）
+</span></span><span class="line"><span class="cl">    │       ├── name: 技能标识符
+</span></span><span class="line"><span class="cl">    │       ├── description: 包含触发关键词 + &#34;pushy&#34;策略
+</span></span><span class="line"><span class="cl">    │       ├── 编写 Markdown body（指令式语气）
+</span></span><span class="line"><span class="cl">    │       └── 遵循 Progressive Disclosure（&lt;500 行）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ├──► 4. Generate Test Cases （生成测试用例）
+</span></span><span class="line"><span class="cl">    │       └── 写入 evals/evals.json（仅 prompts，无 assertions）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    └──► 5. 进入【运行和评估测试】
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>其中第3步编Skill 编写指南，遵循Skill 的标准目录结构及渐进式披露（Progressive Disclosure）原则：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-scss" data-lang="scss"><span class="line"><span class="cl"><span class="nt">skill-name</span><span class="o">/</span>
+</span></span><span class="line"><span class="cl"><span class="err">├──</span> <span class="nt">SKILL</span><span class="nc">.md</span>          <span class="o">(</span><span class="nt">必须</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">├──</span> <span class="nt">YAML</span> <span class="nt">frontmatter</span> <span class="o">(</span><span class="nt">name</span><span class="o">,</span> <span class="nt">description</span> <span class="nt">必填</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">└──</span> <span class="nt">Markdown</span> <span class="nt">指令正文</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──</span> <span class="nt">Bundled</span> <span class="nt">Resources</span> <span class="o">(</span><span class="nt">可选</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="err">├──</span> <span class="nt">scripts</span><span class="o">/</span>      <span class="nt">可执行代码</span><span class="err">（</span><span class="nt">处理确定性</span><span class="o">/</span><span class="nt">重复性任务</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">    <span class="err">├──</span> <span class="nt">references</span><span class="o">/</span>   <span class="nt">按需加载的文档</span>
+</span></span><span class="line"><span class="cl">    <span class="err">└──</span> <span class="nt">assets</span><span class="o">/</span>       <span class="nt">输出中使用的文件</span><span class="err">（</span><span class="nt">模板</span><span class="err">、</span><span class="nt">图标</span><span class="err">、</span><span class="nt">字体</span><span class="err">）</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>写完技能草稿后，会设计 <strong>2–3 个真实业务场景的测试用例</strong>，并保存到技能目录下的 <code>evals/evals.json</code> 文件中。</p>
+<p><strong>暂不编写断言</strong>，断言将在下一步运行测试的过程中编写。</p>
+<blockquote>
+<p>断言用于校验技能运行结果是否符合预期，如同软件开发中的编写测试校验规则。<code>evals.json</code>格式如下：</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">  &#34;skill_name&#34;: &#34;example-skill&#34;,
+</span></span><span class="line"><span class="cl">  &#34;evals&#34;: [
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;id&#34;: 1,
+</span></span><span class="line"><span class="cl">      &#34;prompt&#34;: &#34;User&#39;s example prompt&#34;,                   # 待执行的任务指令
+</span></span><span class="line"><span class="cl">      &#34;expected_output&#34;: &#34;Description of expected result&#34;, # 通俗易懂的成功结果描述
+</span></span><span class="line"><span class="cl">      &#34;files&#34;: [&#34;evals/files/sample1.pdf&#34;],    # 可选输入文件路径列表（路径相对技能根目录）
+</span></span><span class="line"><span class="cl">      &#34;expectations&#34;: [    # 可校验的判定条件列表。暂时不要写断言，在下一步运行测试的过程中编写断言。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      ]
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">  ]
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="2工作流二运行和评估测试eval-iterate-loop">2、工作流二：运行和评估测试（Eval-Iterate Loop）
+</h4><p>这是 skill-creator 的<strong>核心引擎</strong>，所有测试、评分、反馈均在此闭环内完成，共5个步骤：</p>
+<h5 id="step-1并行启动所有测试运行"><strong>Step 1:并行启动所有测试运行</strong>
+</h5><p>对于每个测试用例，在同一轮中同时启动两个子代理（subagent）：</p>
+<ul>
+<li><strong>with_skill</strong>：加载了 Skill 的子代理执行任务.</li>
+<li><strong>baseline</strong>（基线）：没有使用Skill 的子代理执行同样的任务.</li>
+</ul>
+<p>同时启动所有任务，这样它们会大致同时完成，避免等待偏差。</p>
+<h5 id="step-2-运行测试时并行起草断言"><strong>Step 2: 运行测试时，并行起草断言</strong>
+</h5><p>在子代理运行期间（后台），skill-creator 不空闲，而是：</p>
+<ul>
+<li>为每个测试用例编写可验证的 assertions。</li>
+<li>断言编写完成后，更新<code>eval_metadata.json</code>文件和<code>evals/evals.json</code>。</li>
+<li>向用户解释评估标准。</li>
+</ul>
+<p>断言就是可以客观验证的检查项，例如&quot;输出文件是否包含某个关键字段&rdquo;。</p>
+<p><code>evals.json</code> 更新后示例如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">  &#34;skill_name&#34;: &#34;示例技能&#34;,
+</span></span><span class="line"><span class="cl">  &#34;evals&#34;: [
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;id&#34;: 1,
+</span></span><span class="line"><span class="cl">      &#34;prompt&#34;: &#34;用户示例指令&#34;,
+</span></span><span class="line"><span class="cl">      &#34;expected_output&#34;: &#34;预期结果说明&#34;,
+</span></span><span class="line"><span class="cl">      &#34;files&#34;: [&#34;evals/files/sample1.pdf&#34;],
+</span></span><span class="line"><span class="cl">      &#34;expectations&#34;: [
+</span></span><span class="line"><span class="cl">        &#34;输出内容包含内容X&#34;,
+</span></span><span class="line"><span class="cl">        &#34;该技能调用了脚本Y&#34;
+</span></span><span class="line"><span class="cl">      ]
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">  ]
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="step-3-实时捕获性能数据"><strong>Step 3: 实时捕获性能数据</strong>
+</h5><p>子代理完成时，通知中包含 <code>total_tokens</code> 和 <code>duration_ms</code>，需立即保存到 timing.json，后续用于统计分析：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;total_tokens&#34;</span><span class="p">:</span> <span class="mi">84852</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;duration_ms&#34;</span><span class="p">:</span> <span class="mi">23332</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;total_duration_seconds&#34;</span><span class="p">:</span> <span class="mf">23.3</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>⚠️ <strong>关键机制</strong>：该数据仅通过任务通知传递一次，不持久化，错过无法恢复。</p>
+</blockquote>
+<h5 id="step-4-评分聚合基准汇总可视化"><strong>Step 4: 评分、聚合基准汇总、可视化</strong>
+</h5><ul>
+<li>
+<p><strong>对每个运行评分</strong>——启动评分代理（读取 agents/grader.md）根据测试输出评估每个断言，给每个断言打分，将结果保存到每个运行目录中的<code>grading.json</code>。grading.json的<code>expectations</code>数组必须使用<code>text</code>、<code>passed</code>和<code>evidence</code>字段。</p>
+<p><code>grading.json</code>示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">  &#34;expectations&#34;: [
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;text&#34;: &#34;输出包含姓名&#39;John Smith&#39;&#34;,
+</span></span><span class="line"><span class="cl">      &#34;passed&#34;: true,
+</span></span><span class="line"><span class="cl">      &#34;evidence&#34;: &#34;在执行记录第3步发现：&#39;提取的姓名：John Smith, Sarah Johnson&#39;&#34;
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">  ],
+</span></span><span class="line"><span class="cl">  &#34;summary&#34;: {&#34;passed&#34;: 2, &#34;failed&#34;: 1, &#34;total&#34;: 3, &#34;pass_rate&#34;: 0.67},
+</span></span><span class="line"><span class="cl">  &#34;execution_metrics&#34;: {...},
+</span></span><span class="line"><span class="cl">  &#34;timing&#34;: {&#34;executor_duration_seconds&#34;: 165.0,...},
+</span></span><span class="line"><span class="cl">  &#34;claims&#34;: [...],
+</span></span><span class="line"><span class="cl">  &#34;eval_feedback&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;suggestions&#34;: [
+</span></span><span class="line"><span class="cl">      {
+</span></span><span class="line"><span class="cl">        &#34;assertion&#34;: &#34;输出包含姓名&#39;John Smith&#39;&#34;,
+</span></span><span class="line"><span class="cl">        &#34;reason&#34;: &#34;一个幻觉文档提到这个名字也会通过——建议检查它是否作为主要联系人出现&#34;
+</span></span><span class="line"><span class="cl">      }
+</span></span><span class="line"><span class="cl">    ]
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>汇总到基准（Benchmark ）</strong>——从skill-creator目录运行聚合脚本：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python -m scripts.aggregate_benchmark &lt;workspace&gt;/iteration-N --skill-name &lt;name&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这会读取并聚合评分数据（grading.json），生成<code>benchmark.json</code>和<code>benchmark.md</code>，包含每个配置的通过率、时间和令牌使用情况，以及统计均值（mean）、标准差（stddev）和差值（Delta ）。</p>
+<p><code>benchmark.json</code>格式示例如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;metadata&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;skill_name&#34;</span><span class="p">:</span> <span class="s2">&#34;pdf&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;skill_path&#34;</span><span class="p">:</span> <span class="s2">&#34;/path/to/pdf&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="o">...</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;runs&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;eval_id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;eval_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Ocean&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;configuration&#34;</span><span class="p">:</span> <span class="s2">&#34;with_skill&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;run_number&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;result&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;pass_rate&#34;</span><span class="p">:</span><span class="mf">0.85</span><span class="p">,</span><span class="s2">&#34;passed&#34;</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span><span class="s2">&#34;failed&#34;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s2">&#34;total&#34;</span><span class="p">:</span><span class="mi">7</span><span class="p">,</span><span class="s2">&#34;time_seconds&#34;</span><span class="p">:</span><span class="mf">42.5</span><span class="p">,</span><span class="s2">&#34;tokens&#34;</span><span class="p">:</span><span class="mi">3800</span><span class="p">,</span><span class="s2">&#34;tool_calls&#34;</span><span class="p">:</span><span class="mi">18</span><span class="p">,</span><span class="s2">&#34;errors&#34;</span><span class="p">:</span><span class="mi">0</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;expectations&#34;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&#34;text&#34;</span><span class="p">:</span><span class="s2">&#34;...&#34;</span><span class="p">,</span><span class="s2">&#34;passed&#34;</span><span class="p">:</span><span class="bp">true</span><span class="p">,</span><span class="s2">&#34;evidence&#34;</span><span class="p">:</span><span class="s2">&#34;...&#34;</span><span class="p">}],</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;notes&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;使用2023年数据，或已过时&#34;</span><span class="p">,</span><span class="s2">&#34;非可填字段采用文本叠加处理&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;run_summary&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;with_skill&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;pass_rate&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;mean&#34;</span><span class="p">:</span><span class="mf">0.85</span><span class="p">,</span><span class="s2">&#34;stddev&#34;</span><span class="p">:</span><span class="mf">0.05</span><span class="p">,</span><span class="s2">&#34;min&#34;</span><span class="p">:</span><span class="mf">0.80</span><span class="p">,</span><span class="s2">&#34;max&#34;</span><span class="p">:</span><span class="mf">0.90</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;time_seconds&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;mean&#34;</span><span class="p">:</span><span class="mf">45.0</span><span class="p">,</span><span class="s2">&#34;stddev&#34;</span><span class="p">:</span><span class="mf">12.0</span><span class="p">,</span><span class="s2">&#34;min&#34;</span><span class="p">:</span><span class="mf">32.0</span><span class="p">,</span><span class="s2">&#34;max&#34;</span><span class="p">:</span><span class="mf">58.0</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;tokens&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;mean&#34;</span><span class="p">:</span><span class="mi">3800</span><span class="p">,</span><span class="s2">&#34;stddev&#34;</span><span class="p">:</span><span class="mi">400</span><span class="p">,</span><span class="s2">&#34;min&#34;</span><span class="p">:</span><span class="mi">3200</span><span class="p">,</span><span class="s2">&#34;max&#34;</span><span class="p">:</span><span class="mi">4100</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;without_skill&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;pass_rate&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;mean&#34;</span><span class="p">:</span><span class="mf">0.35</span><span class="p">,</span><span class="s2">&#34;stddev&#34;</span><span class="p">:</span><span class="mf">0.08</span><span class="p">,</span><span class="s2">&#34;min&#34;</span><span class="p">:</span><span class="mf">0.28</span><span class="p">,</span><span class="s2">&#34;max&#34;</span><span class="p">:</span><span class="mf">0.45</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;time_seconds&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;mean&#34;</span><span class="p">:</span><span class="mf">32.0</span><span class="p">,</span><span class="s2">&#34;stddev&#34;</span><span class="p">:</span><span class="mf">8.0</span><span class="p">,</span><span class="s2">&#34;min&#34;</span><span class="p">:</span><span class="mf">24.0</span><span class="p">,</span><span class="s2">&#34;max&#34;</span><span class="p">:</span><span class="mf">42.0</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;tokens&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;mean&#34;</span><span class="p">:</span><span class="mi">2100</span><span class="p">,</span><span class="s2">&#34;stddev&#34;</span><span class="p">:</span><span class="mi">300</span><span class="p">,</span><span class="s2">&#34;min&#34;</span><span class="p">:</span><span class="mi">1800</span><span class="p">,</span><span class="s2">&#34;max&#34;</span><span class="p">:</span><span class="mi">2500</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;delta&#34;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&#34;pass_rate&#34;</span><span class="p">:</span><span class="s2">&#34;+0.50&#34;</span><span class="p">,</span><span class="s2">&#34;time_seconds&#34;</span><span class="p">:</span><span class="s2">&#34;+13.0&#34;</span><span class="p">,</span><span class="s2">&#34;tokens&#34;</span><span class="p">:</span><span class="s2">&#34;+1700&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;notes&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;「输出为PDF文件」校验项全量通过，无法体现技能差异&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;测试用例3波动大，运行不稳定或受模型影响&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;未启用技能时，表格提取校验均失败&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;技能平均耗时增加13秒，通过率提升50%&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>分析</strong>——<code>Analyzer Agent</code> 阅读基准数据，找出汇总统计数据可能隐藏的模式。读取<code>agents/analyzer.md</code>（&ldquo;分析基准结果&quot;部分），了解分析的准则。</p>
+</li>
+<li>
+<p><strong>启动查看器</strong>，执行<code>eval-viewer/generate_review.py</code>,同时显示定性输出和定量数据，HTML 交互界面（Outputs + Benchmark 双标签）。</p>
+<p>告知用户：&ldquo;我已经在你的浏览器中打开了结果。有两个选项卡——&lsquo;输出&rsquo;让你可以点击查看每个测试用例并留下反馈，<code>基准</code>显示定量比较。完成后回到这里告诉我。&rdquo;</p>
+</li>
+</ul>
+<h5 id="step-5-人工审查并反馈"><strong>Step 5: 人工审查并反馈</strong>
+</h5><p>用户通过浏览器查看：</p>
+<ul>
+<li><strong>Outputs 标签</strong>：逐条查看测试用例输出，对比前一次迭代。</li>
+<li><strong>Benchmark 标签</strong>：查看通过率、耗时、token 消耗的统计对比。</li>
+</ul>
+<p>在 feedback 文本框中输入改进意见，点击&quot;提交所有评论&rdquo;，反馈保存为 <code>feedback.json</code>。空反馈意味着用户认为没问题。</p>
+<p><code>feedback.json</code>内容示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">  &#34;reviews&#34;: [
+</span></span><span class="line"><span class="cl">    {&#34;run_id&#34;: &#34;eval-0-with_skill&#34;, &#34;feedback&#34;: &#34;图表缺少坐标轴标签&#34;, &#34;timestamp&#34;: &#34;...&#34;},
+</span></span><span class="line"><span class="cl">    {&#34;run_id&#34;: &#34;eval-1-with_skill&#34;, &#34;feedback&#34;: &#34;&#34;, &#34;timestamp&#34;: &#34;...&#34;},
+</span></span><span class="line"><span class="cl">    {&#34;run_id&#34;: &#34;eval-2-with_skill&#34;, &#34;feedback&#34;: &#34;完美，我喜欢&#34;, &#34;timestamp&#34;: &#34;...&#34;}
+</span></span><span class="line"><span class="cl">  ],
+</span></span><span class="line"><span class="cl">  &#34;status&#34;: &#34;complete&#34;
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="3工作流三迭代改进技能">3、工作流三：迭代改进技能
+</h4><h5 id="step-1-改进技能"><strong>Step 1: 改进技能</strong>
+</h5><p>本环节是整个流程的核心闭环。你已经运行了测试用例，用户已经审核了结果，现在需要根据用户的反馈（feedback.json）改进技能，遵循 4 条改进原则：</p>
+<ol>
+<li>
+<p><strong>原则1—Generalize（从反馈中泛化，而非过拟合）</strong>：</p>
+<blockquote>
+<p>we&rsquo;re trying to create skills that can be used a million times across many different prompts</p>
+</blockquote>
+<p><strong>从具体反馈抽象出通用模式</strong>，避免过拟合。目标不是让技能在这三五个测试用例上表现完美，而是要提炼出能扛住百万次不同提示的通用模式。如果某个问题反复出现，不要堆砌越来越多的 <code>MUST</code>/<code>NEVER</code> 硬规则去&quot;堵漏洞&quot;——这会让技能越来越僵化。更好的做法是尝试扩展思路，使用不同的隐喻，或者推荐不同的工作模式。</p>
+</li>
+<li>
+<p><strong>原则2—Keep lean（保持精简，移除无效指令）</strong>：</p>
+<blockquote>
+<p>Remove things that aren&rsquo;t pulling their weight</p>
+</blockquote>
+<p>阅读测试的完整执行过程（transcript），识别浪费时间的行为。如果看起来技能让模型浪费了大量时间做无效率的事情，尝试删除技能中导致这种情况的指令。</p>
+</li>
+<li>
+<p><strong>原则 3 — Explain the why（解释&quot;为什么&quot;）</strong>：</p>
+<p>现代大模型有很强的心理理论和推理能力。<strong>解释&quot;为什么&quot;比命令&quot;做什么&quot;更有效</strong>。如果发现自己要写 <code>ALWAYS</code> 或 <code>NEVER</code>，或者设计极其死板的结构，这是一个黄色警告——如果可能的话，重新表述并解释原因，让模型理解你要求的事情为什么重要，这是一种更人性化、更强大、更有效的方法。</p>
+</li>
+<li>
+<p><strong>原则 4 — Bundle repeated work（整合重复工作）</strong>：</p>
+<p>如果发现多个子代理都在写同一个辅助脚本（比如 <code>create_docx.py</code>、<code>build_chart.py</code>），这就是强烈的信号：<strong>这个公共逻辑应该被提取出来，作为技能自带的工具脚本，放在 <code>scripts/</code> 目录下</strong>。</p>
+</li>
+</ol>
+<h5 id="step-2-迭代循环">Step 2: 迭代循环
+</h5><p>改进技能后：</p>
+<ol>
+<li>应用改进到技能上。</li>
+<li>在新的<code>iteration-&lt;N+1&gt;/</code>目录中重新运行所有测试用例，包括基线运行：如果你创建新技能，基线始终是<code>without_skill</code>（不使用技能）；如果正在改进现有技能，根据你的判断选择合适的基线：用户提供的原始版本，或上一次迭代的版本。</li>
+<li>继续直到：
+<ul>
+<li>用户说他们满意。</li>
+<li>所有反馈都是空的（一切看起来都很好）。</li>
+<li>你没有取得有意义的进展。</li>
+</ul>
+</li>
+</ol>
+<p>每次迭代的工作区按以下结构组织：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-perl" data-lang="perl"><span class="line"><span class="cl"><span class="sr">&lt;skill-name&gt;</span><span class="o">-</span><span class="n">workspace</span><span class="o">/</span>            <span class="c1"># 与 skill 目录同级</span>
+</span></span><span class="line"><span class="cl"><span class="err">├──</span> <span class="n">iteration</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">├──</span> <span class="nb">eval</span><span class="o">-</span><span class="n">descriptive</span><span class="o">-</span><span class="n">name</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span>   <span class="c1"># 每个评测用例一个目录</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">├──</span> <span class="n">with_skill</span><span class="o">/</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">│</span>   <span class="err">├──</span> <span class="n">outputs</span><span class="o">/</span>           <span class="c1"># Skill 版本的输出文件</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">│</span>   <span class="err">├──</span> <span class="n">grading</span><span class="o">.</span><span class="n">json</span>       <span class="c1"># 评分结果</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">│</span>   <span class="err">└──</span> <span class="n">timing</span><span class="o">.</span><span class="n">json</span>        <span class="c1"># 计时数据</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">├──</span> <span class="n">without_skill</span><span class="o">/</span>         <span class="c1"># 基线版本</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">│</span>   <span class="err">├──</span> <span class="n">outputs</span><span class="o">/</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">│</span>   <span class="err">├──</span> <span class="n">grading</span><span class="o">.</span><span class="n">json</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">│</span>   <span class="err">└──</span> <span class="n">timing</span><span class="o">.</span><span class="n">json</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">└──</span> <span class="n">eval_metadata</span><span class="o">.</span><span class="n">json</span>     <span class="c1"># 评测元数据 + 断言</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">├──</span> <span class="nb">eval</span><span class="o">-</span><span class="n">descriptive</span><span class="o">-</span><span class="n">name</span><span class="o">-</span><span class="mi">2</span><span class="o">/</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">│</span>   <span class="err">└──</span> <span class="o">...</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">├──</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">json</span>             <span class="c1"># 本轮聚合统计</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">├──</span> <span class="n">benchmark</span><span class="o">.</span><span class="n">md</span>               <span class="c1"># 人类可读报告</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">└──</span> <span class="n">feedback</span><span class="o">.</span><span class="n">json</span>              <span class="c1"># 用户反馈</span>
+</span></span><span class="line"><span class="cl"><span class="err">├──</span> <span class="n">iteration</span><span class="o">-</span><span class="mi">2</span><span class="o">/</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="err">└──</span> <span class="o">...</span><span class="err">（</span><span class="n">同上结构</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──</span> <span class="n">skill</span><span class="o">-</span><span class="n">snapshot</span><span class="o">/</span>                 <span class="c1"># 改进现有 Skill 时保留的原始快照</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="3工作流四描述优化trigger-optimization">3、工作流四：描述优化（Trigger Optimization）
+</h4><p>描述优化是专门针对 Skill 的<strong>触发准确率</strong>进行调优，解决：<strong>如何让 Skill 的 description 字段更精准地触发？</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">生成 20 条评估查询
+</span></span><span class="line"><span class="cl">    ├── 8-10 条 should-trigger（覆盖不同表述、隐含需求、竞争场景）
+</span></span><span class="line"><span class="cl">    └── 8-10 条 should-not-trigger（近义词干扰、相邻领域、歧义表述）
+</span></span><span class="line"><span class="cl">        │
+</span></span><span class="line"><span class="cl">        ▼
+</span></span><span class="line"><span class="cl">用户审查（HTML 交互编辑）
+</span></span><span class="line"><span class="cl">        │
+</span></span><span class="line"><span class="cl">        ▼
+</span></span><span class="line"><span class="cl">运行优化循环（scripts/run_loop.py）
+</span></span><span class="line"><span class="cl">    ├── 60% train / 40% test 分割
+</span></span><span class="line"><span class="cl">    ├── 每条查询运行 3 次计算可靠触发率
+</span></span><span class="line"><span class="cl">    ├── Claude 基于失败案例提出 description 改进
+</span></span><span class="line"><span class="cl">    ├── 最多 5 次迭代
+</span></span><span class="line"><span class="cl">    └── 选择 test 集表现最好的 description（非 train，防过拟合）
+</span></span><span class="line"><span class="cl">        │
+</span></span><span class="line"><span class="cl">        ▼
+</span></span><span class="line"><span class="cl">应用最优 description 到 SKILL.md frontmatter
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>优化流程分四步：</p>
+<ol>
+<li>
+<p><strong>生成评估查询</strong>：创建 20 条测试查询（约一半应该触发、一半不应该触发），要求查询尽量真实、具体、覆盖各种边缘情况。</p>
+<p>创建20个测试查询，保存为JSON：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">[</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span><span class="nt">&#34;query&#34;</span><span class="p">:</span> <span class="s2">&#34;用户提示词&#34;</span><span class="p">,</span> <span class="nt">&#34;should_trigger&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span><span class="nt">&#34;query&#34;</span><span class="p">:</span> <span class="s2">&#34;另一个提示词&#34;</span><span class="p">,</span> <span class="nt">&#34;should_trigger&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>用户审核</strong>：通过 HTML 页面（assets/eval_review.html）让用户审核和修改查询集。</p>
+</li>
+<li>
+<p><strong>运行优化循环</strong>：通过 <code>scripts/run_loop.py</code> 自动执行&quot;评估→改进→重新评估&quot;循环。按60% train / 40% test 分割查询集，每条查询运行 3 次计算可靠触发率，最多5 次迭代。</p>
+</li>
+<li>
+<p><strong>应用最佳结果</strong>：取测试集上得分最高的描述（而非训练集，以避免过拟合）</p>
+</li>
+</ol>
+<p><strong>注意</strong>：Skills 的触发机制是 Claude 基于 <code>available_skills</code> 列表中的 name + description 做意图匹配。简单查询（如&quot;读取 PDF&quot;）可能不会触发 Skill，因为 Claude 可直接用基础工具处理；复杂、多步骤、专业化查询才会可靠触发。</p>
+<p><strong>关于触发机制的注意事项：</strong></p>
+<blockquote>
+<p>Claude only consults skills for tasks it can&rsquo;t easily handle on its own</p>
+</blockquote>
+<p>Claude 只会在遇到自己不容易处理的复杂任务时才会去&quot;查阅&quot; Skill。简单查询（如&quot;读取 PDF&quot;）可能不会触发 Skill，因为 Claude 可直接用基础工具处理。因此，评估查询需要足够具体、多步骤、专业化。</p>
+<h4 id="4工作流五盲比较">4、工作流五：盲比较
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Skill A ──► Output A ──┐
+</span></span><span class="line"><span class="cl">                       ├──► Comparator Agent（匿名评分）──► Analysis Agent（归因改进）
+</span></span><span class="line"><span class="cl">Skill B ──► Output B ──┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>执行细节</strong>：</p>
+<ul>
+<li>
+<p>comparator 严格不知晓A/B 对应哪个 Skill，仅依据 rubric（Content + Structure，各 1-5 分）和 assertions 裁决。</p>
+<p>双维度评分体系（综合为 1-10 的总分）：</p>
+<ul>
+<li><strong>Content (内容维度)</strong>：正确性、完整性、准确性（各 1-5 分）</li>
+<li><strong>Structure（结构维度）</strong>：组织性、格式化、可用性（各 1-5 分）</li>
+</ul>
+</li>
+<li>
+<p>analyzer 在 Comparator 完成评分后进行“揭盲”，读取双方 SKILL.md 文档、运行记录（transcripts）等数据，深入分析差异点，最终生成按 priority（优先级）+ category（类别）组织的可落地改进建议，明确优化方向。</p>
+</li>
+</ul>
+<blockquote>
+<p>核心原则：在完全不知道哪个输出来自哪个 Skill 的前提下，判断两者优劣。</p>
+</blockquote>
+<h3 id="六核心机制解析">六、核心机制解析
+</h3><h4 id="1progressive-disclosure渐进式披露">1、Progressive Disclosure（渐进式披露）
+</h4><p>skill-creator 自身就是 Progressive Disclosure 架构的最佳实践：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Level 1: Metadata（始终加载）
+</span></span><span class="line"><span class="cl">    ├── name: &#34;skill-creator&#34;
+</span></span><span class="line"><span class="cl">    └── description: 100 token左右的触发描述
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Level 2: SKILL.md Body（触发时加载）
+</span></span><span class="line"><span class="cl">    ├── 完整工作流指令（&lt;500 行）
+</span></span><span class="line"><span class="cl">    └── 仅在用户表达相关意图时进入上下文
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Level 3: Bundled Resources（按需加载）
+</span></span><span class="line"><span class="cl">    ├── agents/*.md（需要评分/对比/分析时读取）
+</span></span><span class="line"><span class="cl">    ├── references/schemas.md（需要查数据结构时读取）
+</span></span><span class="line"><span class="cl">    └── scripts/*.py（执行时不加载到上下文，直接运行）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>工程意义</strong>：</p>
+<ul>
+<li>
+<p>即使安装 50 个 Skill，启动时仅加载 50 × ~100 tokens = 5000 tokens 的元数据。</p>
+</li>
+<li>
+<p>避免上下文窗口被不相关技能挤占，保障主任务可用 token 空间。</p>
+</li>
+</ul>
+<h4 id="2总体哲学">2、总体哲学
+</h4><p>SKILL.md 开篇以通俗语言介绍了 skill-creator的核心工作流程：</p>
+<blockquote>
+<p>At a high level, the process of creating a skill goes like this:</p>
+</blockquote>
+<ul>
+<li>Decide what you want the skill to do and roughly how it should do it</li>
+<li>Write a draft of the skill</li>
+<li>Create a few test prompts and run claude-with-access-to-the-skill on them</li>
+<li>Help the user evaluate the results both qualitatively and quantitatively</li>
+<li>Rewrite the skill based on feedback</li>
+<li>Repeat until you&rsquo;re satisfied</li>
+<li>Expand the test set and try again at larger scale</li>
+</ul>
+<p><strong>解读</strong>：该流程类似文稿打磨，先出初稿、然后请人看看，结合反馈修改，迭代直到满意；不同之处在于本流程搭配自动化工具完成评测与对比。</p>
+<p><strong>安全原则（Principle of Lack of Surprise）</strong>：</p>
+<blockquote>
+<p>&ldquo;skills must not contain malware, exploit code, or any content that could compromise system security&rdquo;</p>
+<p>（Skill 的内容不应该让用户感到意外——它做的事情应该与描述一致，不能包含恶意代码。）</p>
+</blockquote>
+<h4 id="3沟通风格指南人性化设计的典范">3、沟通风格指南（人性化设计的典范）
+</h4><p>skill-creator 开篇就强调了一个非常现实的问题：</p>
+<blockquote>
+<p>&ldquo;there&rsquo;s a trend now where the power of Claude is inspiring plumbers to open up their terminals, parents and grandparents to google &lsquo;how to install npm&rsquo;&rdquo;</p>
+<p>（如今出现了一个有趣的现象：得益于 Claude 强大的能力，水管工开始尝试使用命令行，父母和长辈也主动上网搜索 “如何安装 npm”。）</p>
+</blockquote>
+<p><strong>核心要点</strong>：</p>
+<ul>
+<li><code>evaluation</code> 和 <code>benchmark</code> 属于&quot;边界词汇&quot;——可以直接用，但最好确认用户理解。</li>
+<li><code>JSON</code> 和 <code>assertion</code> 属于&quot;技术词汇&quot;——必须先确认用户懂这些术语，或附上简短解释。</li>
+</ul>
+<p><strong>设计价值</strong>：这教会我们在设计 Skill 时，要考虑<strong>目标用户的多样性</strong>，而不是假设所有人都是技术专家。</p>
+<h4 id="4多代理协作架构">4、多代理协作架构
+</h4><p><code>skill-creator</code>使用子代理（subagent ）能力，实现隔离上下文、并行化执行。主要包含四个子代理：</p>
+<ul>
+<li>
+<p><strong>Executor （执行代理）</strong></p>
+<p>对于每个测试用例，在同一轮中生成两个子代理——一个使用该技能，一个不使用。同时启动所有任务，这样它们会大致同时完成。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">执行此任务：
+</span></span><span class="line"><span class="cl">- 技能路径：&lt;path-to-skill&gt;
+</span></span><span class="line"><span class="cl">- 任务：&lt;eval prompt&gt;
+</span></span><span class="line"><span class="cl">- 输入文件：&lt;eval files if any, or &#34;none&#34;&gt;
+</span></span><span class="line"><span class="cl">- 保存输出到：&lt;workspace&gt;/iteration-&lt;N&gt;/eval-&lt;ID&gt;/with_skill/outputs/
+</span></span><span class="line"><span class="cl">- 要保存的输出：&lt;用户关心的内容——例如，&#34;docx文件&#34;、&#34;最终CSV&#34;&gt;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>基线运行</strong>（相同的提示词，但基线取决于上下文），分两种情况：</p>
+<ul>
+<li><strong>创建新技能</strong>：完全不使用技能。相同的提示词，没有技能路径，保存到<code>without_skill/outputs/</code>。</li>
+<li><strong>改进现有技能</strong>：使用旧版本。编辑前，快照技能（<code>cp -r &lt;skill-path&gt; &lt;workspace&gt;/skill-snapshot/</code>），然后将基线子代理指向快照。保存到<code>old_skill/outputs/</code>。</li>
+</ul>
+</li>
+<li>
+<p><strong>Grader Agent （评分代理）</strong></p>
+<p>对每个运行评分，读取<code>agents/grader.md</code>根据输出评估每个断言。将结果保存到每个运行目录中的<code>grading.json</code>。</p>
+<p><strong>职责</strong>：评审执行结果，判断每个&quot;断言&quot;（assertion）是通过还是失败，并为每项判断提供清晰的证据。</p>
+<p><strong>输入</strong>：</p>
+<ul>
+<li><code>expectations</code>：要检查的断言列表（如&quot;输出包含姓名&rsquo;John Smith&rsquo;&quot;)</li>
+<li><code>transcript_path</code>：执行过程的完整记录</li>
+<li><code>outputs_dir</code>：输出文件目录</li>
+</ul>
+<p><strong>工作流程（8步）</strong>：</p>
+<ol>
+<li>读取Transcript（执行记录）。</li>
+<li>检查输出文件。</li>
+<li>逐一评估断言（判定结果：PASS/FAIL、引用证据）。</li>
+<li>提取并验证隐含声明</li>
+<li>阅读用户备注（若<code>{outputs_dir}/user_notes.md</code> 存在）</li>
+<li>批判性审视评测本身（这是亮点！）</li>
+<li>撰写评分结果 ,写入 <code>grading.json</code></li>
+<li>读取执行指标和计时数据，输出结构的 JSON 文件（结果保存到 <code>{outputs_dir}/../grading.json</code>）。</li>
+</ol>
+<p><strong>&ldquo;关键设计—自我批评</strong>：</p>
+<blockquote>
+<p>&ldquo;A passing grade on a weak assertion is worse than useless — it creates false confidence. When you notice an assertion that&rsquo;s trivially satisfied, or an important outcome that no assertion checks, say so..&rdquo;</p>
+<p>对薄弱断言给出&quot;通过&quot;的评级，其危害比毫无用处还要糟糕——它制造虚假信心。当你注意到某个断言被轻易满足，或某个重要结果没有任何断言检查时，请指出来。</p>
+</blockquote>
+<p>Grader 不仅评分，还会指出评测设计的问题：</p>
+<ul>
+<li>&ldquo;这个断言太弱，即使输出明显错误也会通过&rdquo;</li>
+<li>&ldquo;有个重要结果没有任何断言覆盖&rdquo;</li>
+</ul>
+<p><strong>输出格式（grading.json）</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">  &#34;expectations&#34;: [
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;text&#34;: &#34;输出包含姓名&#39;John Smith&#39;&#34;,
+</span></span><span class="line"><span class="cl">      &#34;passed&#34;: true,
+</span></span><span class="line"><span class="cl">      &#34;evidence&#34;: &#34;在执行记录第3步发现：&#39;提取的姓名：John Smith, Sarah Johnson&#39;&#34;
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">  ],
+</span></span><span class="line"><span class="cl">  &#34;summary&#34;: {&#34;passed&#34;: 2, &#34;failed&#34;: 1, &#34;total&#34;: 3, &#34;pass_rate&#34;: 0.67},
+</span></span><span class="line"><span class="cl">  &#34;execution_metrics&#34;: {...},
+</span></span><span class="line"><span class="cl">  &#34;timing&#34;: {...},
+</span></span><span class="line"><span class="cl">  &#34;claims&#34;: [...],
+</span></span><span class="line"><span class="cl">  &#34;eval_feedback&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;suggestions&#34;: [
+</span></span><span class="line"><span class="cl">      {
+</span></span><span class="line"><span class="cl">        &#34;assertion&#34;: &#34;输出包含姓名&#39;John Smith&#39;&#34;,
+</span></span><span class="line"><span class="cl">        &#34;reason&#34;: &#34;一个幻觉文档提到这个名字也会通过——建议检查它是否作为主要联系人出现&#34;
+</span></span><span class="line"><span class="cl">      }
+</span></span><span class="line"><span class="cl">    ]
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>Comparator Agent （盲评对比代理）</strong></p>
+<p>对于严格比较两个版本技能的情况（例如，用户问&quot;新版本真的更好吗？&quot;），读<code>agents/comparator.md</code>和<code>agents/analyzer.md</code>。基本思路：将两个输出交给独立代理，不告诉它哪个技能产生哪个输出，让它判断质量；然后分析获胜者获胜的原因。</p>
+<p>**角色：**盲测比较器，负责在不知道哪个技能产生哪个输出的情况下，判断哪个输出更好。目的是防止对特定技能或方法产生偏见。</p>
+<p><strong>工作流程</strong>：</p>
+<ol>
+<li>读取输出 A 和输出 B（只知道代号，不知道对应哪个 Skill）</li>
+<li>理解任务要求.</li>
+<li><strong>生成评分量表</strong>（Rubric），双维度评分体系（综合为 1-10 的总分）：
+<ul>
+<li>Content（内容维度）：Correctness（正确性）、Completeness（完整性）、Accuracy（准确性）</li>
+<li>Structure（结构维度）：Organization（组织性）、Formatting（格式）、Usability（可用性）</li>
+</ul>
+</li>
+<li>按量表评分（1-5分制）</li>
+<li>检查断言通过率（辅助证据）</li>
+<li>判定胜者（A、B 或平局）</li>
+</ol>
+<p><strong>输出格式（comparison.json）</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">  &#34;winner&#34;: &#34;A&#34;,
+</span></span><span class="line"><span class="cl">  &#34;reasoning&#34;: &#34;输出A提供了完整解决方案...&#34;,
+</span></span><span class="line"><span class="cl">  &#34;rubric&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;A&#34;: {&#34;content_score&#34;: 4.7, &#34;structure_score&#34;: 4.3, &#34;overall_score&#34;: 9.0},
+</span></span><span class="line"><span class="cl">    &#34;B&#34;: {&#34;content_score&#34;: 2.7, &#34;structure_score&#34;: 2.7, &#34;overall_score&#34;: 5.4}
+</span></span><span class="line"><span class="cl">  },
+</span></span><span class="line"><span class="cl">  &#34;output_quality&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;A&#34;: {
+</span></span><span class="line"><span class="cl">      &#34;score&#34;: 9,
+</span></span><span class="line"><span class="cl">      &#34;strengths&#34;: [&#34;Complete solution&#34;, &#34;Well-formatted&#34;, &#34;All fields present&#34;],
+</span></span><span class="line"><span class="cl">      &#34;weaknesses&#34;: [&#34;Minor style inconsistency in header&#34;]
+</span></span><span class="line"><span class="cl">    },...
+</span></span><span class="line"><span class="cl">  },
+</span></span><span class="line"><span class="cl">  &#34;expectation_results&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;A&#34;: {
+</span></span><span class="line"><span class="cl">      &#34;passed&#34;: 4,
+</span></span><span class="line"><span class="cl">      &#34;total&#34;: 5,
+</span></span><span class="line"><span class="cl">      &#34;pass_rate&#34;: 0.80,
+</span></span><span class="line"><span class="cl">      &#34;details&#34;: [
+</span></span><span class="line"><span class="cl">        {&#34;text&#34;: &#34;Output includes name&#34;, &#34;passed&#34;: true}
+</span></span><span class="line"><span class="cl">      ]
+</span></span><span class="line"><span class="cl">    },...
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>Analyzer Agent（分析子代理）</strong></p>
+<p>包含两大角色：</p>
+<p><strong>角色 A — 盲测后分析器</strong>：在盲测比较后&quot;揭盲&rdquo;，目标是提取可操作的洞察：是什么让获胜方表现更好，以及如何改进落败方？</p>
+<ul>
+<li>
+<p>对比两个 Skill 的指令差异和执行模式差异。</p>
+</li>
+<li>
+<p>最终生成按 priority（优先级:high / medium / low）+ category（类别：instructions、tools、examples、error_handling、structure、references）组织的可落地改进建议，明确优化方向。</p>
+<p><strong>改进建议分类</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>类别</th>
+          <th>说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>instructions</code></td>
+          <td>修改 Skill 的文本指令</td>
+      </tr>
+      <tr>
+          <td><code>tools</code></td>
+          <td>添加/修改脚本、模板</td>
+      </tr>
+      <tr>
+          <td><code>examples</code></td>
+          <td>添加示例输入/输出</td>
+      </tr>
+      <tr>
+          <td><code>error_handling</code></td>
+          <td>添加失败处理指南</td>
+      </tr>
+      <tr>
+          <td><code>structure</code></td>
+          <td>重组 Skill 内容</td>
+      </tr>
+      <tr>
+          <td><code>references</code></td>
+          <td>添加外部文档</td>
+      </tr>
+  </tbody>
+</table></div>
+<p>输出<code>analysis.json</code> 格式示例如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">  &#34;comparison_summary&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;winner&#34;: &#34;A&#34;,
+</span></span><span class="line"><span class="cl">    &#34;winner_skill&#34;: &#34;path/to/winner/skill&#34;,
+</span></span><span class="line"><span class="cl">    &#34;loser_skill&#34;: &#34;path/to/loser/skill&#34;,
+</span></span><span class="line"><span class="cl">    &#34;comparator_reasoning&#34;: &#34;选择优胜方的简要原因&#34;
+</span></span><span class="line"><span class="cl">  },
+</span></span><span class="line"><span class="cl">  &#34;winner_strengths&#34;: [
+</span></span><span class="line"><span class="cl">    &#34;针对多页文档提供清晰分步指引&#34;,
+</span></span><span class="line"><span class="cl">    &#34;内置校验脚本，可识别格式错误&#34;
+</span></span><span class="line"><span class="cl">  ],
+</span></span><span class="line"><span class="cl">  &#34;loser_weaknesses&#34;: [
+</span></span><span class="line"><span class="cl">    &#34;指令表述模糊，执行结果不一致&#34;,
+</span></span><span class="line"><span class="cl">    &#34;无校验脚本，只能临时应对&#34;
+</span></span><span class="line"><span class="cl">  ],
+</span></span><span class="line"><span class="cl">  &#34;instruction_following&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;winner&#34;: {
+</span></span><span class="line"><span class="cl">      &#34;score&#34;: 9,
+</span></span><span class="line"><span class="cl">      &#34;issues&#34;: [&#34;小问题：省略可选日志步骤&#34;]
+</span></span><span class="line"><span class="cl">    },
+</span></span><span class="line"><span class="cl">    &#34;loser&#34;: {
+</span></span><span class="line"><span class="cl">      &#34;score&#34;: 6,
+</span></span><span class="line"><span class="cl">      &#34;issues&#34;: [
+</span></span><span class="line"><span class="cl">        &#34;未使用指定格式模板&#34;,
+</span></span><span class="line"><span class="cl">        &#34;未按第三步要求，自行改用其他方式&#34;
+</span></span><span class="line"><span class="cl">      ]
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">  },
+</span></span><span class="line"><span class="cl">  &#34;improvement_suggestions&#34;: [
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;priority&#34;: &#34;high&#34;,
+</span></span><span class="line"><span class="cl">      &#34;category&#34;: &#34;instructions&#34;,
+</span></span><span class="line"><span class="cl">      &#34;suggestion&#34;: &#34;将模糊指令改为明确操作步骤&#34;,
+</span></span><span class="line"><span class="cl">      &#34;expected_impact&#34;: &#34;消除歧义，统一执行效果&#34;
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">  ],
+</span></span><span class="line"><span class="cl">  &#34;transcript_insights&#34;: {
+</span></span><span class="line"><span class="cl">    &#34;winner_execution_pattern&#34;: &#34;读取技能 → 按五步流程执行 → 调用校验脚本&#34;,
+</span></span><span class="line"><span class="cl">    &#34;loser_execution_pattern&#34;: &#34;读取技能 → 思路不明确 → 尝试多种方式&#34;
+</span></span><span class="line"><span class="cl">  }
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<p><strong>角色 B — 基准分析器：<strong>在测试评估后，分析基准测试结果，基准分析器的目的不是提出技能改进建议，而是</strong>揭示多次运行中的模式和异常</strong>：</p>
+<ul>
+<li>
+<p>哪些断言在两种配置下<strong>始终（100%）通过</strong>吗？（可能无法区分技能价值）。</p>
+</li>
+<li>
+<p>哪些断言在两种配置下<strong>始终（100%）失败</strong>吗？（可能已损坏或超出能力范围）。</p>
+</li>
+<li>
+<p>是否<strong>有技能时始终通过，无技能时始终失败</strong>？（技能在此处明显增加了价值）。</p>
+</li>
+<li>
+<p>是否<strong>有技能时始终失败，无技能时始终通过</strong>？（技能可能正在造成损害）。</p>
+</li>
+<li>
+<p>是否<strong>高度不稳定</strong>？（不稳定的预期或非确定性行为）。</p>
+</li>
+</ul>
+<p>输出格式为 JSON 字符串数组：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">[</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;断言‘输出是 PDF 文件’在两种配置下 100% 通过——可能无法区分技能价值&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;评估 3 显示高方差（50% ± 40%）——运行 2 出现了异常失败&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;无技能运行始终在表格提取预期上失败&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;技能平均增加 13 秒执行时间，但将通过率提高了 50%&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<h4 id="5盲测比较的方法论">5、盲测比较的方法论
+</h4><p><code>agents/comparator.md</code> 和 <code>agents/analyzer.md</code> 构成了一套<strong>因果推断框架</strong>：</p>
+<ul>
+<li><strong>Comparator（盲测）</strong>：消除&quot;先入为主&quot;和&quot;作者偏见&quot;。输出必须包含 <code>rubric</code>（量化评分）+ <code>output_quality</code>（定性总结）+ <code>expectation_results</code>（断言通过率）。</li>
+<li><strong>Analyzer（归因）</strong>：揭盲后执行<strong>反事实分析</strong>。对比双方执行记录（transcripts），检查 instruction following 得分（1-10），识别 winner 的优势（提取可操作的洞察：是什么让获胜方表现更好）和 loser 的可改进点。</li>
+</ul>
+<p><strong>关键设计</strong>：Analyzer 的 <code>improvement_suggestions</code> 按 <code>priority</code>（high/medium/low）和 <code>category</code>（instructions/tools/examples/error_handling/structure/references）分类，确保建议可操作、可度量。</p>
+<h4 id="6反过拟合机制">6、反过拟合机制
+</h4><p>skill-creator 内置多层防过拟合设计：</p>
+<ol>
+<li>
+<p><strong>从反馈中归纳</strong>：Skill 要在许多不同提示词中使用百万次，如果只为测试用例做针对性修改，skill 就废了。遇到顽固问题，尝试扩展思路，使用不同的隐喻，或者推荐不同的工作模式，而不是加更多死板约束。</p>
+</li>
+<li>
+<p><strong>Train/Test 分割</strong>：Description 优化时 60训练集/40测试集分割，选择 test 分数最高的描述。</p>
+</li>
+<li>
+<p><strong>Baseline 对照</strong>：每次迭代必须对比无 Skill 或 旧版本 Skill 的表现，确保改进真实有效。</p>
+</li>
+<li>
+<p><strong>Blind Comparison</strong>：可选的 A/B 盲评，消除评估者偏见。</p>
+</li>
+</ol>
+<h4 id="7数据流与-schema-约束">7、数据流与 Schema 约束
+</h4><p>所有评估数据遵循 references/schemas.md 的严格结构，形成完整的数据管道：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">evals.json          ─── 定义测试用例（prompt + expectations）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">timing.json         ─── 运行计时（来自子 Agent 完成通知）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">metrics.json        ─── 执行指标（工具调用次数、文件数等）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">grading.json        ─── 评分结果（断言通过/失败 + 证据，字段名严格：text/passed/evidence）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">benchmark.json      ─── 聚合统计（with_skill vs without_skill 的 mean/stddev/delta）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">feedback.json       ─── 用户定性反馈（reviews 数组）
+</span></span><span class="line"><span class="cl">	│
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">comparison.json     ─── 盲比较结果（A/B 评分 + 赢家）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">analysis.json       ─── 事后分析（改进建议 + 执行模式洞察）
+</span></span><span class="line"><span class="cl">    │
+</span></span><span class="line"><span class="cl">    ▼
+</span></span><span class="line"><span class="cl">history.json        ─── 版本追踪（迭代历史 + 当前最佳）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>关键约束</strong>：</p>
+<ul>
+<li><code>grading.json</code> 的 expectations 数组必须使用字段 <code>text</code>、<code>passed</code>、<code>evidence</code>，viewer 依赖这些精确字段名。</li>
+<li><code>benchmark.json</code> 的 configuration 必须是 <code>&quot;with_skill&quot;</code> 或 <code>&quot;without_skill&quot;</code>（viewer 硬编码匹配）。</li>
+<li><code>timing.json</code> 的数据必须在子代理完成通知中实时捕获，过后不可恢复。</li>
+</ul>
+<h4 id="8scripts--自动化脚本详解">8、scripts/ —— 自动化脚本详解
+</h4><h5 id="1run_looppy--主循环编排器">1)<code>run_loop.py</code> —— 主循环编排器
+</h5><p>职责：编排整个&quot;描述优化&quot;的自动化循环。</p>
+<p><strong>工作流程：</strong></p>
+<ol>
+<li>将评估查询集按 60:40 分为训练集和测试集（分层采样，保持正负样本比例）。</li>
+<li>对当前描述运行评估（每条查询运行 3 次取可靠触发率）。</li>
+<li>调用 <code>improve_description.py</code> 让 Claude 改进描述。</li>
+<li>对新描述重新评估</li>
+<li>最多迭代 5 轮，选取<strong>测试集</strong>得分最高的描述（而非训练集，防止过拟合）</li>
+<li>生成实时 HTML 报告。</li>
+</ol>
+<p><code>run_loop.py</code>核心代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">def run_loop(eval_set, skill_path, max_iterations=5, holdout=0.4, ...):
+</span></span><span class="line"><span class="cl">    # 划分训练集/测试集（防止过拟合）
+</span></span><span class="line"><span class="cl">    train_set, test_set = split_eval_set(eval_set, holdout)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    for iteration in range(1, max_iterations + 1):
+</span></span><span class="line"><span class="cl">        # 评估当前description
+</span></span><span class="line"><span class="cl">        results = run_eval(all_queries, current_description)
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        # 分离train/test结果
+</span></span><span class="line"><span class="cl">        train_results = [r for r in results if r.query in train_set]
+</span></span><span class="line"><span class="cl">        test_results = [r for r in results if r.query not in train_set]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        # 早停条件：train全部通过
+</span></span><span class="line"><span class="cl">        if train_failed == 0:
+</span></span><span class="line"><span class="cl">            break
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        # 基于train结果改进description（**看不到test结果，防止过拟合**）
+</span></span><span class="line"><span class="cl">        new_description = improve_description(
+</span></span><span class="line"><span class="cl">            eval_results=train_results,  # 只给train结果！
+</span></span><span class="line"><span class="cl">            history=blinded_history       # 隐藏test分数的历史
+</span></span><span class="line"><span class="cl">        )
+</span></span><span class="line"><span class="cl">        current_description = new_description
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    # 选择最佳description（按test分数，而非train分数）
+</span></span><span class="line"><span class="cl">    best = max(history, key=lambda h: h[&#34;test_passed&#34;])
+</span></span><span class="line"><span class="cl">    return best[&#34;description&#34;]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>关键设计——防止过拟合：</p>
+<ul>
+<li>类似机器学习的 Train/Test 分离。</li>
+<li>改进时<strong>看不到测试集结果</strong>。</li>
+<li>最终选择<strong>按测试集选择最佳description</strong>而非训练集。</li>
+</ul>
+<h5 id="2run_evalpy--触发评估运行器"><code>2)run_eval.py</code> —— 触发评估运行器
+</h5><p><strong>职责：</strong> 测试 Skill 描述是否能正确触发。</p>
+<p><strong>核心机制：</strong></p>
+<ol>
+<li>在 <code>.claude/commands/</code> 目录创建临时命令文件</li>
+<li>运行 <code>claude -p</code>（Claude CLI）并使用 <code>--stream-json --include-partial-messages</code> 参数</li>
+<li>通过流式事件检测 Claude 是否触发了该 Skill（早期检测）</li>
+<li>支持通过 <code>ProcessPoolExecutor</code> 并行执行多条查询</li>
+</ol>
+<h5 id="3improve_descriptionpy--描述自动改进"><code>3)improve_description.py</code> —— 描述自动改进
+</h5><p><strong>职责：</strong> 调用 Claude 来生成改进后的 Skill 描述。</p>
+<p><strong>核心流程</strong>：</p>
+<ol>
+<li>分析失败案例：
+<ul>
+<li><strong>Failed triggers</strong>：应该触发但没触发（漏召）</li>
+<li><strong>False triggers</strong>：不该触发但触发了（误召）</li>
+</ul>
+</li>
+<li>构建 Prompt 让 Claude 生成新描述：
+<ul>
+<li>包含当前描述</li>
+<li>包含失败案例（具体查询+触发次数）</li>
+<li>包含历史尝试（避免重复）</li>
+<li>包含 Skill 完整内容（上下文）</li>
+</ul>
+</li>
+<li><strong>关键约束</strong>：
+<ul>
+<li>&ldquo;不要产生越来越长的具体查询列表&rdquo;</li>
+<li>&ldquo;要泛化到更广泛的用户意图类别&rdquo;</li>
+<li>&ldquo;描述不超过100-200词，硬限制1024字符&rdquo;</li>
+<li>&ldquo;用祈使句，聚焦用户意图而非实现细节&rdquo;</li>
+</ul>
+</li>
+<li>安全网：如果生成超过1024字符，自动调用缩短流程</li>
+</ol>
+<p><strong>Prompt 工程亮点</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;The description competes with other skills for Claude&#39;s attention 
+</span></span><span class="line"><span class="cl">— make it distinctive and immediately recognizable.&#34;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">（描述要与其他 Skill 竞争 Claude 的注意力——让它独特且一眼可识别。）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="4aggregate_benchmarkpy--基准聚合脚本">4)<code>aggregate_benchmark.py</code> —— 基准聚合脚本
+</h5><p><strong>职责：</strong> 将分散的评分数据汇总为统计报告。</p>
+<p><strong>输出：</strong></p>
+<ul>
+<li><code>benchmark.json</code>：结构化的完整基准数据</li>
+<li><code>benchmark.md</code>：人类可读的 Markdown 格式报告</li>
+<li>计算每个配置（with_skill / without_skill）的均值、标准差、最小值、最大值</li>
+<li>计算两者之间的 delta（差异）。</li>
+</ul>
+<h5 id="5package_skillpy--skill-打包器"><code>5)package_skill.py</code> —— Skill 打包器
+</h5><p><strong>职责：</strong> 将 Skill 目录打包为可分发的 <code>.skill</code> 文件。</p>
+<p><strong>工作流程：</strong></p>
+<ol>
+<li>调用 <code>quick_validate.py</code> 校验 Skill 格式。</li>
+<li>创建 zip 格式的 <code>.skill</code> 文件。</li>
+<li>排除无关文件：<code>__pycache__</code>、<code>node_modules</code>、<code>.pyc</code>、<code>.DS_Store</code>、根级 <code>evals/</code>。</li>
+</ol>
+<h5 id="5quick_validatepy--skill-格式校验"><code>5)quick_validate.py</code> —— Skill 格式校验
+</h5><p><strong>职责：</strong> 检查 Skill 是否符合规范。</p>
+<p><strong>校验项：</strong></p>
+<ul>
+<li><code>SKILL.md</code> 是否存在且包含有效的 YAML frontmatter。</li>
+<li><code>name</code> 字段是否为 kebab-case 格式，不超过 64 字符。</li>
+<li><code>description</code> 字段是否不超过 1024 字符且不含尖括号。</li>
+<li><code>compatibility</code> 字段（如果有）不超过 500 字符。</li>
+<li>只允许规定的 frontmatter 属性。</li>
+</ul>
+<h4 id="9评测与迭代系统evals-与-eval-viewer">9、评测与迭代系统：evals/ 与 eval-viewer/
+</h4><h5 id="1-评测数据流">1) 评测数据流
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">用户定义测试用例 (evals.json)
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">Claude 并行执行（with_skill vs without_skill）
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">Grader 对执行结果评分 → grading.json
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">aggregate_benchmark.py 聚合 → benchmark.json + benchmark.md
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">Analyzer 分析 → 发现隐藏模式
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">generate_review.py + viewer.html → 可视化界面
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">用户查看并留下反馈 → feedback.json
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">Claude 读取反馈并改进 Skill
+</span></span><span class="line"><span class="cl">    ↓
+</span></span><span class="line"><span class="cl">[循环回到第一步]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="2-evalsjson-结构">2) evals.json 结构
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;skill_name&#34;</span><span class="p">:</span> <span class="s2">&#34;example-skill&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;evals&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>                              <span class="err">#唯一整型标识</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;prompt&#34;</span><span class="p">:</span> <span class="s2">&#34;用户的任务提示（真实场景）&#34;</span><span class="p">,</span>   <span class="err">#待执行的任务指令</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;expected_output&#34;</span><span class="p">:</span> <span class="s2">&#34;预期结果的描述&#34;</span><span class="p">,</span>    <span class="err">#用通俗文字描述预期达标效果</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;files&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;evals/files/sample1.pdf&#34;</span><span class="p">],</span> <span class="err">#可选，输入文件路径列表（路径相对于技能根目录）</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;expectations&#34;</span><span class="p">:</span> <span class="p">[</span>                     <span class="err">#可核验的判定条目列表</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;输出包含X&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;Skill使用了脚本Y&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>设计要点</strong>：</p>
+<ul>
+<li><code>prompt</code> 必须是<strong>真实用户会说的</strong>，不是抽象描述。</li>
+<li><code>expectations</code> 必须是<strong>客观可验证</strong>的，避免主观判断。</li>
+</ul>
+<h5 id="3-eval-viewer可视化系统">3) eval-viewer可视化系统
+</h5><p>skill-creator 提供了一个完整的浏览器端评测查看器：</p>
+<p><strong>技术栈</strong>：</p>
+<ul>
+<li><code>generate_review.py</code>：Python 后端，读取评测数据并注入 HTML 模板</li>
+<li><code>viewer.html</code>：纯前端 HTML（内嵌 CSS/JS），无需服务器即可运行</li>
+</ul>
+<p><strong>功能</strong>：</p>
+<ul>
+<li><strong>Outputs 标签页</strong>：逐个查看测试用例
+<ul>
+<li>显示 Prompt、输出文件、上一轮输出（折叠）</li>
+<li>正式评分结果（折叠）</li>
+<li>反馈文本框（自动保存）</li>
+<li>上一轮反馈（迭代时显示）</li>
+</ul>
+</li>
+<li><strong>Benchmark 标签页</strong>：统计摘要
+<ul>
+<li>通过率、时间、Token 消耗的均值±标准差</li>
+<li>配置间差异（Delta）</li>
+</ul>
+</li>
+</ul>
+<p><strong>Cowork/无浏览器环境适配</strong>：</p>
+<blockquote>
+<p>&ldquo;use <code>--static</code> to write a standalone HTML file instead of starting a server&rdquo;</p>
+<p>（使用 <code>--static</code> 参数生成独立 HTML 文件，而非启动服务器）</p>
+</blockquote>
+<h3 id="七完整执行流程与数据流转">七、完整执行流程与数据流转
+</h3><h4 id="1完整执行流程">1、完整执行流程
+</h4><p>下面是用户触发 skill-creator 到最终输出的完整流程：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-vbnet" data-lang="vbnet"><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                        <span class="n">用户触发</span> <span class="n">Skill</span>                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>   <span class="n">例</span><span class="err">：</span><span class="s">&#34;帮我创建一个处理 CSV 数据清洗的技能&#34;</span>                          <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──────────────────────────────┬──────────────────────────────────────┘</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">阶段</span> <span class="n">1</span><span class="err">：</span><span class="n">意图捕获</span><span class="err">（</span><span class="n">Capture</span> <span class="n">Intent</span><span class="err">）</span>                                   <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">Claude</span> <span class="n">询问确认4个核心问题</span><span class="err">：：</span>                                            <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">1</span><span class="p">.</span> <span class="n">这个技能应让</span> <span class="n">Claude</span> <span class="n">做什么</span><span class="err">？</span>                                        <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">2</span><span class="p">.</span> <span class="n">何时触发</span><span class="err">？（</span><span class="n">用户表述关键词</span><span class="err">）</span>                                         <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">3</span><span class="p">.</span> <span class="n">期望输出格式</span><span class="err">？</span>                                                <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">4</span><span class="p">.</span> <span class="n">是否需要测试用例验证技能是否有效</span><span class="err">？</span>                                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">如果当前对话中已有工作流</span><span class="err">，</span><span class="n">直接从中提取信息</span>                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──────────────────────────────┬──────────────────────────────────────┘</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">阶段</span> <span class="n">2</span><span class="err">：</span><span class="n">深度访谈与调研</span><span class="err">（</span><span class="n">Interview</span> <span class="ow">and</span> <span class="n">Research</span><span class="err">）</span>                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">主动询问边界情况</span><span class="err">（</span><span class="n">edge</span> <span class="n">cases</span><span class="err">）、</span><span class="n">输入</span><span class="o">/</span><span class="n">输出格式</span><span class="err">、</span><span class="n">示例文件</span><span class="err">、</span><span class="n">成功标准和依赖关系</span> <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">检查可用</span> <span class="n">MCP</span> <span class="n">工具</span><span class="err">（</span><span class="n">如需要搜索文档</span><span class="err">）</span>                                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">并行调研</span><span class="err">（</span><span class="n">通过子代理subagent</span><span class="err">）</span>                                        <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──────────────────────────────┬──────────────────────────────────────┘</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">阶段</span> <span class="n">3</span><span class="err">：</span><span class="n">编写</span> <span class="n">SKILL</span><span class="p">.</span><span class="n">md</span> <span class="n">草稿</span>                                           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">根据访谈结果填写</span><span class="err">：</span>                                                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">skill</span> <span class="n">标识符</span>                                                <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">description</span><span class="p">:</span> <span class="n">触发描述</span><span class="err">（</span><span class="n">稍微激进以对抗触发不足</span><span class="err">）</span>                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">编写</span> <span class="n">Markdown</span> <span class="n">body</span><span class="err">（</span><span class="n">指令正文</span><span class="err">）：</span><span class="n">步骤</span><span class="err">、</span><span class="n">示例</span><span class="err">、</span><span class="n">注意事项</span>                   <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">如需要</span><span class="err">：</span><span class="n">创建</span> <span class="n">scripts</span><span class="o">/</span><span class="err">、</span><span class="n">references</span><span class="o">/</span><span class="err">、</span><span class="n">assets</span><span class="o">/</span> <span class="n">等辅助文件</span>               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──────────────────────────────┬──────────────────────────────────────┘</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">阶段</span> <span class="n">4</span><span class="err">：</span><span class="n">生成测试用例</span>                                                  <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">构思</span> <span class="n">2</span><span class="o">-</span><span class="n">3</span> <span class="n">个真实的用户</span> <span class="n">prompt</span>                                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">与用户确认测试用例是否合适</span>                                           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="o">-</span> <span class="n">保存到</span> <span class="n">evals</span><span class="o">/</span><span class="n">evals</span><span class="p">.</span><span class="n">json</span><span class="err">（</span><span class="n">仅</span> <span class="n">prompts</span><span class="err">，</span><span class="n">无</span> <span class="n">assertions</span><span class="err">）</span>                <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──────────────────────────────┬──────────────────────────────────────┘</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">阶段</span> <span class="n">5</span><span class="err">：</span><span class="n">运行测试</span><span class="err">（</span><span class="n">五步评测法</span><span class="err">）</span>                                         <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌──────────────────────────────────────────────────────────┐</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="k">Step</span> <span class="n">1</span><span class="p">:</span> <span class="n">并行启动所有测试运行</span>                               <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>                                                          <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>   <span class="n">测试用例</span> <span class="n">1</span> <span class="err">──┬──</span> <span class="n">with_skill</span> <span class="n">子代理</span> <span class="err">──▶</span> <span class="n">outputs</span><span class="o">/</span>        <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>               <span class="err">└──</span> <span class="n">baseline</span> <span class="n">子代理</span>   <span class="err">──▶</span> <span class="n">outputs</span><span class="o">/</span>        <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>   <span class="n">测试用例</span> <span class="n">2</span> <span class="err">──┬──</span> <span class="n">with_skill</span> <span class="n">子代理</span> <span class="err">──▶</span> <span class="n">outputs</span><span class="o">/</span>        <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>               <span class="err">└──</span> <span class="n">baseline</span> <span class="n">子代理</span>   <span class="err">──▶</span> <span class="n">outputs</span><span class="o">/</span>        <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>   <span class="n">测试用例</span> <span class="n">3</span> <span class="err">──┬──</span> <span class="n">with_skill</span> <span class="n">子代理</span> <span class="err">──▶</span> <span class="n">outputs</span><span class="o">/</span>        <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>               <span class="err">└──</span> <span class="n">baseline</span> <span class="n">子代理</span>   <span class="err">──▶</span> <span class="n">outputs</span><span class="o">/</span>        <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└──────────────────────────────────────────────────────────┘</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                         <span class="err">│（</span><span class="n">同时进行</span><span class="err">）</span>                                  <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌──────────────────────────────────────────────────────────┐</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="k">Step</span> <span class="n">2</span><span class="p">:</span> <span class="n">在等待期间起草量化断言</span>                              <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="o">-</span> <span class="n">编写可客观验证的检查项</span>                                    <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="o">-</span> <span class="n">更新</span> <span class="n">eval_metadata</span><span class="p">.</span><span class="n">json</span> <span class="n">和</span> <span class="n">evals</span><span class="p">.</span><span class="n">json</span>                  <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└──────────────────────────────────────────────────────────┘</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                         <span class="err">│</span>                                           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌──────────────────────────────────────────────────────────┐</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="k">Step</span> <span class="n">3</span><span class="p">:</span> <span class="n">子代理完成时立即捕获</span> <span class="n">timing</span> <span class="n">数据</span>                    <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="o">-</span> <span class="n">total_tokens</span><span class="p">,</span> <span class="n">duration_ms</span> <span class="err">→</span> <span class="n">timing</span><span class="p">.</span><span class="n">json</span>                <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└──────────────────────────────────────────────────────────┘</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                         <span class="err">│</span>                                           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌──────────────────────────────────────────────────────────┐</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="k">Step</span> <span class="n">4</span><span class="p">:</span> <span class="n">评分</span> <span class="err">→</span> <span class="n">聚合</span> <span class="err">→</span> <span class="n">分析</span> <span class="err">→</span> <span class="n">启动可视化</span>                    <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>                                                          <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="n">4a</span><span class="p">.</span> <span class="n">评分代理</span><span class="p">(</span><span class="n">grader</span><span class="p">.</span><span class="n">md</span><span class="p">)</span> <span class="err">→</span> <span class="n">grading</span><span class="p">.</span><span class="n">json</span>                   <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="n">4b</span><span class="p">.</span> <span class="n">aggregate_benchmark</span><span class="p">.</span><span class="n">py</span> <span class="err">→</span> <span class="n">benchmark</span><span class="p">.</span><span class="n">json</span>              <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="n">4c</span><span class="p">.</span> <span class="n">分析代理</span><span class="p">(</span><span class="n">analyzer</span><span class="p">.</span><span class="n">md</span><span class="p">)</span> <span class="err">→</span> <span class="n">检查模式洞察</span>                      <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="n">4d</span><span class="p">.</span> <span class="n">generate_review</span><span class="p">.</span><span class="n">py</span> <span class="err">→</span> <span class="n">浏览器评审页面</span>                   <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└──────────────────────────────────────────────────────────┘</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                         <span class="err">│</span>                                           <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌──────────────────────────────────────────────────────────┐</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="k">Step</span> <span class="n">5</span><span class="p">:</span> <span class="n">用户在浏览器中查看结果</span><span class="err">、</span><span class="n">编写反馈</span>                     <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span>  <span class="o">-</span> <span class="n">点击</span> <span class="s">&#34;Submit All Reviews&#34;</span> <span class="err">→</span> <span class="n">feedback</span><span class="p">.</span><span class="n">json</span>              <span class="err">│</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└──────────────────────────────────────────────────────────┘</span>       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──────────────────────────────┬──────────────────────────────────────┘</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">阶段</span> <span class="n">6</span><span class="err">：</span><span class="n">迭代改进</span><span class="err">（</span><span class="n">核心循环</span><span class="err">）</span>                                          <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌────────────────────────────────────┐</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">读取</span> <span class="n">feedback</span><span class="p">.</span><span class="n">json</span>                 <span class="err">│</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">聚焦有具体投诉的测试用例</span>            <span class="err">│</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">遵循四大原则改进</span> <span class="n">SKILL</span><span class="p">.</span><span class="n">md</span>           <span class="err">│</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└─────────────┬──────────────────────┘</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                <span class="err">│</span>                                                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                <span class="err">▼</span>                                                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">┌────────────────────────────────────┐</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">重新运行所有测试</span> <span class="err">→</span> <span class="n">iteration</span><span class="o">-</span><span class="n">N</span><span class="o">+</span><span class="n">1</span><span class="o">/</span>  <span class="err">│</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">启动评审</span><span class="err">（</span><span class="o">--</span><span class="n">previous</span><span class="o">-</span><span class="n">workspace</span><span class="err">）</span>   <span class="err">│</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">│</span> <span class="n">等待用户反馈</span>                       <span class="err">│</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">└─────────────┬──────────────────────┘</span>                             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                <span class="err">│</span>                                                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                <span class="err">▼</span>                                                    <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>        <span class="n">用户满意</span><span class="err">？</span> <span class="err">────</span> <span class="n">否</span> <span class="err">──▶</span> <span class="n">回到循环顶部</span>                            <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>            <span class="err">│</span>                                                        <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>           <span class="n">是</span>                                                        <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>            <span class="err">│</span>                                                        <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└────────────┼────────────────────────────────────────────────────────┘</span>
+</span></span><span class="line"><span class="cl">             <span class="err">│</span>
+</span></span><span class="line"><span class="cl">             <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">阶段</span> <span class="n">7</span><span class="err">：</span><span class="n">描述优化</span><span class="err">（</span><span class="n">可选</span><span class="err">）</span>                                              <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">1</span><span class="p">.</span> <span class="n">生成</span> <span class="n">20</span> <span class="n">条触发评估查询</span><span class="err">（</span><span class="n">应触发</span> <span class="o">+</span> <span class="n">不应触发</span><span class="err">）</span>                         <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">2</span><span class="p">.</span> <span class="n">用户审核</span><span class="err">（</span><span class="n">assets</span><span class="o">/</span><span class="n">eval_review</span><span class="p">.</span><span class="n">html</span><span class="err">）</span>                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">3</span><span class="p">.</span> <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">scripts</span><span class="p">.</span><span class="n">run_loop</span><span class="err">（</span><span class="n">自动化优化循环</span><span class="err">，</span><span class="n">最多</span> <span class="n">5</span> <span class="n">轮</span><span class="err">）</span>             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">4</span><span class="p">.</span> <span class="n">应用最佳描述到</span> <span class="n">SKILL</span><span class="p">.</span><span class="n">md</span>                                          <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└──────────────────────────────┬──────────────────────────────────────┘</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="err">┌─────────────────────────────────────────────────────────────────────┐</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span> <span class="n">阶段</span> <span class="n">8</span><span class="err">：</span><span class="n">打包发布</span>                                                      <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>                                                                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">scripts</span><span class="p">.</span><span class="n">package_skill</span> <span class="o">&lt;</span><span class="n">path</span><span class="o">/</span><span class="k">to</span><span class="o">/</span><span class="n">skill</span><span class="o">-</span><span class="n">folder</span><span class="o">&gt;</span>             <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">│</span>  <span class="err">→</span> <span class="n">输出</span> <span class="p">.</span><span class="n">skill</span> <span class="n">文件</span><span class="err">（</span><span class="n">zip</span> <span class="n">格式</span><span class="err">）</span>                                       <span class="err">│</span>
+</span></span><span class="line"><span class="cl"><span class="err">└─────────────────────────────────────────────────────────────────────┘</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="2数据流转生命周期">2、数据流转生命周期
+</h4><p>理解数据在各阶段之间如何流转，有助于理解整个系统的协作机制：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-scss" data-lang="scss"><span class="line"><span class="cl"><span class="nt">evals</span><span class="nc">.json</span> <span class="o">(</span><span class="nt">手动编写</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="err">│</span>
+</span></span><span class="line"><span class="cl">    <span class="err">▼</span>
+</span></span><span class="line"><span class="cl"><span class="o">[</span><span class="nt">并行测试运行</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl">    <span class="err">│</span>
+</span></span><span class="line"><span class="cl">    <span class="err">├──▶</span> <span class="nt">outputs</span><span class="o">/</span><span class="err">（</span><span class="nt">各测试用例的输出文件</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">    <span class="err">├──▶</span> <span class="nt">evals</span><span class="o">/</span><span class="nt">evals</span><span class="nc">.json</span><span class="err">（</span><span class="nt">仅</span> <span class="nt">prompts</span><span class="err">，</span><span class="nt">无</span> <span class="nt">assertions</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">    <span class="err">├──▶</span> <span class="nt">eval_metadata</span><span class="nc">.json</span><span class="err">（</span><span class="nt">每个测试用例的元数据</span> <span class="o">+</span> <span class="nt">断言</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">    <span class="err">└──▶</span> <span class="nt">timing</span><span class="nc">.json</span><span class="err">（</span><span class="nt">每次运行的计时数据</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">           <span class="err">│</span>
+</span></span><span class="line"><span class="cl">           <span class="err">▼</span>
+</span></span><span class="line"><span class="cl">    <span class="o">[</span><span class="nt">评分代理</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl">           <span class="err">│</span>
+</span></span><span class="line"><span class="cl">           <span class="err">└──▶</span> <span class="nt">grading</span><span class="nc">.json</span><span class="err">（</span><span class="nt">各断言通过</span><span class="o">/</span><span class="nt">失败</span> <span class="o">+</span> <span class="nt">证据</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                     <span class="err">▼</span>
+</span></span><span class="line"><span class="cl">              <span class="o">[</span><span class="nt">aggregate_benchmark</span><span class="nc">.py</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl">                     <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                     <span class="err">├──▶</span> <span class="nt">benchmark</span><span class="nc">.json</span><span class="err">（</span><span class="nt">结构化统计数据</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">                     <span class="err">└──▶</span> <span class="nt">benchmark</span><span class="nc">.md</span><span class="err">（</span><span class="nt">人类可读报告</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">▼</span>
+</span></span><span class="line"><span class="cl">                     <span class="o">[</span><span class="nt">generate_review</span><span class="nc">.py</span><span class="o">]</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                               <span class="err">└──▶</span> <span class="nt">浏览器评审页面</span>
+</span></span><span class="line"><span class="cl">                                         <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                                         <span class="err">▼</span>
+</span></span><span class="line"><span class="cl">                               <span class="nt">feedback</span><span class="nc">.json</span><span class="err">（</span><span class="nt">用户反馈</span><span class="err">）</span>
+</span></span><span class="line"><span class="cl">                                         <span class="err">│</span>
+</span></span><span class="line"><span class="cl">                                         <span class="err">▼</span>
+</span></span><span class="line"><span class="cl">                               <span class="o">[</span><span class="nt">改进</span> <span class="nt">SKILL</span><span class="nc">.md</span> <span class="err">→</span> <span class="nt">新一轮迭代</span><span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="八设计通用启示">八、设计通用启示
+</h3><ol>
+<li>
+<p><strong>评估即工程（Evaluation as Engineering）</strong></p>
+<p>skill-creator 将评估流程工程化为严格的 Schema 契约、并行实验、统计聚合和可视化审阅。好的 Skill 不是写出来的，而是<strong>测出来、比出来、迭代出来的</strong>。</p>
+</li>
+<li>
+<p><strong>人机协同的反馈回路</strong></p>
+<p>Eval Viewer 的设计体现了&quot;人类审阅优先&quot;的原则：Claude 不直接根据评估结果修改 Skill，而是先将 outputs 和 benchmark 呈现给用户，收集 <code>feedback.json</code> 后再做改进。这防止了自动化系统对量化指标的过度优化。</p>
+</li>
+<li>
+<p><strong>盲测与因果归因的方法论</strong></p>
+<p>在 Skill 改进场景中，&ldquo;新版本是否更好&quot;是一个容易被偏见污染的问题。Blind Comparison 引入了一种<strong>准实验设计</strong>：匿名输出 → 量化裁决 → 结构化归因。这套方法论可直接迁移到任何 A/B 评估场景。</p>
+</li>
+<li>
+<p><strong>解释&quot;为什么&quot;而非堆砌&quot;必须&rdquo;</strong></p>
+<p>SKILL.md 明确反对过度使用 &ldquo;ALWAYS / NEVER&rdquo; 和 &ldquo;super rigid structures（超刚性结构）&quot;，主张用的心智理论（ theory of mind） 向模型解释<strong>为什么</strong>某个做法重要。反映了 Anthropic 对当代 LLM 能力的洞察：足够智能的模型在理解意图后，比遵循死板规则表现更好。</p>
+</li>
+<li>
+<p><strong>提取重复工作到脚本</strong></p>
+<p>如果多个 test case 都导致子代理独立写出类似的辅助脚本，这就是<strong>强烈的信号</strong>：该逻辑应被提取为 Skill 的 bundled script。这是从 prompt engineering 向软件工程过渡的关键实践。</p>
+</li>
+<li>
+<p><strong>泛化而非过拟合</strong></p>
+<p>Skill 要被使用无数次、面对无数种 prompt。如果只为测试用例做针对性修改，skill 就废了。如果某个问题反复出现，不要堆砌越来越多的 <code>MUST</code>/<code>NEVER</code> 硬规则去&quot;堵漏洞&rdquo;，尝试换个隐喻或推荐不同的工作模式，而不是加更多死板约束。</p>
+</li>
+<li>
+<p><strong>保持提示精简</strong></p>
+<p>删除没有实际作用的内容——如果看起来技能让模型浪费了大量时间做无效率的事情，你可以尝试删除技能中导致这种情况的部分，看看会发生什么。</p>
+</li>
+</ol>
+<h3 id="九使用示例">九、使用示例
+</h3><h4 id="场景-a从零创建-skill"><strong>场景 A：从零创建 Skill</strong>
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">我想创建一个 Skill，用于把用户提供的 CSV 数据自动清洗后生成带图表的 Excel 报告。
+</span></span><span class="line"><span class="cl">清洗规则包括：去除空行、标准化日期格式、检测异常值。
+</span></span><span class="line"><span class="cl">图表需要自动判断最合适的类型（柱状图/折线图/饼图）。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134156892.png"
+	width="1191"
+	height="168"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134156892_hu_9cb44593f2706cfc.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134156892_hu_382ebe755a22160c.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516134156892"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="708"
+		data-flex-basis="1701px"
+	
+><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134141138.png"
+	width="1671"
+	height="368"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134141138_hu_6c37ad67b7c2bc7c.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134141138_hu_3efd66f22453317c.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516134141138"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="454"
+		data-flex-basis="1089px"
+	
+></p>
+<blockquote>
+<p>确认细节：异常值检查规则、图标选择逻辑、输出格式、依赖库、是否需要构造测试用例。</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134411175.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134411175_hu_d77f4f0daf0742fe.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134411175_hu_6457d76977580cc9.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516134411175"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<blockquote>
+<p>创建脚本文件</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134529660.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134529660_hu_91765e9730ff54e3.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134529660_hu_f09e374d068c6e2c.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516134529660"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<blockquote>
+<p>生成测试数据：</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134813440.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134813440_hu_d43e3ed7283d7ede.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134813440_hu_c73bf74075115053.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516134813440"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134837768.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134837768_hu_f683c68564f0a2e.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134837768_hu_6ef2fa4a2bec0d1d.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516134837768"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<blockquote>
+<p>生成评估数据，保存为<code>evals.json</code>。</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134916683.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134916683_hu_946db64bfe4bf52f.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516134916683_hu_d6d2dcf3aba24dac.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516134916683"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<blockquote>
+<p>创建测试工作目录</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135031768.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135031768_hu_1c67df4c68b114be.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135031768_hu_c8cbf7a640c86203.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516135031768"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<blockquote>
+<p>运行测试评估</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135226140.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135226140_hu_c4a6c53c3b40b72.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135226140_hu_decb10c9a163b728.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516135226140"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<blockquote>
+<p>测试评估期间保存<code>timing.json</code> 文件</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135540381.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135540381_hu_7266f3db74fec468.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135540381_hu_5bcd73dc7bc61246.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516135540381"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<blockquote>
+<p>生成分析可视化报告<code>review.html</code>：</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135725416.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135725416_hu_dd74989908233389.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516135725416_hu_5d2952046d137998.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516135725416"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<p>回车<code>yes</code>，claude 会自动调用浏览器打开<code>review.html</code>页面，可以看到一共6个页面，分别是：<code>sales_data.csv</code>、<code>category_data.csv</code>、<code>employee_data.csv</code> 三个文件的各<code>with skill</code>、<code>without skill </code>测试报告。</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516140251097.png"
+	width="1905"
+	height="942"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516140251097_hu_c72c7cc18dc74b9c.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516140251097_hu_9c3212f4eb1b4cad.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516140251097"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="202"
+		data-flex-basis="485px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516140808707.png"
+	width="1906"
+	height="941"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516140808707_hu_429fb033cf00aa20.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516140808707_hu_27343490a96482d0.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516140808707"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="202"
+		data-flex-basis="486px"
+	
+></p>
+<blockquote>
+<p>若发现问题或，不满意的地方，拉到下方，可以输入反馈。</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516142312922.png"
+	width="1896"
+	height="953"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516142312922_hu_291b24256b1efb1f.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516142312922_hu_f3e3c59aa7023e5d.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516142312922"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="198"
+		data-flex-basis="477px"
+	
+></p>
+<p>点击按钮<code>Submit All Reviews</code> ，下载feedback.json文件</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141938582.png"
+	width="1853"
+	height="940"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141938582_hu_38f98d4d4fbcb7fb.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141938582_hu_bb7971dd4186847b.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516141938582"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="197"
+		data-flex-basis="473px"
+	
+></p>
+<p>反馈文件<code>feedback.json</code>展示如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">{
+</span></span><span class="line"><span class="cl">  &#34;reviews&#34;: [
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;run_id&#34;: &#34;sales-eval-with_skill&#34;,
+</span></span><span class="line"><span class="cl">      &#34;feedback&#34;: &#34;&#34;,
+</span></span><span class="line"><span class="cl">      &#34;timestamp&#34;: &#34;2026-05-16T06:19:12.803Z&#34;
+</span></span><span class="line"><span class="cl">    },
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;run_id&#34;: &#34;sales-eval-without_skill&#34;,
+</span></span><span class="line"><span class="cl">      &#34;feedback&#34;: &#34;&#34;,
+</span></span><span class="line"><span class="cl">      &#34;timestamp&#34;: &#34;2026-05-16T06:19:12.803Z&#34;
+</span></span><span class="line"><span class="cl">    },
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;run_id&#34;: &#34;category-eval-with_skill&#34;,
+</span></span><span class="line"><span class="cl">      &#34;feedback&#34;: &#34;&#34;,
+</span></span><span class="line"><span class="cl">      &#34;timestamp&#34;: &#34;2026-05-16T06:19:12.803Z&#34;
+</span></span><span class="line"><span class="cl">    },
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;run_id&#34;: &#34;category-eval-without_skill&#34;,
+</span></span><span class="line"><span class="cl">      &#34;feedback&#34;: &#34;&#34;,
+</span></span><span class="line"><span class="cl">      &#34;timestamp&#34;: &#34;2026-05-16T06:19:12.803Z&#34;
+</span></span><span class="line"><span class="cl">    },
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;run_id&#34;: &#34;employee-eval-with_skill&#34;,
+</span></span><span class="line"><span class="cl">      &#34;feedback&#34;: &#34;&#34;,
+</span></span><span class="line"><span class="cl">      &#34;timestamp&#34;: &#34;2026-05-16T06:19:12.803Z&#34;
+</span></span><span class="line"><span class="cl">    },
+</span></span><span class="line"><span class="cl">    {
+</span></span><span class="line"><span class="cl">      &#34;run_id&#34;: &#34;employee-eval-without_skill&#34;,
+</span></span><span class="line"><span class="cl">      &#34;feedback&#34;: &#34;&#34;,
+</span></span><span class="line"><span class="cl">      &#34;timestamp&#34;: &#34;2026-05-16T06:19:12.803Z&#34;
+</span></span><span class="line"><span class="cl">    }
+</span></span><span class="line"><span class="cl">  ],
+</span></span><span class="line"><span class="cl">  &#34;status&#34;: &#34;complete&#34;
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>完成后，claude code 命令窗口展示：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141141266.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141141266_hu_b122fd45f1b281c8.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141141266_hu_1a5047da9014da95.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516141141266"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<p>最终生成技能<code>csv-excel-report</code>目录如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516142718031.png"
+	width="785"
+	height="361"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516142718031_hu_f18a904b2d95abfb.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516142718031_hu_f141a5cd0a01648d.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516142718031"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="217"
+		data-flex-basis="521px"
+	
+></p>
+<p>评测目录如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141729623.png"
+	width="753"
+	height="771"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141729623_hu_5313ca41c504cc84.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260516141729623_hu_157c9e5a25bb7b1b.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260516141729623"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="97"
+		data-flex-basis="234px"
+	
+></p>
+<p>创建的技能<code>csv-excel-report</code>的<code>SKILL.md</code>文件如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: csv-excel-report
+</span></span><span class="line"><span class="cl">description: &gt;
+</span></span><span class="line"><span class="cl">  自动将用户提供的 CSV 数据清洗后生成带图表的 Excel 报告。
+</span></span><span class="line"><span class="cl">  当用户提到 CSV 清洗、CSV 转 Excel、数据清洗报告、自动图表、异常值检测、日期格式标准化、生成 Excel 报告、数据可视化报告时，务必使用此 Skill。
+</span></span><span class="line"><span class="cl">  即使用户没有明确说 &#34;CSV&#34;，只要涉及&#34;把数据清洗后做成 Excel 报告&#34;或&#34;给数据加图表&#34;，也应使用此 Skill。
+</span></span><span class="line"><span class="cl">compatibility: Python 3, pandas, openpyxl
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># CSV 清洗与 Excel 报告生成
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">## 目标
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">帮助用户将 CSV 数据自动清洗并生成结构化的 Excel 报告，包含：
+</span></span><span class="line"><span class="cl">- 清洗后的数据（去除空行、标准化日期格式）
+</span></span><span class="line"><span class="cl">- 统计摘要（异常值统计等）
+</span></span><span class="line"><span class="cl">- 自动选择的图表（柱状图 / 折线图 / 饼图）
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">## 工作流程
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">1. **读取 CSV**：使用 pandas 读取用户提供的 CSV 文件。
+</span></span><span class="line"><span class="cl">2. **数据清洗**：
+</span></span><span class="line"><span class="cl">   - 去除完全为空的行（`dropna(how=&#34;all&#34;)`）。
+</span></span><span class="line"><span class="cl">   - 去除所有非空值仅为空白字符的行。
+</span></span><span class="line"><span class="cl">   - 标准化日期格式：检测日期列（≥50% 的值可解析为日期），统一转为 `YYYY-MM-DD` 格式。
+</span></span><span class="line"><span class="cl">   - 异常值检测：对数值型列使用 IQR 法（1.5×四分位距）标记异常值。
+</span></span><span class="line"><span class="cl">3. **生成 Excel 报告**：
+</span></span><span class="line"><span class="cl">   - Sheet 1 `清洗后数据`：包含清洗后的全部数据，异常值单元格以红色背景高亮。
+</span></span><span class="line"><span class="cl">   - Sheet 2 `统计摘要`：包含行数、日期列列表、各列异常值数量。
+</span></span><span class="line"><span class="cl">   - Sheet 3 `图表`：根据数据特征自动选择最合适的图表类型嵌入。
+</span></span><span class="line"><span class="cl">4. **图表自动选择规则**：
+</span></span><span class="line"><span class="cl">   - 若 X 轴列 ≥70% 为日期 → **折线图**
+</span></span><span class="line"><span class="cl">   - 若 X 轴为离散类别且类别数 ≤10 → **饼图**
+</span></span><span class="line"><span class="cl">   - 其他情况 → **柱状图**
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">## 使用方法
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">优先使用 bundled 脚本 `scripts/generate_report.py`：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">```bash
+</span></span><span class="line"><span class="cl">python scripts/generate_report.py &lt;input.csv&gt; &lt;output.xlsx&gt;
+</span></span><span class="line"><span class="cl">```
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">如果环境未安装依赖，先安装：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">```bash
+</span></span><span class="line"><span class="cl">pip install pandas openpyxl
+</span></span><span class="line"><span class="cl">```
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">如果用户的数据需要额外定制（如自定义异常值阈值、指定图表类型、多列同时绘图），可以基于脚本逻辑修改或重写 Python 代码。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">## 输出格式
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">生成的 `.xlsx` 文件包含以下工作表：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">| Sheet 名称 | 内容 |
+</span></span><span class="line"><span class="cl">|---|---|
+</span></span><span class="line"><span class="cl">| 清洗后数据 | 清洗后的数据表，表头蓝色背景，异常值红色高亮 |
+</span></span><span class="line"><span class="cl">| 统计摘要 | 数据概览：行数、日期列、异常值统计 |
+</span></span><span class="line"><span class="cl">| 图表 | 自动生成的图表（折线/柱状/饼图） |
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">## 注意事项
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">- 日期检测支持多种常见格式：`YYYY-MM-DD`、`YYYY/MM/DD`、`DD-MM-YYYY`、`DD/MM/YYYY` 等。
+</span></span><span class="line"><span class="cl">- 异常值仅做高亮标记，不会删除原始数据。
+</span></span><span class="line"><span class="cl">- 图表自动选择基于第一组合适的列（优先非数值列作为 X 轴，数值列作为 Y 轴）。
+</span></span><span class="line"><span class="cl">- 如果数据中没有合适的数值列，图表 Sheet 会显示提示信息。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>还有其它<code>skill-creator</code>的使用场景功能，可以自行试下哦。以下是使用技能的提示词示例。</p>
+</blockquote>
+<h4 id="场景-b改进现有-skill"><strong>场景 B：改进现有 Skill</strong>
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">我已经有一个处理 PDF 的 Skill，但发现它在处理扫描版 PDF 时经常失败。
+</span></span><span class="line"><span class="cl">请帮我运行一些测试，找出问题所在，并改进 Skill 的指令或添加辅助脚本。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="场景-c量化评估-skill-效果"><strong>场景 C：量化评估 Skill 效果</strong>
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">我优化了我的 xlsx-skill，想确认新版本是否真的比旧版本更好。
+</span></span><span class="line"><span class="cl">请帮我做一组盲测对比，看看在相同的 5 个测试用例上，新版和旧版谁的表现更好。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="场景-d优化-skill-触发率"><strong>场景 D：优化 Skill 触发率</strong>
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">我发现我的 dashboard-skill 有时候用户提到&#34;数据可视化&#34;时不会被触发。
+</span></span><span class="line"><span class="cl">请帮我优化 SKILL.md 里的 description，提高触发准确率。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="场景-e打包分发"><strong>场景 E：打包分发</strong>
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">我的 Skill 已经测试好了，请帮我打包成 .skill 文件，。
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/skill/">Skill</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339.png" width="1678" height="849" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #bbd4db80 0%, #022556C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/images/image-20260425153556852.png" width="1315" height="763" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #23449880 0%, #fafbfdC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552.png" width="1114" height="809" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #1163fd80 0%, #f9f9f9C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Skill 从入门到精通——第三章 Skills 使用及管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260414065402554.png" width="1170" height="687" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第二章 Skills 规范详解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #e4eef480 0%, #e4eef4C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第二章 Skills 规范详解</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

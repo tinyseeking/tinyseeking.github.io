@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="doc-coauthoring是 Anthropic 官方发布的**结构化文档协同写作 Skill**，核心定位是：通过三阶段工作流（Context Gathering → Refinement & Structure → Reader Testing），将用户隐性的领域知识高效转化为对读者有效的高质量结构化文档。">
+<title>Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析">
+<meta property='og:description' content="doc-coauthoring是 Anthropic 官方发布的**结构化文档协同写作 Skill**，核心定位是：通过三阶段工作流（Context Gathering → Refinement & Structure → Reader Testing），将用户隐性的领域知识高效转化为对读者有效的高质量结构化文档。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Skill' /><meta property='article:published_time' content='2026-04-07T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-04-07T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析">
+<meta name="twitter:description" content="doc-coauthoring是 Anthropic 官方发布的**结构化文档协同写作 Skill**，核心定位是：通过三阶段工作流（Context Gathering → Refinement & Structure → Reader Testing），将用户隐性的领域知识高效转化为对读者有效的高质量结构化文档。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#doc-coauthoring-skill-解析文档协同创作">doc-coauthoring Skill 解析—文档协同创作</a>
+          <ol>
+            <li><a href="#一技能概述">一、技能概述</a></li>
+            <li><a href="#二项目文件结构">二、项目文件结构</a></li>
+            <li><a href="#三核心决策树">三、核心决策树</a></li>
+            <li><a href="#四skillmd-结构概览">四、SKILL.md 结构概览</a></li>
+            <li><a href="#五主要工作流">五、主要工作流</a></li>
+            <li><a href="#六核心机制解析">六、核心机制解析</a></li>
+            <li><a href="#七设计通用启示">七、设计通用启示</a></li>
+            <li><a href="#八使用示例">八、使用示例</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339.png" width="1678" height="849" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/agent-skill/" style="background-color: #2a9d8f; color: #fff;">
+                Skill 从入门到精通
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            doc-coauthoring是 Anthropic 官方发布的**结构化文档协同写作 Skill**，核心定位是：通过三阶段工作流（Context Gathering → Refinement &amp; Structure → Reader Testing），将用户隐性的领域知识高效转化为对读者有效的高质量结构化文档。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-04-07T00:00:00Z'>2026年4月7日星期二</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 16 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#doc-coauthoring-skill-解析文档协同创作">doc-coauthoring Skill 解析—文档协同创作</a>
+          <ol>
+            <li><a href="#一技能概述">一、技能概述</a></li>
+            <li><a href="#二项目文件结构">二、项目文件结构</a></li>
+            <li><a href="#三核心决策树">三、核心决策树</a></li>
+            <li><a href="#四skillmd-结构概览">四、SKILL.md 结构概览</a></li>
+            <li><a href="#五主要工作流">五、主要工作流</a></li>
+            <li><a href="#六核心机制解析">六、核心机制解析</a></li>
+            <li><a href="#七设计通用启示">七、设计通用启示</a></li>
+            <li><a href="#八使用示例">八、使用示例</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="skill-从入门到精通第四章-anthropic-官方skill解析doc-coauthoring-skill-解析">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析
+</h1><h3 id="doc-coauthoring-skill-解析文档协同创作">doc-coauthoring Skill 解析—文档协同创作
+</h3><h4 id="一技能概述">一、技能概述
+</h4><p><code>doc-coauthoring</code> 是 Anthropic 官方发布的<strong>结构化文档协同写作 Skill</strong>，核心定位是：通过三阶段工作流（Context Gathering → Refinement &amp; Structure → Reader Testing），将用户隐性的领域知识高效转化为对读者有效的高质量结构化文档。</p>
+<p><strong>触发场景</strong>：</p>
+<ul>
+<li>用户提及写作意图：&ldquo;write a doc&rdquo;, &ldquo;draft a proposal&rdquo;, &ldquo;create a spec&rdquo;, &ldquo;write up&rdquo;</li>
+<li>用户提及特定文档类型：&ldquo;PRD&rdquo;, &ldquo;design doc&rdquo;, &ldquo;decision doc&rdquo;, &ldquo;RFC&rdquo;</li>
+<li>用户似乎正在启动一项实质性写作任务</li>
+</ul>
+<h4 id="二项目文件结构">二、项目文件结构
+</h4><p>该 Skill 采用 Anthropic Skills 规范的最简结构——<strong>单文件 Skill</strong>，无辅助脚本、无外部依赖、无配置目录。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">skills/doc-coauthoring/
+</span></span><span class="line"><span class="cl">└── SKILL.md          # 唯一工程文件，包含完整元数据 + 工作流指令
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>架构特征</strong>：</p>
+<ul>
+<li><strong>零外部依赖</strong>：无 Python/JS 代码、无配置文件、无工具脚本，纯 Markdown 语义驱动。</li>
+<li><strong>单文件自治</strong>：全部行为定义、触发条件、阶段逻辑、边界处理、质量策略均内聚于 <code>SKILL.md</code>。</li>
+<li><strong>声明式控制</strong>：通过 frontmatter 声明技能元数据，通过 Markdown 标题层级组织决策树与指令块。</li>
+</ul>
+<h4 id="三核心决策树">三、核心决策树
+</h4><p>Skill 激活后，Claude 依据以下决策树执行：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">用户输入触发 Skill（description 匹配）
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├─→ 提供结构化工作流选项（三阶段说明）
+</span></span><span class="line"><span class="cl">│   ├─→ 用户拒绝 → 自由模式（freeform）写作
+</span></span><span class="line"><span class="cl">│   └─→ 用户接受 → 进入 Stage 1
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">Stage 1: Context Gathering（上下文收集）
+</span></span><span class="line"><span class="cl">│   ├─→ 初始元问题（5问：生成文档类型/受众/目标/模板/约束）
+</span></span><span class="line"><span class="cl">│   ├─→ 信息倾倒（Info Dumping）
+</span></span><span class="line"><span class="cl">│   │   ├─→ 集成可用？→ 自动拉取 Slack/Drive/Teams 等上下文
+</span></span><span class="line"><span class="cl">│   │   └─→ 集成不可用？→ 建议启用 Connectors 或手动粘贴
+</span></span><span class="line"><span class="cl">│   ├─→ 澄清追问（5-10问，基于缺口生成）
+</span></span><span class="line"><span class="cl">│   └─→ 退出条件：能问出边缘案例与权衡问题，无需解释基础概念
+</span></span><span class="line"><span class="cl">│       └─→ 过渡至 Stage 2
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">Stage 2: Refinement &amp; Structure（精修与结构化）
+</span></span><span class="line"><span class="cl">│   ├─→ 确定章节顺序（从最多未知数的章节开始）
+</span></span><span class="line"><span class="cl">│   ├─→ 创建文档骨架（Artifacts / 本地 Markdown 文件）
+</span></span><span class="line"><span class="cl">│   ├─→ 逐节循环（每节6步）：
+</span></span><span class="line"><span class="cl">│   │   ├─ Step 1: 澄清问题                                       
+</span></span><span class="line"><span class="cl">│   │   ├─ Step 2: 头脑风暴（5-20 选项）                          
+</span></span><span class="line"><span class="cl">│   │   ├─ Step 3: 用户筛选整合（keep/remove/combine）         
+</span></span><span class="line"><span class="cl">│   │   ├─ Step 4: 缺口检查                                       
+</span></span><span class="line"><span class="cl">│   │   ├─ Step 5: 起草（str_replace 替换占位符）                 
+</span></span><span class="line"><span class="cl">│   │   └─ Step 6: 迭代精炼（直至满意，3 次无变更触发删减检查）   
+</span></span><span class="line"><span class="cl">│   ├─→ 质量检查：连续3次迭代无实质变更 → 提议删减
+</span></span><span class="line"><span class="cl">│   ├─→ 近完成检查（80%+章节完成）：全文一致性/冗余/&#34;slop&#34;审查
+</span></span><span class="line"><span class="cl">│   └─→ 过渡至 Stage 3
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">Stage 3: Reader Testing（读者测试）
+</span></span><span class="line"><span class="cl">│   ├─→ 子代理可用？（Claude Code 环境）
+</span></span><span class="line"><span class="cl">│   │   ├─→ 自动执行：预测问题 → 子代理测试 → 额外检查 → 修复循环
+</span></span><span class="line"><span class="cl">│   │   └─→ 退出条件：Reader Claude 一致正确回答且无新缺口
+</span></span><span class="line"><span class="cl">│   └─→ 子代理不可用？（Claude.ai Web）
+</span></span><span class="line"><span class="cl">│       └─→ 手动执行：指导用户开新对话粘贴文档进行测试
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">Final Review（最终审查）
+</span></span><span class="line"><span class="cl">│   ├─→ 用户最终通读建议
+</span></span><span class="line"><span class="cl">│   ├─→ 事实/链接/技术细节复核
+</span></span><span class="line"><span class="cl">│   └─→ 交付完成 + 附录/更新建议
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="四skillmd-结构概览">四、SKILL.md 结构概览
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: doc-coauthoring
+</span></span><span class="line"><span class="cl">description: 引导用户按照规范的三阶段工作流程完成文档合著。适用于用户需要编写文档、方案提案、技术规格书、决策文档、征求意见稿（RFC）及其他同类结构化内容的场景。当用户提及撰写文档、起草规格说明、制作方案提案等同类文档编写任务时，触发本流程。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">[概述：通过三阶段工作流，将用户零散上下文转化为对读者有效的高质量结构化文档]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## When to Offer 适用发起时机
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">主动向用户提供这套标准化工作流程，说明三个阶段内容，随后**主动征询用户意愿**，绝不强行推进。若用户拒绝，则改为自由式协助撰写。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## The 3-Stage Workflow 三阶段工作流程
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### 第一阶段：信息收集
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">目标：补齐用户与claude之间的信息认知差。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">执行流程：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 提出基础问询：文档类型、目标读者、业务影响、是否需套用模板、各类约束条件
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 若用户提供模板或现有文档，进行阅读核查；标注缺少替代文本的图片
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 引导用户完整提供所有相关信息：背景情况、过往讨论、业务立场、时间线、技术细节等
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 若有集成工具可调用，自动拉取相关资料；若无，则建议用户接入工具或直接粘贴内容
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 基于信息缺失点，生成 5-10 个澄清疑问
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">结束条件：无需再解释基础常识，提问可直接聚焦边界场景与利弊取舍问题。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### 第二阶段：内容打磨与框架搭建
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">目标：逐章节搭建并完善章节内容。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">框架搭建：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 根据文档类型，建议划分 3-5 个章节；优先从信息最不确定的章节开始撰写
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 搭建文档骨架：有可用文档资产则直接复用，无则新建本地 Markdown 文件，预留「待撰写」占位符
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">单章节六步循环流程：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">1.</span> <span class="gs">**信息澄清**</span>：针对当前章节提出 5-10 个问题
+</span></span><span class="line"><span class="cl"><span class="k">2.</span> <span class="gs">**思路头脑风暴**</span>：列出 5-20 条编号思路，可按需补充更多
+</span></span><span class="line"><span class="cl"><span class="k">3.</span> <span class="gs">**筛选整合**</span>：由用户选择保留、删除或合并内容，并简要说明理由
+</span></span><span class="line"><span class="cl"><span class="k">4.</span> <span class="gs">**缺漏核查**</span>：询问是否遗漏关键核心信息
+</span></span><span class="line"><span class="cl"><span class="k">5.</span> <span class="gs">**内容初稿撰写**</span>：使用<span class="sb">`str_replace`</span>功能替换占位符，**不要完整重印整篇文档**
+</span></span><span class="line"><span class="cl"><span class="k">6.</span> <span class="gs">**迭代优化**</span>：精准微调内容，直至用户满意
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">关键要求：连续 3 轮迭代无实质性内容修改时，主动询问可删减哪些不影响核心价值的内容。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">质量把控：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 文档完成度达 80% 以上时，通读全文，检查行文流畅度、内容冗余、逻辑矛盾、空话赘述等问题
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 退出第二阶段前，整体通读审核全文逻辑连贯性
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">### 第三阶段：读者视角测试
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">目标：验证零基础读者也能顺畅读懂本文档。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">执行流程：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">1.</span> 生成 5-10 个读者会现实地问的问题
+</span></span><span class="line"><span class="cl"><span class="k">2.</span> 启用**全新的claude对话实例**测试（避免原有上下文信息干扰）
+</span></span><span class="line"><span class="cl"><span class="k">3.</span> 核查文档歧义点、隐含错误假设、逻辑矛盾问题
+</span></span><span class="line"><span class="cl"><span class="k">4.</span> 反馈所有信息缺漏点，返回第二阶段进行修改完善
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">关键要求：若有sub-agents（子智能)代理可用，直接自动化完成测试；若无，则给出完整的手动操作步骤：新开一个 claude.ai 对话、粘贴文档、逐项提问核验。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">结束条件：全新测试实例可准确解答读者问题，且未发现新的信息缺漏与表述歧义。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Final Review 最终审阅
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 确认文档已通过读者视角测试
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 提醒用户：**文档所有权归用户所有，文档质量由用户全权负责**
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 建议用户自行最终通读，核对事实、链接有效性及业务影响描述
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 可提供最后一轮审阅优化，或标记任务完成
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 实用建议：可在附录附上本次对话链接；复杂细节内容统一放入附录；结合真实反馈持续迭代优化文档
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## Global Guidance 全局准则
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">语气：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 表述直白、流程化；仅在影响执行逻辑时，补充说明背后依据
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 不刻意推介这套流程，按规范直接执行即可
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">异常情况处理：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 用户想跳过某环节：确认是否直接跳过并改为自由撰写模式
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 用户表现出烦躁情绪：先表示理解，同时提供提速优化方案
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **始终**交由用户自主调整流程节奏与环节
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">上下文管理：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 信息缺失时主动问询补齐
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 不积压信息漏洞，发现缺漏立即核实补充
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">文档资产管理：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 仅完整章节定稿时，使用 <span class="sb">`create_file`</span>功能
+</span></span><span class="line"><span class="cl"><span class="k">-</span> **所有**内容修改统一使用<span class="sb">`str_replace`</span>功能
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 每次修改后，同步提供文档资产链接
+</span></span><span class="line"><span class="cl"><span class="k">-</span> 头脑风暴清单**严禁**存入文档资产，仅保留在对话记录中
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gs">**重要原则**</span>：核心目标是产出**读者真正能读懂、能用**的文档，而非一味追求撰写速度。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="五主要工作流">五、主要工作流
+</h4><p>Skill 定义了一条<strong>三阶段端到端工作流</strong>，-严格串行推进：</p>
+<h5 id="stage-1-context-gathering上下文收集">Stage 1: Context Gathering（上下文收集）
+</h5><p><strong>目标</strong>：缩小用户所知与 Claude 所知之间的认知差距，为后续智能指导建立知识基线。</p>
+<p><strong>执行步骤</strong>：</p>
+<ol>
+<li><strong>初始元问题</strong>：抛出5个结构化问题（文档类型、受众、期望影响、模板/格式、其他约束），允许用户速记回答。</li>
+<li><strong>模板/集成探测</strong>：若用户提及模板或共享文档，探测可用集成（MCP Servers / Connectors）自动拉取；若编辑现有文档，检查图片 alt-text 缺失（无障碍与 AI 可读性双重考量）。</li>
+<li><strong>信息倾倒（Info Dumping）</strong>：鼓励用户无组织地倾倒所有背景信息（项目背景、团队讨论、替代方案排除理由、组织政治、时间线、技术架构、利益相关者顾虑）。提供多种输入方式：意识流、频道链接、文档链接。</li>
+<li><strong>集成自适应</strong>：检测到 Slack/Teams/Drive/SharePoint 等 MCP 集成时主动调用；无集成时建议用户在 Claude 设置中启用 Connectors。</li>
+<li><strong>澄清追问</strong>：用户完成初始倾倒后，生成 5-10 个编号问题，聚焦上下文缺口。用户可用速记、链接或继续倾倒回答。</li>
+<li><strong>退出判定</strong>：当问题显示出理解时——当可以在不需要解释基础的情况下询问边缘情况和权衡时，视为已收集到足够的上下文。</li>
+</ol>
+<h5 id="stage-2-refinement--structure精修与结构化">Stage 2: Refinement &amp; Structure（精修与结构化）
+</h5><p><strong>目标</strong>：通过逐节构建、Brainstorm-Curation-Draft-Refine 闭环，产出高质量文档。</p>
+<p><strong>执行步骤</strong>：</p>
+<ol>
+<li>
+<p><strong>章节排序策略</strong>：从&quot;最多未知数的章节&quot;开始（决策文档的核心提案、技术规范的技术方案），摘要部分最后处理。</p>
+</li>
+<li>
+<p><strong>骨架创建</strong>：</p>
+<ul>
+<li><strong>Artifacts 可用</strong>：调用 <code>create_file</code> 创建 Artifact，生成带 <code>[To be written]</code> 占位符的完整章节骨架。</li>
+<li><strong>无 Artifacts</strong>：在工作目录创建 <code>.md</code> 文件（如 <code>decision-doc.md</code>）。</li>
+</ul>
+</li>
+<li>
+<p><strong>逐节6步循环</strong>（每章节重复）：</p>
+<ul>
+<li><strong>Step 1 Clarifying Questions(澄清问题)</strong>：针对当前章节生成 5-10 个具体问题。</li>
+<li><strong>Step 2 Brainstorm(头脑风暴)</strong>：生成 5-20 个编号选项（复杂度自适应），覆盖用户可能遗忘的上下文角度。</li>
+<li><strong>Step 3 Curation(筛选整合)</strong>：用户通过编号选择保留/删除/合并（如 &ldquo;Keep 1,4,7,9&rdquo;），Claude 解析自由形式反馈。</li>
+<li><strong>Step 4 Gap Check(缺口检查)</strong>：基于用户选择，询问是否有重要遗漏。</li>
+<li><strong>Step 5 Drafting(起草)</strong>：使用 <code>str_replace</code> 替换占位符为实际内容（<strong>绝不重印全文</strong>）。</li>
+<li><strong>Step 6 Iterative Refinement(迭代优化)</strong>：根据用户反馈手术级编辑，迭代至满意。</li>
+</ul>
+</li>
+<li>
+<p><strong>质量检查</strong>：连续3次迭代无实质变更时，主动提议删减（&ldquo;能否在不丢失信息的前提下删除内容？&quot;）。</p>
+</li>
+<li>
+<p><strong>近完成审查（80%+）</strong>：全文重读，检查跨节一致性、冗余、矛盾、&ldquo;slop&rdquo;（通用填充内容）。</p>
+</li>
+</ol>
+<h5 id="stage-3-reader-testing读者测试">Stage 3: Reader Testing（读者测试）
+</h5><p><strong>目标</strong>：用零上下文 Claude 实例验证文档对真实读者的有效性，捕获作者盲区。</p>
+<p><strong>双路径执行：</strong></p>
+<p>路径 A：子代理可用（Claude Code）</p>
+<ol>
+<li><strong>预测问题</strong>：生成 5-10 个读者可能提出的问题。</li>
+<li><strong>子代理测试</strong>：对每个问题，调用子代理（全新的 Claude 实例，Reader Claude）对这些问题作答，无本对话上下文，仅传入文档内容+问题，汇总 Reader Claude 对每个问题的正确/错误之处。</li>
+<li><strong>额外检查</strong>：调用子代理检查歧义、错误假设、内部矛盾。</li>
+<li><strong>修复循环</strong>：发现问题 → 列出具体问题 → 回退至 Stage 2 精修。</li>
+</ol>
+<p>路径 B：子代理不可用（Claude.ai Web）</p>
+<ol>
+<li><strong>预测问题</strong>：同上。</li>
+<li><strong>手动测试指导</strong>：指导用户打开新 Claude 对话（https://claude.ai），粘贴文档，逐问测试。</li>
+<li><strong>额外检查清单</strong>：要求 Reader Claude 回答三个元问题（歧义点、假设知识、内部矛盾）。</li>
+<li><strong>迭代修复</strong>：收集 Reader Claude 的困惑点，回退精修。</li>
+</ol>
+<p><strong>退出条件</strong>：Reader Claude 能一致正确回答且不再暴露新缺口/歧义。</p>
+<h4 id="六核心机制解析">六、核心机制解析
+</h4><h5 id="1上下文传递的三层漏斗context-funnel">1、上下文传递的三层漏斗（Context Funnel）
+</h5><p>Stage 1 采用<strong>漏斗式信息收敛</strong>策略：</p>
+<ol>
+<li><strong>元问题层</strong>（结构化）：5个高阶（文档类型、受众、期望影响、模板/格式、约束）问题快速框定文档边界。</li>
+<li><strong>倾倒层</strong>（非结构化）：鼓励用户倾倒他们拥有的所有上下文，不必担心组织，最大化信息熵。</li>
+<li><strong>追问层</strong>（靶向性）：基于已收集上下文生成缺口问题，精准补全。</li>
+</ol>
+<p><strong>底层原理</strong>：</p>
+<ul>
+<li><strong>认知负荷分配</strong>：元问题降低用户启动成本（只需回答5个简单问题），倾倒层释放用户记忆缓存，追问层由 Claude 承担组织负担（&ldquo;你来说，我来问&rdquo;）。</li>
+<li><strong>集成探测逻辑</strong>：在倾倒阶段主动检测上下文源（Slack 频道、Drive 文档、Teams 线程），通过 MCP 集成自动拉取，避免手动复制粘贴的信息损耗。</li>
+<li><strong>alt-text 检查</strong>：编辑现有文档时，检查图片 alt-text 缺失——这是<strong>AI 可读性工程</strong>的关键细节：当其他用户将文档粘贴到 Claude 时，无 alt-text 的图片对 Claude 完全不可见。</li>
+</ul>
+<h5 id="2brainstorm-curation-draft-闭环bcd-loop">2、Brainstorm-Curation-Draft 闭环（BCD Loop）
+</h5><p>Stage 2 的核心是<strong>节级六步循环</strong>，其设计遵循&quot;发散 → 收敛 → 固化 → 精修&quot;的创作规律：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>步骤</th>
+          <th>动作</th>
+          <th>工具/方法</th>
+          <th>设计目的</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>澄清问题</td>
+          <td>对话（5-10 个问题）</td>
+          <td>缩小该节的信息缺口</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>头脑风暴</td>
+          <td>对话（5-20 个编号选项）</td>
+          <td>发散探索，防止遗漏</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>筛选</td>
+          <td>对话（keep/remove/combine）</td>
+          <td>用户主权决策，Claude 学习偏好</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>缺口检查</td>
+          <td>对话</td>
+          <td>防止&quot;选完即对&quot;的确认偏误</td>
+      </tr>
+      <tr>
+          <td>5</td>
+          <td>起草</td>
+          <td><code>str_replace</code> 替换占位符</td>
+          <td>将共识固化为文本</td>
+      </tr>
+      <tr>
+          <td>6</td>
+          <td>迭代精炼</td>
+          <td><code>str_replace</code> 局部编辑</td>
+          <td>精准打磨，禁止全文重印</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>底层原理</strong>：</p>
+<ul>
+<li><strong>选项过载管理</strong>：Brainstorm 阶段生成 5-20 个选项（而非一次性生成完整内容），降低用户认知负荷，将&quot;创作&quot;转化为&quot;选择&rdquo;。</li>
+<li><strong>筛选整合（Curatorial Writing）</strong>：用户通过编号选择（&ldquo;Keep 1,4,7,9&rdquo;）表达意图，Claude 负责解析自由形式反馈并映射到结构化操作——这是<strong>人机协作的交互协议设计</strong>。</li>
+<li><strong>手术级编辑（Surgical Editing）</strong>：强制使用 <code>str_replace</code> 而非全文重印，确保：
+<ul>
+<li>上下文窗口高效利用（避免重复传输未变更内容）</li>
+<li>编辑原子性（每次变更可独立追踪与回滚）</li>
+<li>用户注意力聚焦（仅展示变更部分）</li>
+</ul>
+</li>
+</ul>
+<h5 id="3零上下文读者测试fresh-claude-test">3、零上下文读者测试（Fresh Claude Test）
+</h5><p><strong>源码设计</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Reader Claude = New Claude Instance + Document Content + Question (No Context Bleed)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>底层原理</strong>：</p>
+<ul>
+<li><strong>作者盲区（Curse of Knowledge）</strong>：作者因掌握背景知识而难以感知文档的模糊点。Fresh Claude Test 通过<strong>上下文隔离</strong>模拟真实读者的零知识状态。</li>
+<li><strong>子代理架构</strong>：在 Claude Code 环境中，Skill 指导 Claude 调用子代理（sub-agent）执行测试——这是<strong>元认知外包</strong>：主对话的 Claude 保留完整上下文负责写作，子代理仅接收文档内容负责阅读验证，两者形成<strong>写作-阅读对抗网络</strong>。</li>
+<li><strong>对抗性验证</strong>：通过预测读者问题 → 子代理回答 → 比对预期与实际，构建自动化文档质量门禁。</li>
+</ul>
+<h5 id="4artifact-与文件系统的自适应策略">4、Artifact 与文件系统的自适应策略
+</h5><p>Skill 对文档载体的选择遵循<strong>环境自适应</strong>原则：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">If access to artifacts is available:
+</span></span><span class="line"><span class="cl">  → create_file (Artifact) + str_replace + 提供 Artifact 链接
+</span></span><span class="line"><span class="cl">Else:
+</span></span><span class="line"><span class="cl">  → 创建本地 .md 文件 + str_replace + 确认文件名
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>环境感知</strong>：Skill 不假设 Artifacts 一定可用（Claude Code CLI 与 Claude.ai Web 的能力差异），通过条件分支实现<strong>能力降级优雅处理</strong>。</p>
+<h4 id="七设计通用启示">七、设计通用启示
+</h4><h5 id="1工作流即代码">1、工作流即代码
+</h5><p><code>doc-coauthoring</code> 证明：复杂的交互工作流可以完全通过声明式 Markdown 指令实现，无需传统编程语言。其本质是将<strong>对话状态机</strong>编码为标题层级、条件段落与退出条件。</p>
+<h5 id="2分阶段推进--退出条件">2、分阶段推进 + 退出条件
+</h5><ul>
+<li>每个阶段有明确的<strong>退出条件</strong>（Stage 1: 能追问边缘案例; Stage 3: 读者测试一致通过）</li>
+<li>避免无限循环：3轮无改动触发器、用户拒绝即退场</li>
+<li><strong>启示</strong>: 工作流型 Skill 必须设计可观测的退出条件，否则容易陷入无限迭代</li>
+</ul>
+<h5 id="3发散-收敛漏斗">3、发散-收敛漏斗
+</h5><ul>
+<li>每个章节的6步循环本质是一轮发散-收敛</li>
+<li>头脑风暴数量有明确区间（5-20），防止过度发散或不足</li>
+<li><strong>启示</strong>: 结构化创作任务应先发散再收敛，避免过早收敛导致遗漏</li>
+</ul>
+<h5 id="4环境检测而非环境假设">4、环境检测而非环境假设
+</h5><ul>
+<li>不假设运行环境，运行时通过条件指令动态适配</li>
+<li>Stage 3 的子代理/手动双路径展示了 Skill 的<strong>运行时感知能力</strong>。单一 Skill 通过条件逻辑适配不同运行时环境，最大化复用性而不牺牲环境特性。</li>
+<li><strong>启示</strong>: Skill 应设计为跨环境可运行，通过检测而非配置来适配</li>
+</ul>
+<h5 id="5人机协作协议">5、人机协作协议
+</h5><ul>
+<li><strong>策展优于创作</strong>：让用户做选择题（Keep/Remove/Combine）而非填空题，降低认知负荷。</li>
+<li><strong>手术级编辑</strong>：<code>str_replace</code> 替代全文重印，是上下文窗口管理与用户注意力管理的关键。</li>
+<li><strong>对抗性验证</strong>：引入&quot;零上下文读者&quot;概念，将质量验证从主观感受转化为可执行的客观测试。</li>
+</ul>
+<h5 id="6质量工程红线">6、质量工程红线
+</h5><ul>
+<li><strong>连续3次无实质变更 → 主动提议删减</strong>：防止过度打磨与冗余膨胀。</li>
+<li><strong>80%完成度触发全文审查</strong>：避免早期章节的假设与后期章节冲突。</li>
+<li><strong>&ldquo;slop&quot;检测</strong>：明确将&quot;通用填充内容&quot;列为审查目标，对抗 LLM 的&quot;安全但空洞&quot;倾向</li>
+</ul>
+<h4 id="八使用示例">八、使用示例
+</h4><h5 id="1使用场景">1、使用场景
+</h5><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>场景</th>
+          <th>文档类型</th>
+          <th>核心价值</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>技术决策</strong></td>
+          <td>Architecture Decision Record (ADR)</td>
+          <td>通过 Reader Testing 验证技术方案对非技术利益相关者的可理解性</td>
+      </tr>
+      <tr>
+          <td><strong>产品规划</strong></td>
+          <td>Product Requirements Doc (PRD)</td>
+          <td>利用 Brainstorm-Curation 穷尽需求场景，避免遗漏边缘案例</td>
+      </tr>
+      <tr>
+          <td><strong>项目提案</strong></td>
+          <td>Technical Proposal / RFC</td>
+          <td>上下文收集阶段自动拉取 Slack 讨论与 Drive 背景文档，确保提案基于完整信息</td>
+      </tr>
+      <tr>
+          <td><strong>规范制定</strong></td>
+          <td>API Spec / Design Doc</td>
+          <td>分节构建确保每个接口/模块的约束条件被显式讨论而非隐含假设</td>
+      </tr>
+      <tr>
+          <td><strong>复盘文档</strong></td>
+          <td>Post-mortem / Incident Report</td>
+          <td>信息倾倒阶段鼓励无过滤输入（包括组织政治与人为因素），避免 sanitized 版本</td>
+      </tr>
+  </tbody>
+</table></div>
+<h5 id="2调用示例">2、调用示例
+</h5><h6 id="示例-1技术规范文档"><strong>示例 1：技术规范文档</strong>
+</h6><p>在Claude code中输入指令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">我需要写一份关于用户认证系统重构的技术规范，目标读者是后端开发团队。
+</span></span><span class="line"><span class="cl">文档需要包含：背景、现有问题、解决方案设计、实施计划、风险评估。
+</span></span><span class="line"><span class="cl">使用 doc-coauthoring 技能帮我完成。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行过程部分展示如下：</p>
+<blockquote>
+<p>Stage 1: Context Gathering（上下文收集）：抛出5个结构化问题（文档类型、受众、期望影响、模板/格式、其他约束）</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223544958.png"
+	width="1680"
+	height="899"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223544958_hu_688c85f6a9962f89.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223544958_hu_c48cfb90ff6d0981.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506223544958"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="186"
+		data-flex-basis="448px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223620868.png"
+	width="1665"
+	height="501"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223620868_hu_c1c4ce1e23875560.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223620868_hu_a21e4521c582a831.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506223620868"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="332"
+		data-flex-basis="797px"
+	
+></p>
+<blockquote>
+<p>Stage 1:信息倾倒（Info Dumping）：鼓励用户无组织地倾倒所有背景信息（项目背景、团队讨论&hellip;）</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223729567.png"
+	width="1670"
+	height="262"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223729567_hu_46c68d0a4b373bb8.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223729567_hu_f66f28d01afc1c44.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506223729567"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="637"
+		data-flex-basis="1529px"
+	
+></p>
+<blockquote>
+<p>Stage 1:澄清追问：用户完成初始倾倒后，生成 5-10 个编号问题，聚焦上下文缺口。用户可用速记、链接或继续倾倒回答。</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223744760.png"
+	width="1681"
+	height="729"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223744760_hu_7a1717dafa44d867.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223744760_hu_6fb88640f3aab950.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506223744760"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="230"
+		data-flex-basis="553px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223820986.png"
+	width="1673"
+	height="775"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223820986_hu_cb61e1488bad0f28.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223820986_hu_cdf8f0eafc819ad0.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506223820986"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="215"
+		data-flex-basis="518px"
+	
+></p>
+<blockquote>
+<p>Stage 2: Refinement &amp; Structure（精修与结构）:通过逐节构建、Brainstorm-Curation-Draft-Refine 闭环（逐节6步循环），产出高质量文档。</p>
+</blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223846814.png"
+	width="1691"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223846814_hu_8fc7154786f3e564.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223846814_hu_b2b81111743ad168.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506223846814"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="220"
+		data-flex-basis="528px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223940351.png"
+	width="1674"
+	height="801"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223940351_hu_8aac2b14c8749083.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506223940351_hu_dd43b522b3c5e089.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506223940351"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="208"
+		data-flex-basis="501px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224053955.png"
+	width="1667"
+	height="845"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224053955_hu_b0d1f214e58a74ea.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224053955_hu_7d24f9f8354c3222.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506224053955"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="197"
+		data-flex-basis="473px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224316367.png"
+	width="1680"
+	height="899"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224316367_hu_de185919e5b6fa51.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224316367_hu_bc6c53012ef3174e.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506224316367"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="186"
+		data-flex-basis="448px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224216442.png"
+	width="1557"
+	height="867"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224216442_hu_25c4231176f96804.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224216442_hu_a63fa1df40f2c0d0.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506224216442"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="179"
+		data-flex-basis="431px"
+	
+></p>
+<blockquote>
+<h5 id="stage-3-reader-testing读者测试用零上下文-claude-实例验证文档对真实读者的有效性捕获作者盲区">Stage 3: Reader Testing（读者测试）：用零上下文 Claude 实例验证文档对真实读者的有效性，捕获作者盲区。
+</h5></blockquote>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224401509.png"
+	width="1668"
+	height="751"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224401509_hu_bc684d32272c7baa.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224401509_hu_18169473e253ff17.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506224401509"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="222"
+		data-flex-basis="533px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224420193.png"
+	width="1676"
+	height="728"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224420193_hu_ac9cc537e5f94000.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224420193_hu_917702e57af6aaa.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506224420193"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="230"
+		data-flex-basis="552px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339.png"
+	width="1678"
+	height="849"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339_hu_f854edf241ee01cd.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339_hu_e23415879c50bebe.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260506224447339"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="197"
+		data-flex-basis="474px"
+	
+></p>
+<h6 id="示例-2技术教程写作"><strong>示例 2：技术教程写作</strong>
+</h6><p>在Claude code中输入指令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">我需要写一份关于**AI Agent Hermes 的完整技术教程**，要求如下：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">1. 适用人群：AI Agent 初学者、大模型应用开发者、智能体落地工程师
+</span></span><span class="line"><span class="cl">2. 教程结构：从基础概念→快速入门→核心原理→架构拆解(核心组件详解)→深入实战案例→源码解析→生产调优进阶→常见问题排查
+</span></span><span class="line"><span class="cl">3. 内容要求：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">- 清晰讲解 Hermes 是什么、在 AI Agent 生态中的定位、核心优势与适用场景
+</span></span><span class="line"><span class="cl">- 安装、快速入门使用
+</span></span><span class="line"><span class="cl">- 拆解 Hermes 智能体核心架构、设计思想、模块组成。详解每个模块：工作流机制、记忆系统、工具调用逻辑等。
+</span></span><span class="line"><span class="cl">- 深入实战： 至少3个完整案例 + 最佳实践
+</span></span><span class="line"><span class="cl">- 源码目录结构解析、核心类与函数讲解
+</span></span><span class="line"><span class="cl">- 补充生产级部署方案、性能调优、上下文优化、安全风控要点
+</span></span><span class="line"><span class="cl">- 常见问题排查
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">信息来源（必须基于以下真实信息）
+</span></span><span class="line"><span class="cl">- GitHub: https://github.com/NousResearch/hermes-agent
+</span></span><span class="line"><span class="cl">- 官方文档: https://hermes-agent.nousresearch.com/docs
+</span></span><span class="line"><span class="cl">- 架构文档: https://hermes-agent.nousresearch.com/docs/developer-guide/architecture
+</span></span><span class="line"><span class="cl">- Skills 标准: https://agentskills.io/home（Anthropic 维护，Apache 2.0）
+</span></span><span class="line"><span class="cl">- MCP 规范: https://modelcontextprotocol.io/docs/getting-started/intro
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">行文风格：通俗易懂、技术严谨、步骤清晰，代码带详细注释，小白能跟着一步步实操。
+</span></span><span class="line"><span class="cl">使用 doc-coauthoring 技能帮我完成。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行过程部分展示如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120704689.png"
+	width="1680"
+	height="809"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120704689_hu_7b8dbc87f4deb1c7.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120704689_hu_3bdeb4a6a308fe8e.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260507120704689"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="207"
+		data-flex-basis="498px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120727661.png"
+	width="1678"
+	height="693"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120727661_hu_5647d78bd3471ce6.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120727661_hu_ea19d1b9529b7a31.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260507120727661"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="242"
+		data-flex-basis="581px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120809743.png"
+	width="1679"
+	height="289"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120809743_hu_5082ad90e6a5c1f3.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120809743_hu_daaf1ac9146d70f6.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260507120809743"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="580"
+		data-flex-basis="1394px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120929959.png"
+	width="1672"
+	height="778"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120929959_hu_d8cbc29982ab692f.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507120929959_hu_39ee7ebf5c65b9e7.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260507120929959"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="214"
+		data-flex-basis="515px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121032716.png"
+	width="1681"
+	height="719"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121032716_hu_51a0e9015b4063dc.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121032716_hu_1ee839b76b618316.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260507121032716"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="233"
+		data-flex-basis="561px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121058771.png"
+	width="1669"
+	height="802"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121058771_hu_a18940f401092c77.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121058771_hu_4aeebfea06368aae.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260507121058771"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="208"
+		data-flex-basis="499px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121111467.png"
+	width="1680"
+	height="880"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121111467_hu_a86904ad35221b76.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507121111467_hu_b7a13043195329dd.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260507121111467"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="190"
+		data-flex-basis="458px"
+	
+></p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507135102105.png"
+	width="1679"
+	height="867"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507135102105_hu_4d71c481e4da2d21.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260507135102105_hu_c1bc4f360dee4422.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260507135102105"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="193"
+		data-flex-basis="464px"
+	
+></p>
+<blockquote>
+<p>经测试，使用doc-coauthoring Skill 生成的《Hermes Agent的技术教程》，全文共计2.5万字；未使用该技能时，生成的教程仅8千字左右。同时，与未使用技能的版本相比，使用doc-coauthoring Skill 生成的教程在完整性、专业性上均有显著提升，内容更系统、逻辑更清晰，能更全面地覆盖Hermes Agent相关技术要点。</p>
+<p>本次测试采用方舟codingplan套餐的kimi k2.6模型。</p>
+</blockquote>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/skill/">Skill</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462.png" width="1383" height="819" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #3f474f80 0%, #f3fafeC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/images/image-20260425153556852.png" width="1315" height="763" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #23449880 0%, #fafbfdC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552.png" width="1114" height="809" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #1163fd80 0%, #f9f9f9C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Skill 从入门到精通——第三章 Skills 使用及管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260414065402554.png" width="1170" height="687" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第二章 Skills 规范详解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #e4eef480 0%, #e4eef4C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第二章 Skills 规范详解</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

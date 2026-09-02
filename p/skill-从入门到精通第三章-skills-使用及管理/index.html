@@ -1,0 +1,2977 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="从零创建你的第一个智能体 Skill ，并在 Anthropic Code 中体验其运行效果。掌握 Skills 的实际使用方法，能够独立使用、定制和部署、管理 Skills。">
+<title>Skill 从入门到精通——第三章 Skills 使用及管理</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Skill 从入门到精通——第三章 Skills 使用及管理">
+<meta property='og:description' content="从零创建你的第一个智能体 Skill ，并在 Anthropic Code 中体验其运行效果。掌握 Skills 的实际使用方法，能够独立使用、定制和部署、管理 Skills。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Skill' /><meta property='article:published_time' content='2026-04-05T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-04-05T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="Skill 从入门到精通——第三章 Skills 使用及管理">
+<meta name="twitter:description" content="从零创建你的第一个智能体 Skill ，并在 Anthropic Code 中体验其运行效果。掌握 Skills 的实际使用方法，能够独立使用、定制和部署、管理 Skills。"><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li><a href="#一环境准备与-claude-code-安装">一、环境准备与 Claude Code 安装</a>
+      <ol>
+        <li><a href="#11-环境准备">1.1 环境准备</a>
+          <ol>
+            <li><a href="#1系统要求">1）系统要求</a></li>
+            <li><a href="#2软件安装">2）软件安装</a></li>
+          </ol>
+        </li>
+        <li><a href="#12-安装-claude-code">1.2 安装 Claude Code</a>
+          <ol>
+            <li><a href="#方式-1官方一键脚本推荐无-node-依赖">方式 1：官方一键脚本（推荐，无 Node 依赖）</a></li>
+            <li><a href="#方式-2npm-全局安装适合前端--node-开发者">方式 2：npm 全局安装（适合前端 / Node 开发者）</a></li>
+            <li><a href="#验证安装">验证安装</a></li>
+          </ol>
+        </li>
+        <li><a href="#13-认证配置核心步骤">1.3 认证配置（核心步骤）</a>
+          <ol>
+            <li><a href="#一认证方案1需可访问claude官网国内需科学上网">一、认证方案1（需可访问Claude官网，国内需科学上网）</a></li>
+            <li><a href="#二认证方案2国内使用方案">二、认证方案2（国内使用方案）</a></li>
+          </ol>
+        </li>
+        <li><a href="#14-首次启动与使用">1.4 首次启动与使用</a></li>
+      </ol>
+    </li>
+    <li><a href="#二skill-存储位置与目录结构">二、Skill 存储位置与目录结构</a>
+      <ol>
+        <li><a href="#1技能存储级别与路径">1、技能存储级别与路径</a></li>
+        <li><a href="#2嵌套目录自动识别monorepo-专属支持">2、嵌套目录自动识别（Monorepo 专属支持）</a></li>
+        <li><a href="#3标准-skill-目录结构">3、标准 Skill 目录结构</a></li>
+        <li><a href="#4加载机制总结">4、加载机制总结</a></li>
+      </ol>
+    </li>
+    <li><a href="#三实战创建第一个自定义-skill">三、实战：创建第一个自定义 Skill</a>
+      <ol>
+        <li><a href="#31-创建目录文件">3.1 创建目录文件</a></li>
+        <li><a href="#32-编写-skillmd-配置直接复制">3.2 编写 SKILL.md 配置（直接复制）</a></li>
+        <li><a href="#33-测试验证-skill-运行效果">3.3 测试验证 Skill 运行效果</a>
+          <ol>
+            <li><a href="#第一步进入项目目录">第一步：进入项目目录</a></li>
+            <li><a href="#第二步启动-claude-code-并加载技能">第二步：启动 Claude Code 并加载技能</a></li>
+            <li><a href="#第三步发送指令测试">第三步：发送指令测试</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#四安装-anthropic-官方-skill-仓库">四、安装 Anthropic 官方 Skill 仓库</a>
+      <ol>
+        <li><a href="#41-安装官方-skill-仓库">4.1 安装官方 Skill 仓库</a>
+          <ol>
+            <li><a href="#方式-1插件市场安装推荐">方式 1：插件市场安装（推荐）</a></li>
+            <li><a href="#方式-2手动-git-克隆安装灵活可控">方式 2：手动 Git 克隆安装（灵活可控）</a></li>
+          </ol>
+        </li>
+        <li><a href="#42-skill-查看与验证">4.2 Skill 查看与验证</a>
+          <ol>
+            <li><a href="#1-查看所有已加载技能">1. 查看所有已加载技能</a></li>
+            <li><a href="#2-验证单个技能是否可用">2. 验证单个技能是否可用</a></li>
+          </ol>
+        </li>
+        <li><a href="#43-skill-使用">4.3 Skill 使用</a>
+          <ol>
+            <li><a href="#1-自然语言调用">1. 自然语言调用</a></li>
+            <li><a href="#2-斜杠命令claude-code-支持">2. 斜杠命令（Claude Code 支持）</a></li>
+            <li><a href="#3-明确指明使用具体的skill来处理">3. 明确指明使用具体的Skill来处理</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#五claude-code-中-skill-管理启用--禁用--更新--卸载">五、Claude code 中 Skill 管理（启用 / 禁用 / 更新 / 卸载）</a>
+      <ol>
+        <li><a href="#51-禁用单个技能">5.1 禁用单个技能</a></li>
+        <li><a href="#52-恢复启用单个技能">5.2 恢复启用单个技能</a></li>
+        <li><a href="#53-管理插件级技能整包启用--禁用">5.3 管理插件级技能（整包启用 / 禁用）</a></li>
+        <li><a href="#54-更新官方-skills">5.4 更新官方 Skills</a></li>
+        <li><a href="#55-卸载技能">5.5 卸载技能</a></li>
+      </ol>
+    </li>
+    <li><a href="#六skill-统一管理">六、Skill 统一管理</a>
+      <ol>
+        <li><a href="#61-为什么需要管理-skill">6.1 为什么需要管理 Skill</a></li>
+        <li><a href="#62-skill-的存储结构与规范">6.2 Skill 的存储结构与规范</a>
+          <ol>
+            <li><a href="#1技能存储目录">1、技能存储目录</a></li>
+            <li><a href="#2标准目录结构"><strong>2、标准目录结构</strong></a></li>
+          </ol>
+        </li>
+        <li><a href="#63-手动管理-skill">6.3 手动管理 Skill</a>
+          <ol>
+            <li><a href="#1手动安装-skill">1、手动安装 Skill</a></li>
+            <li><a href="#2手动更新-skill">2、手动更新 Skill</a></li>
+            <li><a href="#3手动删除-skill">3、手动删除 Skill</a></li>
+            <li><a href="#4手动创建自定义-skill">4、手动创建自定义 Skill</a></li>
+            <li><a href="#5手动管理的优缺点">5、手动管理的优缺点</a></li>
+          </ol>
+        </li>
+        <li><a href="#64-npx-skills-工具管理">6.4 <code>npx skills</code> 工具管理</a>
+          <ol>
+            <li><a href="#641-环境准备">6.4.1 环境准备</a></li>
+            <li><a href="#642-核心命令详解">6.4.2 核心命令详解</a></li>
+            <li><a href="#643-可复现安装lockfile-机制">6.4.3 可复现安装：Lockfile 机制</a></li>
+            <li><a href="#644-高级用法">6.4.4 高级用法</a></li>
+            <li><a href="#645-npx-skills-的优缺点">6.4.5 <code>npx skills</code> 的优缺点</a></li>
+            <li><a href="#646-两种管理方式对比">6.4.6 两种管理方式对比</a></li>
+          </ol>
+        </li>
+        <li><a href="#65-生产环境最佳实践">6.5 生产环境最佳实践</a>
+          <ol>
+            <li><a href="#651-项目级-skill-优先">6.5.1 项目级 Skill 优先</a></li>
+            <li><a href="#652-区分-skill-类型并设置调用权限">6.5.2 区分 Skill 类型并设置调用权限</a></li>
+            <li><a href="#653-定期审计与更新">6.5.3 定期审计与更新</a></li>
+            <li><a href="#654-安全注意事项">6.5.4 安全注意事项</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#七官方-skill-资源库">七、官方 Skill 资源库</a></li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/agent-skill/" style="background-color: #2a9d8f; color: #fff;">
+                Skill 从入门到精通
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/">Skill 从入门到精通——第三章 Skills 使用及管理</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            从零创建你的第一个智能体 Skill ，并在 Anthropic Code 中体验其运行效果。掌握 Skills 的实际使用方法，能够独立使用、定制和部署、管理 Skills。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-04-05T00:00:00Z'>2026年4月5日星期日</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 25 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li><a href="#一环境准备与-claude-code-安装">一、环境准备与 Claude Code 安装</a>
+      <ol>
+        <li><a href="#11-环境准备">1.1 环境准备</a>
+          <ol>
+            <li><a href="#1系统要求">1）系统要求</a></li>
+            <li><a href="#2软件安装">2）软件安装</a></li>
+          </ol>
+        </li>
+        <li><a href="#12-安装-claude-code">1.2 安装 Claude Code</a>
+          <ol>
+            <li><a href="#方式-1官方一键脚本推荐无-node-依赖">方式 1：官方一键脚本（推荐，无 Node 依赖）</a></li>
+            <li><a href="#方式-2npm-全局安装适合前端--node-开发者">方式 2：npm 全局安装（适合前端 / Node 开发者）</a></li>
+            <li><a href="#验证安装">验证安装</a></li>
+          </ol>
+        </li>
+        <li><a href="#13-认证配置核心步骤">1.3 认证配置（核心步骤）</a>
+          <ol>
+            <li><a href="#一认证方案1需可访问claude官网国内需科学上网">一、认证方案1（需可访问Claude官网，国内需科学上网）</a></li>
+            <li><a href="#二认证方案2国内使用方案">二、认证方案2（国内使用方案）</a></li>
+          </ol>
+        </li>
+        <li><a href="#14-首次启动与使用">1.4 首次启动与使用</a></li>
+      </ol>
+    </li>
+    <li><a href="#二skill-存储位置与目录结构">二、Skill 存储位置与目录结构</a>
+      <ol>
+        <li><a href="#1技能存储级别与路径">1、技能存储级别与路径</a></li>
+        <li><a href="#2嵌套目录自动识别monorepo-专属支持">2、嵌套目录自动识别（Monorepo 专属支持）</a></li>
+        <li><a href="#3标准-skill-目录结构">3、标准 Skill 目录结构</a></li>
+        <li><a href="#4加载机制总结">4、加载机制总结</a></li>
+      </ol>
+    </li>
+    <li><a href="#三实战创建第一个自定义-skill">三、实战：创建第一个自定义 Skill</a>
+      <ol>
+        <li><a href="#31-创建目录文件">3.1 创建目录文件</a></li>
+        <li><a href="#32-编写-skillmd-配置直接复制">3.2 编写 SKILL.md 配置（直接复制）</a></li>
+        <li><a href="#33-测试验证-skill-运行效果">3.3 测试验证 Skill 运行效果</a>
+          <ol>
+            <li><a href="#第一步进入项目目录">第一步：进入项目目录</a></li>
+            <li><a href="#第二步启动-claude-code-并加载技能">第二步：启动 Claude Code 并加载技能</a></li>
+            <li><a href="#第三步发送指令测试">第三步：发送指令测试</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#四安装-anthropic-官方-skill-仓库">四、安装 Anthropic 官方 Skill 仓库</a>
+      <ol>
+        <li><a href="#41-安装官方-skill-仓库">4.1 安装官方 Skill 仓库</a>
+          <ol>
+            <li><a href="#方式-1插件市场安装推荐">方式 1：插件市场安装（推荐）</a></li>
+            <li><a href="#方式-2手动-git-克隆安装灵活可控">方式 2：手动 Git 克隆安装（灵活可控）</a></li>
+          </ol>
+        </li>
+        <li><a href="#42-skill-查看与验证">4.2 Skill 查看与验证</a>
+          <ol>
+            <li><a href="#1-查看所有已加载技能">1. 查看所有已加载技能</a></li>
+            <li><a href="#2-验证单个技能是否可用">2. 验证单个技能是否可用</a></li>
+          </ol>
+        </li>
+        <li><a href="#43-skill-使用">4.3 Skill 使用</a>
+          <ol>
+            <li><a href="#1-自然语言调用">1. 自然语言调用</a></li>
+            <li><a href="#2-斜杠命令claude-code-支持">2. 斜杠命令（Claude Code 支持）</a></li>
+            <li><a href="#3-明确指明使用具体的skill来处理">3. 明确指明使用具体的Skill来处理</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#五claude-code-中-skill-管理启用--禁用--更新--卸载">五、Claude code 中 Skill 管理（启用 / 禁用 / 更新 / 卸载）</a>
+      <ol>
+        <li><a href="#51-禁用单个技能">5.1 禁用单个技能</a></li>
+        <li><a href="#52-恢复启用单个技能">5.2 恢复启用单个技能</a></li>
+        <li><a href="#53-管理插件级技能整包启用--禁用">5.3 管理插件级技能（整包启用 / 禁用）</a></li>
+        <li><a href="#54-更新官方-skills">5.4 更新官方 Skills</a></li>
+        <li><a href="#55-卸载技能">5.5 卸载技能</a></li>
+      </ol>
+    </li>
+    <li><a href="#六skill-统一管理">六、Skill 统一管理</a>
+      <ol>
+        <li><a href="#61-为什么需要管理-skill">6.1 为什么需要管理 Skill</a></li>
+        <li><a href="#62-skill-的存储结构与规范">6.2 Skill 的存储结构与规范</a>
+          <ol>
+            <li><a href="#1技能存储目录">1、技能存储目录</a></li>
+            <li><a href="#2标准目录结构"><strong>2、标准目录结构</strong></a></li>
+          </ol>
+        </li>
+        <li><a href="#63-手动管理-skill">6.3 手动管理 Skill</a>
+          <ol>
+            <li><a href="#1手动安装-skill">1、手动安装 Skill</a></li>
+            <li><a href="#2手动更新-skill">2、手动更新 Skill</a></li>
+            <li><a href="#3手动删除-skill">3、手动删除 Skill</a></li>
+            <li><a href="#4手动创建自定义-skill">4、手动创建自定义 Skill</a></li>
+            <li><a href="#5手动管理的优缺点">5、手动管理的优缺点</a></li>
+          </ol>
+        </li>
+        <li><a href="#64-npx-skills-工具管理">6.4 <code>npx skills</code> 工具管理</a>
+          <ol>
+            <li><a href="#641-环境准备">6.4.1 环境准备</a></li>
+            <li><a href="#642-核心命令详解">6.4.2 核心命令详解</a></li>
+            <li><a href="#643-可复现安装lockfile-机制">6.4.3 可复现安装：Lockfile 机制</a></li>
+            <li><a href="#644-高级用法">6.4.4 高级用法</a></li>
+            <li><a href="#645-npx-skills-的优缺点">6.4.5 <code>npx skills</code> 的优缺点</a></li>
+            <li><a href="#646-两种管理方式对比">6.4.6 两种管理方式对比</a></li>
+          </ol>
+        </li>
+        <li><a href="#65-生产环境最佳实践">6.5 生产环境最佳实践</a>
+          <ol>
+            <li><a href="#651-项目级-skill-优先">6.5.1 项目级 Skill 优先</a></li>
+            <li><a href="#652-区分-skill-类型并设置调用权限">6.5.2 区分 Skill 类型并设置调用权限</a></li>
+            <li><a href="#653-定期审计与更新">6.5.3 定期审计与更新</a></li>
+            <li><a href="#654-安全注意事项">6.5.4 安全注意事项</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#七官方-skill-资源库">七、官方 Skill 资源库</a></li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="skill-从入门到精通第三章-skills-使用及管理">Skill 从入门到精通——第三章 Skills 使用及管理
+</h1><blockquote>
+<p><strong>学习目标</strong>：从零创建你的第一个智能体 Skill ，并在 Anthropic Code 中体验其运行效果。掌握 Skills 的实际使用方法，能够独立使用、定制和部署、管理 Skills。</p>
+</blockquote>
+<p><strong>Skills（技能）</strong> 是一套存放指令、脚本与资源的文件夹，智能体在执行任务时会自动发现并动态加载这些内容，从而提升在专业任务上的表现。你可以将其理解为智能体的<strong>专业操作手册</strong>，让它在特定领域具备专业能力—— 例如在设计网站时，自动遵循对应公司的品牌规范。</p>
+<p><strong>Agent Skills</strong> 格式最初由 <a class="link" href="https://www.anthropic.com/"  target="_blank" rel="noopener"
+    >Anthropic</a> 设计并以开放标准发布，现已被 Claude、Cursor、VS Code、OpenAI Codex、GitHub、openClaw、Hermes Agent 等主流 AI 工具与平台广泛支持，成为当前智能体开发的通用标准。</p>
+<p>这意味着，你只需编写一份 Skills 配置，即可无缝适配所有支持 <strong>Agent Skills</strong> 规范的平台与工具。</p>
+<p><strong>本章将带你：</strong></p>
+<ol>
+<li>
+<p>完成 Claude Code 环境搭建。</p>
+</li>
+<li>
+<p>编写第一个自定义 Skill、测试并验证技能运行效果。</p>
+</li>
+<li>
+<p>安装 Anthropic 官方 Skill 仓库，掌握Claude code 中技能管理（启用、禁用、更新、卸载）</p>
+</li>
+<li>
+<p>掌握 Skill 统一管理。</p>
+</li>
+</ol>
+<blockquote>
+<p>Claude Code 是 Anthropic 官方推出的命令行 AI 助手，原生完美支持 Agent Skills 标准，是学习、开发与调试技能的首选工具。它不仅具备强大的代码编写能力，还能协助完成所有可通过命令行操作的任务：文档撰写、项目构建、文件检索、主题调研等。</p>
+<p>本章所有 Skill 的开发、调试与验证均基于 Claude Code 进行。你也可以在其它支持 Skill 规范的工具中使用，差异主要体现在技能安装目录、触发方式命令上。</p>
+</blockquote>
+<h2 id="一环境准备与-claude-code-安装">一、环境准备与 Claude Code 安装
+</h2><h3 id="11-环境准备">1.1 环境准备
+</h3><h4 id="1系统要求">1）系统要求
+</h4><ul>
+<li><strong>操作系统</strong>：macOS 13+ / Ubuntu 20.04+ / Debian 11+ / Windows 10+（推荐 WSL2）</li>
+<li><strong>内存</strong>：≥8GB（推荐 16GB+）</li>
+<li><strong>存储</strong>：SSD ≥10GB 可用空间</li>
+<li><strong>网络</strong>：可正常访问 Anthropic API（或国内）</li>
+</ul>
+<h4 id="2软件安装">2）软件安装
+</h4><p><strong>Node.js（v18.0+）（可选，2026 年官方推出原生安装器，无需 Node.js，支持自动后台更新 ）</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># macOS（Homebrew）
+</span></span><span class="line"><span class="cl">brew install node
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Ubuntu/Debian
+</span></span><span class="line"><span class="cl">curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+</span></span><span class="line"><span class="cl">sudo apt-get install -y nodejs
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Windows（WSL）
+</span></span><span class="line"><span class="cl">curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+</span></span><span class="line"><span class="cl">sudo apt-get install -y nodejs
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>验证：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">node -v  # ≥v18.0
+</span></span><span class="line"><span class="cl">npm -v
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>Git（2.23+）（可选，拉取gihub项目需要）</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># macOS
+</span></span><span class="line"><span class="cl">brew install git
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Ubuntu/Debian
+</span></span><span class="line"><span class="cl">sudo apt install git
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># Windows 
+</span></span><span class="line"><span class="cl">https://git-scm.com/install/windows  #下载后运行安装
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="12-安装-claude-code">1.2 安装 Claude Code
+</h3><h4 id="方式-1官方一键脚本推荐无-node-依赖">方式 1：官方一键脚本（推荐，无 Node 依赖）
+</h4><p>macOS / Linux / WSL2</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">curl -fsSL https://claude.ai/install.sh | bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Homebrew（macOS/Linux）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">brew install --cask claude-code
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Windows（原生 PowerShell）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 以下安装方式二选一
+</span></span><span class="line"><span class="cl"># 方式一：PowerShell 原生安装（官方推荐）
+</span></span><span class="line"><span class="cl">irm https://claude.ai/install.ps1 | iex
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 方式二：WinGet（更稳定，有进度条）
+</span></span><span class="line"><span class="cl">winget install Anthropic.ClaudeCode
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p><strong>注意</strong>：部分用户反馈 PowerShell 原生安装脚本可能长时间无响应（无进度条、无状态提示），若 5 分钟无反应，建议直接改用 <code>winget</code> 。安装后需<strong>新开一个 PowerShell 窗口</strong>再执行 <code>claude</code> 命令。</p>
+</blockquote>
+<h4 id="方式-2npm-全局安装适合前端--node-开发者">方式 2：npm 全局安装（适合前端 / Node 开发者）
+</h4><p>如果原生安装器不可用，需先安装 <strong>Node.js 18+</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 国内用户配置镜像加速
+</span></span><span class="line"><span class="cl">npm config set registry https://registry.npmmirror.com
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 全局安装 Claude Code
+</span></span><span class="line"><span class="cl">npm install -g @anthropic-ai/claude-code
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="验证安装">验证安装
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 检查 Claude Code 版本</span>
+</span></span><span class="line"><span class="cl">claude --version
+</span></span><span class="line"><span class="cl"><span class="c1"># 预期输出：2.1.116 (Claude Code)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="13-认证配置核心步骤">1.3 认证配置（核心步骤）
+</h3><p>提供两种接入方案，可根据网络环境选择：</p>
+<ul>
+<li>能访问 Claude 官网（国内需科学上网） → <strong>推荐方案 1</strong></li>
+<li>国内访问受限 → 使用 <strong>方案 2</strong></li>
+</ul>
+<h4 id="一认证方案1需可访问claude官网国内需科学上网">一、认证方案1（需可访问Claude官网，国内需科学上网）
+</h4><p>Claude Code 需要 API Key 或 Claude.ai 账户登录。</p>
+<h5 id="方式-1配置api-key">方式 1：配置API Key
+</h5><p>从 <a class="link" href="https://console.anthropic.com/"  target="_blank" rel="noopener"
+    >console.anthropic.com</a> 获取 API Key（格式 <code>sk-ant-...</code>），然后通过以下任一方式配置：</p>
+<p><strong>环境变量（临时）:</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># macOS / Linux</span>
+</span></span><span class="line"><span class="cl"><span class="nb">export</span> <span class="nv">ANTHROPIC_API_KEY</span><span class="o">=</span><span class="s2">&#34;sk-ant-你的密钥&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Windows PowerShell</span>
+</span></span><span class="line"><span class="cl"><span class="nv">$env</span>:ANTHROPIC_API_KEY<span class="o">=</span><span class="s2">&#34;sk-ant-你的密钥&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>配置文件（永久）</strong></p>
+<p>创建配置文件，用于持久化 Claude 相关环境变量与语言设置：</p>
+<ul>
+<li><strong>macOS / Linux</strong>：<code>~/.claude/settings.json</code></li>
+<li><strong>Windows</strong>：<code>%USERPROFILE%\.claude\settings.json</code></li>
+</ul>
+<p>写入以下配置内容：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;env&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_API_KEY&#34;</span><span class="p">:</span> <span class="s2">&#34;sk-ant-你的密钥&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_BASE_URL&#34;</span><span class="p">:</span> <span class="s2">&#34;https://api.anthropic.com&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;API_TIMEOUT_MS&#34;</span><span class="p">:</span> <span class="s2">&#34;300000&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;language&#34;</span><span class="p">:</span> <span class="s2">&#34;简体中文&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="方式-2claudeai-登录需海外网络">方式 2：Claude.ai 登录（需海外网络）
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">claude login
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>浏览器会自动打开认证页面。需要 <strong>Claude Pro/Max 订阅</strong>。</p>
+<hr>
+<h4 id="二认证方案2国内使用方案">二、认证方案2（国内使用方案）
+</h4><p>由于 Anthropic 官方 API 在国内访问受限，可使用以下两种方式：</p>
+<ol>
+<li>使用第三方的API代理平台访问 Anthropic 官方模型。</li>
+<li>接入兼容 Anthropic API 的其它模型。</li>
+</ol>
+<h5 id="方式1第三方-api-代理平台">方式1：第三方 API 代理平台
+</h5><p>在 <code>settings.json</code> 中 ，修改 <code>ANTHROPIC_BASE_URL</code> 为中转地址及配置密钥。</p>
+<ul>
+<li><strong>macOS / Linux</strong>：<code>~/.claude/settings.json</code></li>
+<li><strong>Windows</strong>：<code>%USERPROFILE%\.claude\settings.json</code></li>
+</ul>
+<p>配置内容如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;env&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_API_KEY&#34;</span><span class="p">:</span> <span class="s2">&#34;你的中转平台密钥&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_BASE_URL&#34;</span><span class="p">:</span> <span class="s2">&#34;https://你的中转地址/v1&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;claude-sonnet-4-6&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="方式2接入兼容-anthropic-api-的其它模型">方式2：接入兼容 Anthropic API 的其它模型
+</h5><p>Claude Code 支持通过兼容 Anthropic API 格式接入其它模型。</p>
+<p>创建并编辑配置文件<code>settings.json</code> ：</p>
+<ul>
+<li><strong>macOS/Linux</strong>: <code>~/.claude/settings.json</code></li>
+<li><strong>Windows</strong>: <code>%USERPROFILE%\.claude\settings.json</code></li>
+</ul>
+<blockquote>
+<p>以下接入模型，只需要配置一个即可。</p>
+</blockquote>
+<p><strong>接入<code>DeepSeek</code>模型</strong></p>
+<p>API Key 获取入口：https://platform.deepseek.com/api_keys</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;env&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_AUTH_TOKEN&#34;</span><span class="p">:</span> <span class="s2">&#34;你的 DeepSeek API Key&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_BASE_URL&#34;</span><span class="p">:</span> <span class="s2">&#34;https://api.deepseek.com/anthropic&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_SONNET_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;deepseek-chat&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_OPUS_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;deepseek-reasoner&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_HAIKU_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;deepseek-chat&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;API_TIMEOUT_MS&#34;</span><span class="p">:</span> <span class="s2">&#34;300000&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>配置说明：</p>
+<ul>
+<li><code>ANTHROPIC_AUTH_TOKEN</code>：填写 <strong>DeepSeek API Key</strong></li>
+<li><code>ANTHROPIC_BASE_URL</code>：DeepSeek 提供的 Claude 兼容接口地址</li>
+<li>ANTHROPIC_DEFAULT_SONNET_MODEL：通用对话模型</li>
+<li>ANTHROPIC_DEFAULT_OPUS_MODEL：深度思考 / 推理模型</li>
+<li>ANTHROPIC_DEFAULT_HAIKU_MODEL：轻量模型</li>
+<li>CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC：超时与关闭额外请求，保证国内使用更稳定。</li>
+</ul>
+<p><strong>接入<code>智谱</code> 模型</strong></p>
+<p>API Key 获取入口：https://open.bigmodel.cn/usercenter/apikeys</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;env&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_AUTH_TOKEN&#34;</span><span class="p">:</span> <span class="s2">&#34;你的 智谱 API Key&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_BASE_URL&#34;</span><span class="p">:</span> <span class="s2">&#34;https://open.bigmodel.cn/api/anthropic&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_SONNET_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;glm-5&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_OPUS_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;glm-5&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_HAIKU_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;glm-5&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>接入<code>百炼</code> CodingPlan</strong></p>
+<p>获取入口：https://help.aliyun.com/zh/model-studio/coding-plan</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;env&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_AUTH_TOKEN&#34;</span><span class="p">:</span> <span class="s2">&#34;你的 百炼 API Key&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_BASE_URL&#34;</span><span class="p">:</span> <span class="s2">&#34;https://dashscope.aliyuncs.com/apps/anthropic&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_SONNET_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;qwen3-max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_OPUS_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;qwen3-max&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_HAIKU_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;qwen3-coder-next&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>接入<code>火山引擎</code> CodingPlan</strong></p>
+<p>获取入口：https://www.volcengine.com/activity/codingplan</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;env&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_AUTH_TOKEN&#34;</span><span class="p">:</span> <span class="s2">&#34;你的 火山引擎 API Key&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_BASE_URL&#34;</span><span class="p">:</span> <span class="s2">&#34;https://ark.cn-beijing.volces.com/api/coding&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_SONNET_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;doubao-seed-2.0-pro&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_OPUS_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;doubao-seed-2.0-code&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;ANTHROPIC_DEFAULT_HAIKU_MODEL&#34;</span><span class="p">:</span> <span class="s2">&#34;minimax-m2.5&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>如果模型调用访问量比较大，建议购买模型服务商的CodingPlan服务，按月付费，防止token费用失控。</p>
+</blockquote>
+<h3 id="14-首次启动与使用">1.4 首次启动与使用
+</h3><p>进入项目目录启动：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> your-project
+</span></span><span class="line"><span class="cl">claude
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>首次启动会进入 <strong>初始化向导</strong>（选择主题、确认权限），之后即可使用。</p>
+<p>启动成功后界面如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421150701419.png"
+	width="1698"
+	height="673"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421150701419_hu_d596c6e3c71e1aad.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421150701419_hu_e823a18a4bf95b5d.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260421150701419"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="252"
+		data-flex-basis="605px"
+	
+></p>
+<p>输入：&ldquo;介绍下自己&rdquo;</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421151031262.png"
+	width="1680"
+	height="768"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421151031262_hu_49707d04923f7bfc.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421151031262_hu_ae7f101c99e37f1b.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260421151031262"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="218"
+		data-flex-basis="525px"
+	
+></p>
+<p><strong>常用命令</strong></p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">命令</th>
+          <th style="text-align: left">作用</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><code>claude &quot;你的问题&quot;</code></td>
+          <td style="text-align: left">单次提问（非交互）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/status</code></td>
+          <td style="text-align: left">查看当前模型、API 配置状态</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/model &lt;模型名&gt;</code></td>
+          <td style="text-align: left">切换模型（如 <code>claude-opus-4-6</code>）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/clear</code></td>
+          <td style="text-align: left">清除对话历史</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/compact</code></td>
+          <td style="text-align: left">压缩上下文释放窗口空间</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/plan</code></td>
+          <td style="text-align: left">规划模式（只分析不修改代码）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/cost</code></td>
+          <td style="text-align: left">查看当前会话花费</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">/doctor</td>
+          <td style="text-align: left">运行系统诊断，检查安装和环境问题</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><code>/help</code></td>
+          <td style="text-align: left">显示所有可用命令</td>
+      </tr>
+  </tbody>
+</table></div>
+<h2 id="二skill-存储位置与目录结构">二、Skill 存储位置与目录结构
+</h2><p>Claude Code 会在启动时<strong>自动扫描（技能存储目录）并加载技能</strong>，无需手动引入或注册。但技能存储路径不规范、目录结构错误、文件名大小写不符合规范，都会直接导致技能无法被识别或加载失效。</p>
+<h3 id="1技能存储级别与路径">1、技能存储级别与路径
+</h3><p><code>Claude Code</code> 的<strong>Skill</strong> 按<strong>使用范围</strong>分为 4 个级别，不同级别对应固定存储路径，且明确的<strong>同名技能优先级</strong>。</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>级别</th>
+          <th>存储路径</th>
+          <th>适用范围</th>
+          <th>优先级说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>企业级</strong></td>
+          <td>托管设置（官方配置）</td>
+          <td>组织内<strong>所有用户 / 项目</strong></td>
+          <td>最高：企业级 &gt; 个人级 &gt; 项目级</td>
+      </tr>
+      <tr>
+          <td><strong>个人级</strong></td>
+          <td><code>~/.claude/skills/&lt;技能名称&gt;/SKILL.md</code></td>
+          <td>你本机<strong>所有项目</strong></td>
+          <td>中</td>
+      </tr>
+      <tr>
+          <td><strong>项目级</strong></td>
+          <td><code>项目目录/.claude/skills/&lt;技能名称&gt;/SKILL.md</code></td>
+          <td><strong>仅当前项目</strong></td>
+          <td>低</td>
+      </tr>
+      <tr>
+          <td><strong>插件级</strong></td>
+          <td><code>&lt;插件&gt;/skills/&lt;技能名称&gt;/SKILL.md</code></td>
+          <td>插件启用的项目 / 环境</td>
+          <td>独立命名空间：<code>插件名:技能名</code>，无优先级冲突</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>补充说明：</strong></p>
+<ol>
+<li><strong>企业级限制</strong>：仅官方 Claude Code 服务支持，第三方兼容 Anthropic API 的服务通常不提供该能力。</li>
+<li><strong>路径符号</strong>：<code>~</code> 为用户主目录，Windows 对应路径为：<code>C:\Users\你的用户名\.claude\skills\</code>。</li>
+<li><strong>兼容路径</strong>：部分 Agent 开发框架使用的存储路径可能不相同，其它常见路径如：
+<ul>
+<li>项目级：<code>&lt;project&gt;/.agents/skills/</code></li>
+<li>个人级：<code>~/.agents/skills/</code></li>
+</ul>
+</li>
+</ol>
+<h3 id="2嵌套目录自动识别monorepo-专属支持">2、嵌套目录自动识别（Monorepo 专属支持）
+</h3><p>Claude Code 支持<strong>子目录嵌套技能识别</strong>，完美适配<strong>单体多仓（monorepo）</strong> 项目架构。</p>
+<p>当你编辑子目录文件时，系统会<strong>自动向上 / 向下扫描</strong>该目录下的 <code>.claude/skills/</code>：</p>
+<ul>
+<li>示例：编辑 <code>packages/frontend/xxx.js</code>时，系统会同时识别 <code>packages/frontend/.claude/skills/</code> 中的技能；</li>
+<li>作用：每个子包 / 模块可拥有<strong>独立专属技能</strong>，互不干扰。</li>
+</ul>
+<h3 id="3标准-skill-目录结构">3、标准 Skill 目录结构
+</h3><p>一个完整的 Skill 最小单元 = 一个文件夹 + 一个 <code>SKILL.md</code> 配置文件：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">你的项目根目录/
+</span></span><span class="line"><span class="cl">└── .claude/            # 固定配置根目录
+</span></span><span class="line"><span class="cl">    └── skills/         # 固定技能总目录
+</span></span><span class="line"><span class="cl">        └── 技能名称/   # 技能文件夹（英文小写+短横线命名）
+</span></span><span class="line"><span class="cl">            └── SKILL.md  # ✅ 唯一必选入口文件（固定文件名，大小写不可修改）            
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>一个完整Skill的目录包含必选文件和可选文件，标准结构如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">my-first-skill/          <span class="c1"># Skill目录（名称自定义，遵循命名规范）</span>
+</span></span><span class="line"><span class="cl">├── SKILL.md            <span class="c1"># 必选：Skill入口文件，定义元数据和核心指令</span>
+</span></span><span class="line"><span class="cl">├── reference.md        <span class="c1"># 可选：参考文档，拆分复杂说明</span>
+</span></span><span class="line"><span class="cl">├── examples/           <span class="c1"># 可选：示例文件夹，存放使用示例</span>
+</span></span><span class="line"><span class="cl">│   └── sample.md       <span class="c1"># 可选：示例文件</span>
+</span></span><span class="line"><span class="cl">└── scripts/            <span class="c1"># 可选：脚本文件夹，存放可执行脚本</span>
+</span></span><span class="line"><span class="cl">    └── helper.py       <span class="c1"># 可选：辅助脚本，处理精确计算、格式转换等</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>关键规则:</strong></p>
+<ol>
+<li>
+<p><strong>Skill目录名</strong>：仅允许小写字母、数字、连字符（-），最长64字符，避免使用特殊符号和中文，示例：<code>hello-world-skill</code>；</p>
+</li>
+<li>
+<p><strong><code>SKILL.md</code></strong>：唯一必需文件，定义技能核心逻辑、触发规则、元数据；</p>
+</li>
+<li>
+<p><strong>扩展文件</strong>：<code>reference.md</code>、<code>/references</code>、<code>/examples</code>、<code>/scripts</code> 均为可选，<strong>需要在 SKILL.md 中主动引用</strong>， 才会加载使用；</p>
+</li>
+<li>
+<p><strong>编码要求</strong>：所有文件统一使用 <strong>UTF-8 编码</strong>，避免中文乱码</p>
+</li>
+</ol>
+<h3 id="4加载机制总结">4、加载机制总结
+</h3><ol>
+<li>Claude Code 启动时<strong>自动扫描</strong>所有级别技能路径，无需手动配置；</li>
+<li>同名技能按 <strong>企业级 → 个人级 → 项目级</strong> 优先级覆盖；</li>
+<li>最小结构即可运行，复杂技能可按需扩展附属文件（如：模板、示例、脚本）；</li>
+<li>Monorepo 项目可使用嵌套 <code>.claude/skills/</code> 实现子包独立技能。</li>
+</ol>
+<h2 id="三实战创建第一个自定义-skill">三、实战：创建第一个自定义 Skill
+</h2><p>本节从零开始创建一个「智能随机选择器」Skill。该技能可实现抛硬币、随机生成数字、从多个选项中抽签等功能，无任何代码文件和附件文件，适合作为入门的 Skill 实例。</p>
+<h3 id="31-创建目录文件">3.1 创建目录文件
+</h3><ol>
+<li>新建一个空文件夹作为测试项目，如<code>test-randmon-picker</code>。</li>
+<li>在项目内创建层级目录：<code>.claude/skills/random-picker/</code></li>
+<li>在 <code>random-picker</code> 文件夹中新建文件：<code>SKILL.md</code></li>
+</ol>
+<p>最终目录结构：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">test-randmon-picker/
+</span></span><span class="line"><span class="cl">└── .claude/
+</span></span><span class="line"><span class="cl">    └── skills/
+</span></span><span class="line"><span class="cl">        └── random-picker/
+</span></span><span class="line"><span class="cl">            └── SKILL.md
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="32-编写-skillmd-配置直接复制">3.2 编写 SKILL.md 配置（直接复制）
+</h3><p><code>SKILL.md</code> 是技能的核心配置文件，支持 <strong>YAML 头部声明</strong> + <strong>Markdown 指令 / 脚本</strong>，是行业通用格式。</p>
+<p>编写<code>SKILL.md</code>内容如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-markdown" data-lang="markdown"><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">name: random-picker
+</span></span><span class="line"><span class="cl">description: 随机选择工具，可实现抛硬币（正面/反面）、随机生成1~N的数字、从用户提供的多个选项中随机抽取一个，适用于所有需要随机决策的场景，无需额外配置，直接运行即可。
+</span></span><span class="line"><span class="cl">version: 1.0.0               # 技能版本（可选）
+</span></span><span class="line"><span class="cl">author:  Tiny     		     # 作者（可选）
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gh"># 智能随机选择器 - 执行指令
+</span></span></span><span class="line"><span class="cl">本技能支持3种核心功能，根据用户需求自动选择对应命令，跨平台兼容（Mac/Linux 用 bash 命令，Windows 用 PowerShell 命令），执行后返回结果。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 功能1：抛硬币（正面/反面）
+</span></span></span><span class="line"><span class="cl"><span class="gu">### 适用场景：用户需要抛硬币做决策
+</span></span></span><span class="line"><span class="cl"><span class="gu">### 执行命令
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> Mac/Linux（bash/zsh 终端）：
+</span></span><span class="line"><span class="cl"><span class="s">```bash
+</span></span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="k">$((</span>RANDOM <span class="o">%</span> <span class="m">2</span><span class="k">))</span> <span class="p">|</span> awk <span class="s1">&#39;{if($0==0) print &#34;正面&#34;} else print &#34;反面&#34;}&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="s">```</span>
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Windows（PowerShell）：
+</span></span><span class="line"><span class="cl"><span class="s">```powershell
+</span></span></span><span class="line"><span class="cl"><span class="nb">Get-Random</span> <span class="n">-InputObject</span> <span class="s2">&#34;正面&#34;</span><span class="p">,</span><span class="s2">&#34;反面&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="s">```</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 功能2：生成1~N的随机数
+</span></span></span><span class="line"><span class="cl"><span class="gu">### 适用场景：用户需要生成指定范围内的随机数（如1~10、1~100）
+</span></span></span><span class="line"><span class="cl"><span class="gu">### 执行命令
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> Mac/Linux（bash/zsh 终端）：
+</span></span><span class="line"><span class="cl"><span class="s">```bash
+</span></span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="k">$((</span>RANDOM <span class="o">%</span> &lt;max&gt; <span class="o">+</span> <span class="m">1</span><span class="k">))</span>
+</span></span><span class="line"><span class="cl"><span class="s">```</span>
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Windows（PowerShell）：
+</span></span><span class="line"><span class="cl"><span class="s">```powershell
+</span></span></span><span class="line"><span class="cl"><span class="nb">Get-Random</span> <span class="n">-Minimum</span> <span class="mf">1</span> <span class="n">-Maximum</span> <span class="p">([</span><span class="no">int</span><span class="p">]&lt;</span><span class="n">max</span><span class="p">&gt;</span> <span class="p">+</span> <span class="mf">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="s">```</span>
+</span></span><span class="line"><span class="cl"><span class="gu">### 替换规则：将 &lt;max&gt; 替换为用户指定的最大数字（如用户要1~10，替换为10）
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 功能3：从多个选项中随机选择
+</span></span></span><span class="line"><span class="cl"><span class="gu">### 适用场景：用户提供多个选项（用逗号分隔），需要随机抽取一个
+</span></span></span><span class="line"><span class="cl"><span class="gu">### 执行命令
+</span></span></span><span class="line"><span class="cl"><span class="k">-</span> Mac/Linux（bash/zsh 终端）：
+</span></span><span class="line"><span class="cl"><span class="s">```bash
+</span></span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;&lt;choices&gt;&#34;</span> <span class="p">|</span> tr <span class="s1">&#39;,&#39;</span> <span class="s1">&#39;\n&#39;</span> <span class="p">|</span> shuf -n <span class="m">1</span>
+</span></span><span class="line"><span class="cl"><span class="s">```</span>
+</span></span><span class="line"><span class="cl"><span class="k">-</span> Windows（PowerShell）：
+</span></span><span class="line"><span class="cl"><span class="s">```powershell
+</span></span></span><span class="line"><span class="cl"><span class="s2">&#34;&lt;choices&gt;&#34;</span><span class="p">.</span><span class="py">Split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span> <span class="p">|</span> <span class="nb">Get-Random</span>
+</span></span><span class="line"><span class="cl"><span class="s">```</span>
+</span></span><span class="line"><span class="cl"><span class="gu">### 替换规则：将 &lt;choices&gt; 替换为用户提供的选项（用英文逗号分隔，如“奶茶,咖啡,可乐”）
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="gu">## 通用规则
+</span></span></span><span class="line"><span class="cl"><span class="k">1.</span> 优先匹配用户需求，自动选择对应功能的命令，无需用户指定系统类型。
+</span></span><span class="line"><span class="cl"><span class="k">2.</span> 替换参数时，严格按照用户要求，不添加额外字符。
+</span></span><span class="line"><span class="cl"><span class="k">3.</span> 执行命令后，只返回最终结果，不解释命令含义、不输出多余内容。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="33-测试验证-skill-运行效果">3.3 测试验证 Skill 运行效果
+</h3><h4 id="第一步进入项目目录">第一步：进入项目目录
+</h4><p>终端切换到你的测试项目根目录：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> /test-randmon-picker   <span class="c1"># test-randmon-picker替换为你的项目路径</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="第二步启动-claude-code-并加载技能">第二步：启动 Claude Code 并加载技能
+</h4><p>输入命令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">claude
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>进入交互界面后，输入命令查看已加载技能：</p>
+<blockquote>
+<p>Claude Code 启动时<strong>自动扫描</strong>所有级别技能路径，无需手动配置。</p>
+<ul>
+<li>项目级：<code>&lt;project&gt;/.claude/skills/</code></li>
+<li>个人级：<code>~/.claude/skills/</code></li>
+<li>插件级:  <code>&lt;插件&gt;/skills/</code></li>
+</ul>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/skills
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>若输出：<code>✅ random-picker</code>，说明技能加载成功。</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421231136724.png"
+	width="1428"
+	height="361"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421231136724_hu_486f2bc97681a3bc.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421231136724_hu_352b010917cddc06.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260421231136724"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="395"
+		data-flex-basis="949px"
+	
+><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421225313435.png"
+	width="1341"
+	height="123"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421225313435_hu_e58a3b1d33108e6d.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421225313435_hu_90caaf33547fbec.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260421225313435"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1090"
+		data-flex-basis="2616px"
+	
+></p>
+<blockquote>
+<p>说明：Skill 编写完成后无需手动导入，Claude Code会自动扫描Skill存储目录，识别新创建的Skill，启动后即可直接使用。</p>
+</blockquote>
+<h4 id="第三步发送指令测试">第三步：发送指令测试
+</h4><p>Skill 支持两种触发方式：</p>
+<ul>
+<li>
+<p><strong>方式一：自动触发</strong>（根据description关键词)</p>
+<p>直接发送自然语言指令，Claude 会根据关键词自动匹配并运行技能。</p>
+</li>
+<li>
+<p><strong>方式二：手动触发（精准调用）</strong></p>
+<p>格式：<code>/技能名称 任务内容</code></p>
+<p>示例：<code>/random-picker 抛硬币</code></p>
+</li>
+</ul>
+<blockquote>
+<p>注意：若Skill未启动，检查SKILL.md的元数据配置，确保<code>user-invocable</code>为true，且description关键词清晰。或者使用手动触发方式。</p>
+</blockquote>
+<p>以下是3种功能的测试示例：</p>
+<p><strong>测试1：抛硬币</strong></p>
+<ul>
+<li>输入指令：<code>抛硬币</code></li>
+<li>预期结果：Claude 运行对应命令，返回「正面」或「反面」（随机）。</li>
+</ul>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230240720.png"
+	width="1428"
+	height="720"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230240720_hu_c0292b1bcc98c781.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230240720_hu_754f9f5ba11fa56f.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260421230240720"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="198"
+		data-flex-basis="476px"
+	
+></p>
+<p><strong>测试2：生成随机数</strong></p>
+<ul>
+<li>输入指令：<code>帮我生成一个1~10的随机数</code>（可替换为1<del>20、1</del>100等）</li>
+<li>预期结果：返回1到指定数字之间的随机整数（如7、15）。</li>
+</ul>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230426835.png"
+	width="1319"
+	height="285"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230426835_hu_8a0ba94d686b9e90.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230426835_hu_4a8c2d9a1950fa26.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260421230426835"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="462"
+		data-flex-basis="1110px"
+	
+></p>
+<p><strong>测试3：随机选选项</strong></p>
+<ul>
+<li>输入指令：<code>从奶茶,咖啡,可乐,果汁中随机选一个</code>（选项可自定义，用英文逗号分隔）</li>
+<li>预期结果：从提供的选项中随机返回一个（如咖啡、果汁）。</li>
+</ul>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230841822.png"
+	width="1428"
+	height="369"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230841822_hu_f0884c3a13276e85.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260421230841822_hu_ac9b3404bd1a03ec.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260421230841822"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="386"
+		data-flex-basis="928px"
+	
+></p>
+<h2 id="四安装-anthropic-官方-skill-仓库">四、安装 Anthropic 官方 Skill 仓库
+</h2><p>Anthropic 官方开源 Skills 示例仓库（GitHub 地址：https://github.com/anthropics/skills），涵盖文档办公、Web 开发、创意品牌及平台工具四大类别，共计 17 个 Skill 实现。这些技能集合不仅是 Claude 技能系统的官方示范库，同时也为开发者提供了可学习、可复用、可定制的参考模板，是新手入门学习Claude 技能开发的官方权威资料。</p>
+<h3 id="41-安装官方-skill-仓库">4.1 安装官方 Skill 仓库
+</h3><p>Anthropic 官方提供两种技能安装方式：<strong>插件市场安装</strong> 和 <strong>手动 Git 安装</strong>。</p>
+<h4 id="方式-1插件市场安装推荐">方式 1：插件市场安装（推荐）
+</h4><p>适合直接安装官方整包技能（包含 PDF/DOCX/XLSX 等文档处理能力），操作最简单、最稳定。</p>
+<ol>
+<li>
+<p><strong>启动 Claude Code</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">claude
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>添加官方 Skills 市场</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 注册官方技能市场
+</span></span><span class="line"><span class="cl">/plugin marketplace add anthropics/skills
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423083858672.png"
+	width="1452"
+	height="402"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423083858672_hu_18aeb5b048363419.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423083858672_hu_acc11c1f24fc7.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423083858672"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="361"
+		data-flex-basis="866px"
+	
+></p>
+</li>
+<li>
+<p><strong>查看可安装的插件列表</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/plugin list
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>安装官方技能包（含 pdf /docx/xlsx 等）</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/plugin install document-skills@anthropic-agent-skills
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>重载插件（确保生效）</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="o">/</span><span class="n">reload</span><span class="o">-</span><span class="n">plugins</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423085753193.png"
+	width="1424"
+	height="87"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423085753193_hu_93007e83fe55131d.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423085753193_hu_e3ea0e44abfee000.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423085753193"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="1636"
+		data-flex-basis="3928px"
+	
+></p>
+</li>
+<li>
+<p><strong>查看是否加载成功</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/skills
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423084313067.png"
+	width="1442"
+	height="639"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423084313067_hu_7e383c37b71afecd.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423084313067_hu_9e36dee9d1f6fcaf.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423084313067"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="225"
+		data-flex-basis="541px"
+	
+></p>
+</li>
+</ol>
+<hr>
+<h4 id="方式-2手动-git-克隆安装灵活可控">方式 2：手动 Git 克隆安装（灵活可控）
+</h4><p>适合只想安装单个技能、或需要自定义修改的场景。</p>
+<ol>
+<li>
+<p><strong>克隆官方仓库</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git clone https://github.com/anthropics/skills.git
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> skills
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>安装到用户全局路径（所有项目可用）</strong></p>
+<p>全局技能会放在用户主目录下，所有 Claude Code 会话都能调用。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 创建全局技能目录 Windows对应路径为：`C:\Users\你的用户名\.claude\skills\`</span>
+</span></span><span class="line"><span class="cl">mkdir -p ~/.claude/skills
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 拷贝 单个技能（示例：pdf / docx / xlsx）</span>
+</span></span><span class="line"><span class="cl">cp -r skills/pdf ~/.claude/skills/
+</span></span><span class="line"><span class="cl">cp -r skills/docx ~/.claude/skills/
+</span></span><span class="line"><span class="cl">cp -r skills/xlsx ~/.claude/skills/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 拷贝 全部技能（二选一执行即可）</span>
+</span></span><span class="line"><span class="cl">cp -r skills/* ~/.claude/skills/
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>或安装到项目路径（仅当前项目可用）</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p .claude/skills
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 拷贝单个技能到当前项目</span>
+</span></span><span class="line"><span class="cl">cp -r skills/pdf .claude/skills/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 拷贝全部技能到当前项目</span>
+</span></span><span class="line"><span class="cl">cp -r skills/* .claude/skills/
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p><strong>重载技能并验证</strong></p>
+<p><strong>新版 Claude Code（v2.1.0+）</strong>：保存文件后<strong>自动重载</strong>，可直接验证。</p>
+<p><strong>旧版</strong>：必须手动重载。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="o">/</span><span class="n">reload</span><span class="o">-</span><span class="n">plugins</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p><strong>注意</strong>：Claude Code v2.1.0+ 支持 <strong>Skill 热重载</strong>——在 <code>~/.claude/skills</code> 或 <code>.claude/skills</code> 中创建或修改 Skill 后，无需重启 Claude Code 即可立即使用 。</p>
+</blockquote>
+<p>查看已安装的技能列表：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/skills list
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ol>
+<h3 id="42-skill-查看与验证">4.2 Skill 查看与验证
+</h3><h4 id="1-查看所有已加载技能">1. 查看所有已加载技能
+</h4><p>列出当前已安装并生效的全部技能：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/skills list
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423090358047.png"
+	width="1441"
+	height="657"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423090358047_hu_5820a6a1dd8f2ed0.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423090358047_hu_8b1bc69c5faebca9.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423090358047"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="219"
+		data-flex-basis="526px"
+	
+></p>
+<h4 id="2-验证单个技能是否可用">2. 验证单个技能是否可用
+</h4><p>查看指定技能的帮助信息，判断是否正常加载：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/技能名称 help
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/pdf help
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>显示帮助文档 → 技能加载正常</li>
+<li>提示 <code>Unknown command</code> → 未安装或未重载生效</li>
+</ul>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423090508251.png"
+	width="1457"
+	height="538"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423090508251_hu_2c626e206be06c45.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423090508251_hu_4887332c190f98e.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423090508251"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="270"
+		data-flex-basis="649px"
+	
+></p>
+<h3 id="43-skill-使用">4.3 Skill 使用
+</h3><h4 id="1-自然语言调用">1. 自然语言调用
+</h4><p>Claude 根据任务描述自动匹配并加载对应 Skill。无需记忆命令，直接描述需求即可：</p>
+<p>示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">解析 project_spec.pdf 并提取核心需求总结
+</span></span><span class="line"><span class="cl">读取 data.xlsx 的 Sheet2，用透视表按季度汇总销售额
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>由模型自动判断意图，匹配并触发合适的 Skill 完成处理。</p>
+</blockquote>
+<h4 id="2-斜杠命令claude-code-支持">2. 斜杠命令（Claude Code 支持）
+</h4><p>安装 skill 后，可通过 <code>/skill-name</code> 直接调用，支持参数传递。</p>
+<p>示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/pdf 摘要总结 file.pdf
+</span></span><span class="line"><span class="cl">/xlsx 提取表格 file.xlsx
+</span></span><span class="line"><span class="cl">/mcp-builder 基于公司内部 REST API 创建一个 MCP server：支持查询用户列表和创建工单，用 FastMCP (Python) 实现，带错误重试
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="3-明确指明使用具体的skill来处理">3. 明确指明使用具体的Skill来处理
+</h4><p>当任务需要特定 Skill 的独有能力，或要避免 Claude 自动路由到不合适的 Skill 时，显式指名可确保行为可控。</p>
+<p>示例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 示例1：使用frontend-design技能生成数据看板
+</span></span><span class="line"><span class="cl">使用 frontend-design skill 设计一个数据看板界面，要求：
+</span></span><span class="line"><span class="cl">- 深色模式
+</span></span><span class="line"><span class="cl">- 卡片式布局
+</span></span><span class="line"><span class="cl">- 避免过度渐变与大圆角的“AI 风”设计
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 示例2：使用canvas-design技能生成会议海报
+</span></span><span class="line"><span class="cl">用 canvas-design skill 生成一张 1200×630 像素的会议海报，具体要求如下：
+</span></span><span class="line"><span class="cl">- 背景：采用算法生成的流动渐变网格（由perlin noise驱动，色调柔和）
+</span></span><span class="line"><span class="cl">- 主标题：使用粗体无衬线字体，居中对齐，颜色为 #1F1F1F（深灰）
+</span></span><span class="line"><span class="cl">- 底部：添加 16px 高的品牌色条，颜色为 #1F1F1F，无额外文字
+</span></span><span class="line"><span class="cl">- 输出格式：PNG，保留透明通道，便于后续叠加使用
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 示例3：使用algorithmic-art技能创建艺术图
+</span></span><span class="line"><span class="cl">用 algorithmic-art skill 编写一段 p5.js 脚本，实现以下效果：
+</span></span><span class="line"><span class="cl">- 生成 10 个随机分布的半透明圆形，半径范围 50-100px
+</span></span><span class="line"><span class="cl">- 色彩：采用 HSL 模式，色相范围 200-280（冷色调），饱和度 50%，透明度 60%
+</span></span><span class="line"><span class="cl">- 效果：给每个圆形添加 3px 的高斯模糊，增强层次感
+</span></span><span class="line"><span class="cl">- 输出：导出 1080×1080 像素的图片，适配 Instagram 方形图尺寸
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>使用 frontend-design skill 设计一个数据看板界面。演示如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120347698.png"
+	width="1680"
+	height="720"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120347698_hu_dd610cedf93f28b7.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120347698_hu_5e2b14dbe5db68ca.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423120347698"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="233"
+		data-flex-basis="560px"
+	
+><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120407577.png"
+	width="1690"
+	height="405"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120407577_hu_30f5fa846229a826.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120407577_hu_ae5d3912cfbbc0dc.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423120407577"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="417"
+		data-flex-basis="1001px"
+	
+></p>
+<p>生成结果（dashboard.html文件）：
+<img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120454086.png"
+	width="1892"
+	height="809"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120454086_hu_dd2ee0948179ff5a.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423120454086_hu_c14ae78b401e7580.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423120454086"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="233"
+		data-flex-basis="561px"
+	
+></p>
+<h2 id="五claude-code-中-skill-管理启用--禁用--更新--卸载">五、Claude code 中 Skill 管理（启用 / 禁用 / 更新 / 卸载）
+</h2><h3 id="51-禁用单个技能">5.1 禁用单个技能
+</h3><p>核心说明：通过<code>claude code</code>权限配置中的「deny」规则，可精确禁用指定单个Skill，实现精准权限管控。</p>
+<ol>
+<li>
+<p>打开权限编辑器</p>
+<p>在<code>Claude code</code>操作界面输入以下命令，调出权限编辑窗口：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/permissions
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>在 <code>deny</code> 区域添加禁用的技能</p>
+<p>禁用单个Skill需在「deny」区域添加对应规则，语法及示例如下：</p>
+<ul>
+<li>
+<p>精确匹配：<code>Skill(技能名称)</code>，仅禁用指定名称的单个Skill；</p>
+</li>
+<li>
+<p>前缀匹配：<code>Skill(技能名称 *)</code>，禁用所有以该名称为前缀的相关Skill（支持任意参数）。</p>
+</li>
+</ul>
+<p>示例（禁用pdf技能）：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">Skill(document-skills:pdf)
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>切换到<code>Deny</code>选项卡，添加规则：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134831543.png"
+	width="1376"
+	height="392"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134831543_hu_8806c5eb1c7433f7.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134831543_hu_1cd6d0ddbad2575c.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423134831543"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="351"
+		data-flex-basis="842px"
+	
+></p>
+<p>输入禁用的Skill：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134849754.png"
+	width="1668"
+	height="390"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134849754_hu_3fdc970fd4677aa.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134849754_hu_af96d73e1b9822f3.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423134849754"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="427"
+		data-flex-basis="1026px"
+	
+></p>
+<p>选择该禁用规则的生效范围（根据实际需求选择，如项目、用户全局等）；</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134912618.png"
+	width="1687"
+	height="377"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134912618_hu_da3a4ad7ae810094.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134912618_hu_6f6ca17b6678205.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423134912618"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="447"
+		data-flex-basis="1073px"
+	
+></p>
+</li>
+<li>
+<p>保存（Ctrl+S）并退出</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134958047.png"
+	width="1578"
+	height="373"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134958047_hu_f40068c9244e5520.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423134958047_hu_3e56fe99edb20f99.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423134958047"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="423"
+		data-flex-basis="1015px"
+	
+></p>
+</li>
+</ol>
+<blockquote>
+<p>注意事项：通过「/permissions」命令禁用的Skill，仅对 Claude 自动触发的场景生效；若用户手动输入「/技能名称」触发，该Skill仍可正常使用。</p>
+</blockquote>
+<h3 id="52-恢复启用单个技能">5.2 恢复启用单个技能
+</h3><p>核心说明：删除「deny」区域中对应的禁用规则，即可恢复该Skill的正常使用。</p>
+<ol>
+<li>
+<p>再次打开权限</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/permissions
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>删除 <code>Skill(document-skills:pdf)</code> 这一行</p>
+</li>
+<li>
+<p>保存</p>
+</li>
+</ol>
+<h3 id="53-管理插件级技能整包启用--禁用">5.3 管理插件级技能（整包启用 / 禁用）
+</h3><p>适用于通过 <code>/plugin install</code> 安装的整包技能。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 查看已安装插件
+</span></span><span class="line"><span class="cl">/plugin list
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 禁用整个文档技能包（pdf/docx/xlsx 一起禁用）
+</span></span><span class="line"><span class="cl">/plugin disable document-skills@anthropic-agent-skills
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 重新启用
+</span></span><span class="line"><span class="cl">/plugin enable document-skills@anthropic-agent-skills
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423141654816.png"
+	width="1631"
+	height="430"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423141654816_hu_39bc3d295e73088f.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260423141654816_hu_976da134c4717769.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260423141654816"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="379"
+		data-flex-basis="910px"
+	
+></p>
+<h3 id="54-更新官方-skills">5.4 更新官方 Skills
+</h3><p>插件方式更新</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/plugin update document-skills@anthropic-agent-skills
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>手动 Git 方式更新</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-gdscript3" data-lang="gdscript3"><span class="line"><span class="cl"><span class="n">cd</span> <span class="n">skills</span>
+</span></span><span class="line"><span class="cl"><span class="n">git</span> <span class="n">pull</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 重新覆盖到技能目录</span>
+</span></span><span class="line"><span class="cl"><span class="n">cp</span> <span class="o">-</span><span class="n">r</span> <span class="n">skills</span><span class="o">/</span><span class="n">pdf</span> <span class="o">~/.</span><span class="n">claude</span><span class="o">/</span><span class="n">skills</span><span class="o">/</span>
+</span></span><span class="line"><span class="cl"><span class="o">/</span><span class="n">skills</span> <span class="n">reload</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><hr>
+<h3 id="55-卸载技能">5.5 卸载技能
+</h3><p><strong>方式 A：插件卸载</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">/plugin uninstall document-skills@anthropic-agent-skills
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>方式 B：手动删除目录</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 删除全局技能
+</span></span><span class="line"><span class="cl">rm -rf ~/.claude/skills/pdf
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"># 删除项目技能
+</span></span><span class="line"><span class="cl">rm -rf .claude/skills/pdf
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="六skill-统一管理">六、Skill 统一管理
+</h2><h3 id="61-为什么需要管理-skill">6.1 为什么需要管理 Skill
+</h3><p>随着社区技能数量呈爆发式增长，仅 Antigravity Awesome Skills 仓库就已收录 <strong>1000+</strong> 各类通用与场景化技能。技能规模化普及的同时，开发者与团队在落地生产级 Agent 应用时，普遍面临一系列核心痛点：</p>
+<ul>
+<li><strong>技能发现难</strong>：如何从海量技能中找到适合自己项目的？</li>
+<li><strong>版本管理乱</strong>：第三方技能持续迭代更新，更新后如何维护升级，如何同步到团队？</li>
+<li><strong>环境一致性</strong>：本地开发、测试服务器、生产环境、团队成员电脑的技能集不统一，导致 Agent 执行结果差异。如何保证不同机器上的 Agent 使用相同的技能集？。</li>
+<li><strong>跨工具兼容</strong>：同一团队使用不同 Agent 工具时如何共享技能？</li>
+</ul>
+<p>因此，<strong>系统化的 Skill 管理</strong>成为生产级 Agent 开发的必备能力。</p>
+<p>当前行业主流 Skill 管理方案分为两类：<strong>手动管理Skill</strong>、<strong><code>npx skills</code> 工具管理</strong>。下面详细介绍这两种方案。</p>
+<h3 id="62-skill-的存储结构与规范">6.2 Skill 的存储结构与规范
+</h3><p>在深入管理方式前，先理解 Skill 在文件系统中的组织方式（<strong>文件存储规则、目录规范</strong>）。</p>
+<h4 id="1技能存储目录">1、技能存储目录
+</h4><p>不同 Agent 工具默认技能存储目录存在差异：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">Agent 工具</th>
+          <th style="text-align: left">个人级 Skill 目录</th>
+          <th style="text-align: left">项目级 Skill 目录</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">Claude Code</td>
+          <td style="text-align: left"><code>~/.claude/skills/</code></td>
+          <td style="text-align: left"><code>.claude/skills/</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">Cursor</td>
+          <td style="text-align: left"><code>~/.cursor/skills/</code></td>
+          <td style="text-align: left"><code>.cursor/skills/</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">Codex CLI</td>
+          <td style="text-align: left"><code>~/.codex/skills/</code></td>
+          <td style="text-align: left"><code>.codex/skills/</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">Gemini CLI</td>
+          <td style="text-align: left"><code>~/.gemini/skills/</code></td>
+          <td style="text-align: left"><code>.gemini/skills/</code></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">跨工具统一规范（推荐）</td>
+          <td style="text-align: left"><strong><code>~/.agents/skills/</code></strong></td>
+          <td style="text-align: left"><strong><code>.agents/skills/</code></strong></td>
+      </tr>
+  </tbody>
+</table></div>
+<p><strong>规则说明</strong>：</p>
+<ul>
+<li><strong>个人级（全局）</strong>：存放在用户主目录下，对该用户所有项目生效。</li>
+<li><strong>项目级（局部）</strong>：存放于项目根目录下，<strong>仅对当前项目生效</strong>，可提交至代码仓库，适合团队协作。</li>
+<li><strong>加载规则：<strong>Agent 启动时会</strong>自动递归扫描</strong>指定目录，加载目录内的 <code>SKILL.md</code> 核心文件（技能的唯一标识文件）；加载优先级：<strong>项目级 &gt; 个人级</strong>（同名技能优先使用项目级，便于团队定制覆盖全局技能）。</li>
+</ul>
+<h4 id="2标准目录结构"><strong>2、标准目录结构</strong>
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl"># 技能标准结构
+</span></span><span class="line"><span class="cl">skills/
+</span></span><span class="line"><span class="cl">├── skill-name-1/        # 技能唯一目录名（单个技能结构，必须包含 SKILL.md）
+</span></span><span class="line"><span class="cl">│   └── SKILL.md          # 技能核心描述文件（必填）
+</span></span><span class="line"><span class="cl">├── skill-name-2/
+</span></span><span class="line"><span class="cl">│   ├── SKILL.md
+</span></span><span class="line"><span class="cl">│   └── utils.js          # 技能配套脚本/资源（可选）
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="63-手动管理-skill">6.3 手动管理 Skill
+</h3><p>手动管理是最基础、最透明的方式，适合理解底层机制、定制化需求强或网络受限的场景。</p>
+<h4 id="1手动安装-skill">1、手动安装 Skill
+</h4><p><strong>步骤 1：获取 Skill 源文件</strong></p>
+<p>从 GitHub 或其它源下载 Skill 文件。以安装 Vercel 的 React 最佳实践技能为例：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 克隆技能仓库</span>
+</span></span><span class="line"><span class="cl">git clone https://github.com/vercel-labs/agent-skills.git /tmp/agent-skills
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查看可用技能</span>
+</span></span><span class="line"><span class="cl">ls /tmp/agent-skills/skills/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>步骤 2：复制到 Agent 技能目录</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 安装到个人级（对所有项目生效）</span>
+</span></span><span class="line"><span class="cl">mkdir -p ~/.claude/skills/react-best-practices
+</span></span><span class="line"><span class="cl">cp /tmp/agent-skills/skills/react-best-practices/* ~/.claude/skills/react-best-practices/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 或安装到项目级（仅当前项目）</span>
+</span></span><span class="line"><span class="cl">mkdir -p .claude/skills/react-best-practices
+</span></span><span class="line"><span class="cl">cp /tmp/agent-skills/skills/react-best-practices/* .claude/skills/react-best-practices/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>步骤 3：验证安装</strong></p>
+<p>在 Claude Code 中输入：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">What skills are available?
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>或直接调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">/react-best-practices
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="2手动更新-skill">2、手动更新 Skill
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 进入技能仓库更新代码</span>
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> /tmp/agent-skills <span class="o">&amp;&amp;</span> git pull
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 重新复制更新后的文件</span>
+</span></span><span class="line"><span class="cl">cp /tmp/agent-skills/skills/react-best-practices/* ~/.claude/skills/react-best-practices/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="3手动删除-skill">3、手动删除 Skill
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 删除个人级技能</span>
+</span></span><span class="line"><span class="cl">rm -rf ~/.claude/skills/react-best-practices
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 删除项目级技能</span>
+</span></span><span class="line"><span class="cl">rm -rf .claude/skills/react-best-practices
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="4手动创建自定义-skill">4、手动创建自定义 Skill
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">mkdir -p ~/.claude/skills/my-custom-skill
+</span></span><span class="line"><span class="cl">cat &gt; ~/.claude/skills/my-custom-skill/SKILL.md <span class="s">&lt;&lt; &#39;EOF&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s">---
+</span></span></span><span class="line"><span class="cl"><span class="s">name: my-custom-skill
+</span></span></span><span class="line"><span class="cl"><span class="s">description: My team&#39;s custom coding conventions
+</span></span></span><span class="line"><span class="cl"><span class="s">---
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s"># My Team Coding Conventions
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">## Import Order
+</span></span></span><span class="line"><span class="cl"><span class="s">1. React/Vue imports
+</span></span></span><span class="line"><span class="cl"><span class="s">2. Third-party libraries
+</span></span></span><span class="line"><span class="cl"><span class="s">3. Absolute project imports (@/)
+</span></span></span><span class="line"><span class="cl"><span class="s">4. Relative imports (./)
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">## Naming
+</span></span></span><span class="line"><span class="cl"><span class="s">- Components: PascalCase
+</span></span></span><span class="line"><span class="cl"><span class="s">- Hooks: useCamelCase
+</span></span></span><span class="line"><span class="cl"><span class="s">- Utilities: camelCase
+</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="5手动管理的优缺点">5、手动管理的优缺点
+</h4><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">维度</th>
+          <th style="text-align: left">说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>优点</strong></td>
+          <td style="text-align: left">完全可控，无需依赖外部工具；适合私有 Skill 管理；零网络依赖（本地文件即可）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>缺点</strong></td>
+          <td style="text-align: left">操作繁琐，易出错；无版本锁定机制；难以发现新技能；跨团队同步困难</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="64-npx-skills-工具管理">6.4 <code>npx skills</code> 工具管理
+</h3><p><code>npx skills</code> 是 Vercel 官方维护的 CLI 工具，作为 <strong>Agent Skills 生态的包管理器</strong>，提供发现、安装、更新、删除的一站式能力 。</p>
+<p><strong><code>npx skills</code></strong> 是 <strong>Vercel 官方推出的 AI Agent 技能管理 CLI 工具</strong>，作为 <strong>Agent Skills 生态的包管理器</strong>，提供发现、安装、更新、删除的一站式能力 。让你的 AI 助手（Cursor、Claude、GitHub Copilot、Windsurf 等）瞬间拥有专业级能力（代码规范、性能优化、一键部署、审查等）。</p>
+<p>简单的说，它就是 <strong>AI 技能的「应用商店 + 命令行管理器」</strong>。</p>
+<h4 id="641-环境准备">6.4.1 环境准备
+</h4><p>确保已安装 Node.js <strong>20.6+</strong> 和 npm/npx。</p>
+<p><strong>npx skills</strong> 是 Skills CLI 的调用方式，无需全局安装，直接通过 npx 调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="err">#</span> <span class="nx">查看使用帮助</span>
+</span></span><span class="line"><span class="cl"><span class="nx">npx</span> <span class="nx">skills</span> <span class="o">-</span><span class="nx">h</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Skills CLI 支持 <strong>50+</strong> 种主流 AI 助手或工具，包括 Claude Code、Cursor、Codex、OpenCode、Trae、Windsurf、GitHub Copilot、Gemini CLI 等。</p>
+<h4 id="642-核心命令详解">6.4.2 核心命令详解
+</h4><h5 id="1发现技能npx-skills-find">1、发现技能：<code>npx skills find</code>
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 按关键词搜索技能</span>
+</span></span><span class="line"><span class="cl">npx skills find react performance
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>输出示例：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260429092146281.png"
+	width="1440"
+	height="742"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260429092146281_hu_34cb5723c84752e8.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260429092146281_hu_4be830c11ec383a4.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260429092146281"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="194"
+		data-flex-basis="465px"
+	
+></p>
+<p>也可以直接访问可视化目录网站 <a class="link" href="https://skills.sh/"  target="_blank" rel="noopener"
+    >skills.sh</a> 进行浏览 。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">skills.sh 是 Vercel 推出的开放 AI 智能体技能生态平台，相当于 AI Agent 界的 npm，用于一键安装、共享、管理可复用的 Agent 技能（Skills）。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="2安装技能npx-skills-add">2、安装技能：<code>npx skills add</code>
+</h5><p>支持多种来源格式 ：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># GitHub 简写（推荐）</span>
+</span></span><span class="line"><span class="cl">npx skills add vercel-labs/agent-skills --skill vercel-react-best-practices
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装仓库下的所有技能(会引导选择需要安装的skill、Agent工具及作用范围)</span>
+</span></span><span class="line"><span class="cl">npx skills add vercel-labs/agent-skills
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 完整 URL</span>
+</span></span><span class="line"><span class="cl">npx skills add https://github.com/microsoft/playwright-cli
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 本地路径（开发调试）</span>
+</span></span><span class="line"><span class="cl">npx skills add ./my-local-skills
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 安装到指定 Agent（跨工具兼容）</span>
+</span></span><span class="line"><span class="cl">npx skills add vercel-labs/agent-skills -a claude-code -g
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>常用选项：</p>
+<ul>
+<li><code>-s, --skill &lt;skills...&gt;</code>：指定要安装的技能名称（可指定多个）</li>
+<li><code>-a, --agent &lt;agents&gt;</code>：指定目标 AI 助手。</li>
+<li><code>-g, --global</code>：全局安装（用户级别），默认是项目级别。</li>
+<li><code>-l, --list</code>：仅列出可用技能，不实际安装。</li>
+<li><code>--copy</code>：使用复制而非符号链接安装。</li>
+<li><code>-y, --yes</code>：跳过所有确认提示。</li>
+<li><code>--all</code>：安装所有技能到所有 Agent。</li>
+</ul>
+<p><strong>安装原理</strong>：<code>npx skills</code> 会自动将远程仓库中的 <code>SKILL.md</code> 及相关资源下载到对应 Agent 的技能目录（如： <code>~/.claude/skills/</code> 或 <code>.claude/skills/</code>），并创建 <code>skills-lock.json</code> 锁定版本 。</p>
+<h5 id="3查看已安装技能npx-skills-list">3、查看已安装技能：<code>npx skills list</code>
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">npx skills list  <span class="c1">#查看项目 skill</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">npx skills list -g   <span class="c1">#查看全局 skill</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260429093915204.png"
+	width="946"
+	height="472"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260429093915204_hu_82196f4aa6859a66.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/images/image-20260429093915204_hu_a58d98c2b7528d41.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260429093915204"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="200"
+		data-flex-basis="481px"
+	
+></p>
+<h5 id="4更新技能npx-skills-update">4、更新技能：<code>npx skills update</code>
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 检查所有已安装技能的更新</span>
+</span></span><span class="line"><span class="cl">npx skills check
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 批量更新所有技能</span>
+</span></span><span class="line"><span class="cl">npx skills update
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 更新全局</span>
+</span></span><span class="line"><span class="cl">npx skills update -g
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 更新指定技能</span>
+</span></span><span class="line"><span class="cl">npx skills update vercel-react-best-practices
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="5删除技能npx-skills-remove">5、删除技能：<code>npx skills remove</code>
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 删除指定技能</span>
+</span></span><span class="line"><span class="cl">npx skills remove vercel-react-best-practices  <span class="c1"># 项目级</span>
+</span></span><span class="line"><span class="cl">npx skills remove vercel-react-best-practices -g  <span class="c1"># 全局</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="643-可复现安装lockfile-机制">6.4.3 可复现安装：Lockfile 机制
+</h4><p>这是 <code>npx skills</code> 最强大的特性之一。安装项目级技能后，工具会在当前目录生成 <code>skills-lock.json</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;skills&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;vercel-react-best-practices&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;vercel-labs/agent-skills&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;sourceType&#34;</span><span class="p">:</span> <span class="s2">&#34;github&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;skillPath&#34;</span><span class="p">:</span> <span class="s2">&#34;skills/react-best-practices/SKILL.md&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;computedHash&#34;</span><span class="p">:</span> <span class="s2">&#34;ca7b0c0c6e5f2750043f7f0cd72d16ac4e2abc48f9b5500d047a4b77a2506212&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>团队协作流程</strong>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 成员 A：安装所需技能并提交 lockfile。(安装范围选择项目级)</span>
+</span></span><span class="line"><span class="cl">npx skills add vercel-labs/agent-skills --skill vercel-react-best-practices
+</span></span><span class="line"><span class="cl">git add skills-lock.json
+</span></span><span class="line"><span class="cl">git commit -m <span class="s2">&#34;chore: add agent skills&#34;</span>
+</span></span><span class="line"><span class="cl">git push
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 成员 B：克隆项目后一键恢复相同技能集</span>
+</span></span><span class="line"><span class="cl">git clone &lt;repo&gt;
+</span></span><span class="line"><span class="cl"><span class="nb">cd</span> &lt;repo&gt;
+</span></span><span class="line"><span class="cl">npx skills install  <span class="c1"># 根据 skills-lock.json 精确还原</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这确保了团队内所有开发者、CI 环境、不同机器上的 Agent 都使用<strong>完全一致的 Skill 版本</strong>。</p>
+<h4 id="644-高级用法">6.4.4 高级用法
+</h4><h5 id="6441-全局安装与多-agent-共享">6.4.4.1 全局安装与多 Agent 共享
+</h5><p><code>npx skills</code> 默认将技能安装到 <code>~/.agent/</code> 目录作为全局缓存，然后通过软链接（symlink）映射到具体 Agent 目录，节省磁盘空间 ：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 查看全局缓存</span>
+</span></span><span class="line"><span class="cl">ls ~/.agent/skills/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 手动创建软链接给多个 Agent 共享</span>
+</span></span><span class="line"><span class="cl">ln -s ~/.agent/skills/vercel-react-best-practices ~/.cursor/skills/vercel-react-best-practices
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="6442-批量安装社区技能集">6.4.4.2 批量安装社区技能集
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 一次安装 Antigravity 社区的 1,234+ 个技能（按 Agent 过滤）</span>
+</span></span><span class="line"><span class="cl">npx antigravity-awesome-skills --claude
+</span></span><span class="line"><span class="cl">npx antigravity-awesome-skills --cursor
+</span></span><span class="line"><span class="cl">npx antigravity-awesome-skills --gemini
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="645-npx-skills-的优缺点">6.4.5 <code>npx skills</code> 的优缺点
+</h4><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">维度</th>
+          <th style="text-align: left">说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">**优点 **</td>
+          <td style="text-align: left">一键安装/更新/删除；Lockfile 保证环境一致性；强大的发现能力；自动处理跨 Agent 兼容；支持版本锁定（commit/tag）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left">**缺点 **</td>
+          <td style="text-align: left">依赖 Node.js 和网络；对私有仓库需要额外配置认证；需要信任第三方工具</td>
+      </tr>
+  </tbody>
+</table></div>
+<h4 id="646-两种管理方式对比">6.4.6 两种管理方式对比
+</h4><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">对比维度</th>
+          <th style="text-align: left">手动管理</th>
+          <th style="text-align: left"><code>npx skills</code> 工具管理</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>上手难度</strong></td>
+          <td style="text-align: left">低（只需理解目录结构）</td>
+          <td style="text-align: left">中（需记忆 CLI 命令）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>操作效率</strong></td>
+          <td style="text-align: left">低（手动复制、更新、删除）</td>
+          <td style="text-align: left">高（一行命令完成）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>版本控制</strong></td>
+          <td style="text-align: left">无（需手动跟踪）</td>
+          <td style="text-align: left">内置 Lockfile（<code>skills-lock.json</code>）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>团队同步</strong></td>
+          <td style="text-align: left">困难（需手动分发文件或通过Git管理）</td>
+          <td style="text-align: left">简单（提交 lockfile 到 Git）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>技能发现</strong></td>
+          <td style="text-align: left">无（需自行搜索 GitHub）</td>
+          <td style="text-align: left">内置搜索 + skills.sh 网站</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>跨 Agent 兼容</strong></td>
+          <td style="text-align: left">需手动适配路径</td>
+          <td style="text-align: left">自动处理 50+ Agent 工具</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>私有 Skill</strong></td>
+          <td style="text-align: left">完全支持（本地文件即可）</td>
+          <td style="text-align: left">支持（通过本地路径或私有仓库）</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>离线环境</strong></td>
+          <td style="text-align: left">完全支持</td>
+          <td style="text-align: left">安装时需要网络，运行时不需</td>
+      </tr>
+  </tbody>
+</table></div>
+<h3 id="65-生产环境最佳实践">6.5 生产环境最佳实践
+</h3><h4 id="651-项目级-skill-优先">6.5.1 项目级 Skill 优先
+</h4><p>将 Skill 安装在项目目录（如：<code>.claude/skills/</code>）而非个人目录，并提交 <code>skills-lock.json</code>：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 在项目根目录执行</span>
+</span></span><span class="line"><span class="cl">npx skills add vercel-labs/agent-skills --skill vercel-react-best-practices
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 提交到 Git</span>
+</span></span><span class="line"><span class="cl">git add .claude/skills/ skills-lock.json <span class="c1"># 不要忽略 lockfile！</span>
+</span></span><span class="line"><span class="cl">git commit -m <span class="s2">&#34;feat: add react performance review skill&#34;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这样新成员克隆项目后即可获得完全一致的 Agent 能力。</p>
+<h4 id="652-区分-skill-类型并设置调用权限">6.5.2 区分 Skill 类型并设置调用权限
+</h4><p>默认情况下，你和 Claude 都可以调用任意技能。你可以输入 <code>/技能名称</code> 手动调用；当对话场景匹配时，Claude 也可以自动加载并调用。如需精细化管控技能调用权限，可通过两项前置元数据配置限制：</p>
+<ul>
+<li><strong><code>disable-model-invocation: true</code></strong>：仅支持<strong>用户手动调用</strong>，禁止模型自动触发。适用于存在副作用、需要控制执行时机的流程，例如 <code>/commit</code>（提交代码）、<code>/deploy</code>（部署）、<code>/send-slack-message</code>（发送消息）。避免 Claude 自行判断、擅自执行部署等高危操作。</li>
+<li><strong><code>user-invocable: false</code></strong>：仅允许<strong>Claude 自动调用</strong>，关闭用户手动使用权限。适用于背景知识类、不适合作为指令手动执行的技能。例如 <code>legacy-system-context</code> 技能用于讲解老旧系统逻辑，Claude 在需要时自动引用即可，用户无需也无法手动调用。</li>
+</ul>
+<p>根据 Skill 的用途设置合适的调用模式 ：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">deploy-production</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">Deploy application to production environment</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">disable-model-invocation</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">   </span><span class="c"># 仅用户可调用，防止 Agent 自动执行危险操作</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">allowed-tools</span><span class="p">:</span><span class="w"> </span><span class="l">Bash(kubectl *, docker *)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c"># 这个 Skill 涉及生产部署，必须用户显式调用 /deploy-production</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">codebase-architecture</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l">Internal architecture documentation and conventions</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">user-invocable</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">            </span><span class="c"># 仅 Agent 自动调用，不显示在 / 菜单中</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="c"># 这个 Skill 作为背景知识，Agent 处理相关文件时自动加载</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="653-定期审计与更新">6.5.3 定期审计与更新
+</h4><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 每月执行一次</span>
+</span></span><span class="line"><span class="cl">npx skills check          <span class="c1"># 查看可更新项</span>
+</span></span><span class="line"><span class="cl">npx skills update         <span class="c1"># 批量更新</span>
+</span></span><span class="line"><span class="cl">npx skills list           <span class="c1"># 检查是否有不再使用的技能，项目级</span>
+</span></span><span class="line"><span class="cl">npx skills list  -g         <span class="c1"># 检查是否有不再使用的技能，全局</span>
+</span></span><span class="line"><span class="cl">npx skills remove &lt;name&gt;  <span class="c1"># 清理废弃技能</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="654-安全注意事项">6.5.4 安全注意事项
+</h4><ol>
+<li><strong>审查 Skill 来源</strong>：安装前查看仓库的 Stars、维护者信誉、最近更新时间。优先使用经过 <a class="link" href="https://skills.sh/"  target="_blank" rel="noopener"
+    >Agent Trust Hub</a> 或 安全审计的技能。</li>
+<li><strong>限制敏感操作</strong>：涉及部署、支付、数据删除的 Skill 务必设置 <code>disable-model-invocation: true</code>。</li>
+</ol>
+<h2 id="七官方-skill-资源库">七、官方 Skill 资源库
+</h2><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: left">资源</th>
+          <th style="text-align: left">地址</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left">官方 Skills 库</td>
+          <td style="text-align: left"><a class="link" href="https://github.com/anthropics/skills"  target="_blank" rel="noopener"
+    >https://github.com/anthropics/skills</a></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">官方插件</td>
+          <td style="text-align: left"><a class="link" href="https://github.com/anthropics/claude-plugins-official"  target="_blank" rel="noopener"
+    >https://github.com/anthropics/claude-plugins-official</a></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">社区收集</td>
+          <td style="text-align: left"><a class="link" href="https://github.com/ComposioHQ/awesome-claude-skills"  target="_blank" rel="noopener"
+    >https://github.com/ComposioHQ/awesome-claude-skills</a></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">Skills 市场</td>
+          <td style="text-align: left"><a class="link" href="https://skills.sh/"  target="_blank" rel="noopener"
+    >https://skills.sh/</a></td>
+      </tr>
+      <tr>
+          <td style="text-align: left">SkillsMP</td>
+          <td style="text-align: left"><a class="link" href="https://skillsmp.com/"  target="_blank" rel="noopener"
+    >https://skillsmp.com</a></td>
+      </tr>
+  </tbody>
+</table></div>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/skill/">Skill</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462.png" width="1383" height="819" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #3f474f80 0%, #f3fafeC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339.png" width="1678" height="849" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #bbd4db80 0%, #022556C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/images/image-20260425153556852.png" width="1315" height="763" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #23449880 0%, #fafbfdC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552.png" width="1114" height="809" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #1163fd80 0%, #f9f9f9C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260414065402554.png" width="1170" height="687" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第二章 Skills 规范详解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #e4eef480 0%, #e4eef4C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第二章 Skills 规范详解</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

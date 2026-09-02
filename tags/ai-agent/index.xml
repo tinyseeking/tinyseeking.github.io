@@ -72,13 +72,6 @@
       <description>&lt;h1 id=&#34;4-手把手搭建第一个-rag-实战实现本地文档智能问答&#34;&gt;4 手把手搭建第一个 RAG 实战：实现本地文档智能问答&#xD;&#xA;&lt;/h1&gt;&lt;h2 id=&#34;41-项目概述&#34;&gt;4.1 项目概述&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​&#x9;&#x9;本文将带领你从零开始搭建基于 RAG（检索增强生成）的知识问答系统，实现文档上传、内容解析与并基于检索文档内容进行智能问答。系统支持 PDF、DOCX、TXT、MD 等多格式文档，通过向量数据库存储文档向量，结合大语言模型（LLM）生成准确回答，并具有流式输出功能提升用户体验，有效解决 LLM 的静态知识局限与 “幻觉” 问题。&lt;/p&gt;</description>
     </item>
     <item>
-      <title>构建 AI Agent 的技术架构</title>
-      <link>https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/</link>
-      <pubDate>Fri, 09 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>https://tinyseeking.github.io/p/%E6%9E%84%E5%BB%BA-ai-agent-%E7%9A%84%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/</guid>
-      <description>&lt;h2 id=&#34;第3章-构建-ai-agent-的技术架构&#34;&gt;第3章 构建 AI Agent 的技术架构&#xD;&#xA;&lt;/h2&gt;&lt;p&gt;​&#x9;&#x9;我们了解了AI Agent的概念框架后，我们就想构建智能体，但如何构建智能体呢？有没有一些设计模式或最佳实践可遵循，这些设计模式或最佳实践就形成技术架构。这节我们就深入的探索构建 AI Agent 的技术架构。&lt;/p&gt;</description>
-    </item>
-    <item>
       <title>AI Agent 核心概念</title>
       <link>https://tinyseeking.github.io/p/ai-agent-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5/</link>
       <pubDate>Mon, 05 Jan 2026 00:00:00 +0000</pubDate>

@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="PDF Skill 是 Anthropic 官方 Agent Skills 体系中负责 PDF 全生命周期处理的专业技能。覆盖：读取解析、内容创建、文档操作、表单处理、格式转换、高级渲染。">
+<title>Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析</title>
+
+<link rel='canonical' href='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/'>
+
+<link rel="stylesheet" href="../../scss/style.min.12cc436ab5f8511a88ba664cf1ef0912660ff4b5b07ea9078eb9fd7832b1e898.css"><meta property='og:title' content="Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析">
+<meta property='og:description' content="PDF Skill 是 Anthropic 官方 Agent Skills 体系中负责 PDF 全生命周期处理的专业技能。覆盖：读取解析、内容创建、文档操作、表单处理、格式转换、高级渲染。">
+<meta property='og:url' content='https://tinyseeking.github.io/p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/'>
+<meta property='og:site_name' content='Tiny 的技术博客'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Skill' /><meta property='article:published_time' content='2026-04-06T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2026-04-06T00:00:00&#43;00:00'/><meta property='og:image' content='https://tinyseeking.github.io/' />
+<meta name="twitter:title" content="Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析">
+<meta name="twitter:description" content="PDF Skill 是 Anthropic 官方 Agent Skills 体系中负责 PDF 全生命周期处理的专业技能。覆盖：读取解析、内容创建、文档操作、表单处理、格式转换、高级渲染。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://tinyseeking.github.io/' /><link rel="shortcut icon" href="../../img/avatar.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        <figure class="site-avatar">
+                <a href="../../">
+                    <img src="../../img/avatar.png" 
+                        width="150"
+                        height="150"
+                        class="site-logo"
+                        loading="lazy"
+                        alt="Avatar">
+                </a>
+                
+                    <span class="emoji">✏️</span>
+                
+            </figure>
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="../../">Tiny 的技术博客</a></h1>
+            <h2 class="site-description">学习、探索，聚焦 AI Agent 工程化落地 &amp; 企业级解决方案</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://gitee.com/tinyseeking'
+                        target="_blank"
+                        title="Gitee"
+                        rel="me"
+                    >
+                        
+                        
+                            <?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg t="1769660419653" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2793" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><path d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z" fill="#C71D23" p-id="2794"></path></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/tinyseeking'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='../../' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../%E5%85%B3%E4%BA%8E/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='../../search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav class="toc-nav" id="TableOfContents">
+                
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#pdf-skill解析pdf处理">pdf Skill解析—PDF处理</a>
+          <ol>
+            <li><a href="#一技能概述">一、技能概述</a></li>
+            <li><a href="#二项目文件结构">二、项目文件结构</a></li>
+            <li><a href="#三核心决策树">三、核心决策树</a></li>
+            <li><a href="#四主要工作流">四、主要工作流</a></li>
+            <li><a href="#五设计通用启示">五、设计通用启示</a></li>
+            <li><a href="#六设计要点">六、设计要点</a></li>
+            <li><a href="#七使用示例">七、使用示例</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+    <div class="article-image">
+        <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552.png" width="1114" height="809" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析" />
+        </a>
+    </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            
+            
+            
+            <a href="../../categories/agent-skill/" style="background-color: #2a9d8f; color: #fff;">
+                Skill 从入门到精通
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            PDF Skill 是 Anthropic 官方 Agent Skills 体系中负责 PDF 全生命周期处理的专业技能。覆盖：读取解析、内容创建、文档操作、表单处理、格式转换、高级渲染。
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published" datetime='2026-04-06T00:00:00Z'>2026年4月6日星期一</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 7 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    
+    <aside class="article-toc">
+        <details>
+            <summary>
+                <div class="article-toc-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chevron-right"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6l6 6l-6 6" /></svg>
+                    <span>目录</span>
+                </div>
+            </summary>
+            <nav class="toc-nav">
+                
+  <ol>
+    <li>
+      <ol>
+        <li><a href="#pdf-skill解析pdf处理">pdf Skill解析—PDF处理</a>
+          <ol>
+            <li><a href="#一技能概述">一、技能概述</a></li>
+            <li><a href="#二项目文件结构">二、项目文件结构</a></li>
+            <li><a href="#三核心决策树">三、核心决策树</a></li>
+            <li><a href="#四主要工作流">四、主要工作流</a></li>
+            <li><a href="#五设计通用启示">五、设计通用启示</a></li>
+            <li><a href="#六设计要点">六、设计要点</a></li>
+            <li><a href="#七使用示例">七、使用示例</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+
+            </nav>
+        </details>
+    </aside>
+    
+
+    <section class="article-content">
+    
+    
+    <h1 id="skill-从入门到精通第四章-anthropic-官方skill解析pdf-skill-解析">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pdf Skill 解析
+</h1><h3 id="pdf-skill解析pdf处理">pdf Skill解析—PDF处理
+</h3><h4 id="一技能概述">一、技能概述
+</h4><p>PDF Skill 是 Anthropic 官方 Agent Skills 体系中负责 PDF 全生命周期处理的专业技能。覆盖：</p>
+<ul>
+<li><strong>读取解析</strong>: 文本/表格/元数据/图像提取。</li>
+<li><strong>内容创建</strong>: 基于 reportlab 的 PDF 生成（含多页文档、表格、样式系统）。</li>
+<li><strong>文档操作</strong>: 合并、拆分、旋转、裁剪、水印、加密。</li>
+<li><strong>表单处理</strong>: 可填写表单（AcroForm）与非可填写表单（纯视觉表单）的自动填充。</li>
+<li><strong>格式转换</strong>: PDF ↔ 图像、OCR 文本提取。</li>
+<li><strong>高级渲染</strong>: 基于 PDFium 的高速渲染与浏览器端解析。</li>
+</ul>
+<h4 id="二项目文件结构">二、项目文件结构
+</h4><p>基于<code>./skills/skills/pdf</code>目录源码，文件结构如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">pdf/
+</span></span><span class="line"><span class="cl">├── SKILL.md                           # 主编排提示词
+</span></span><span class="line"><span class="cl">├── reference.md                       # 高级功能与按需参考文档
+</span></span><span class="line"><span class="cl">├── forms.md                           # 专门的表单填写工作流指南
+</span></span><span class="line"><span class="cl">├── LICENSE.txt                        # 专有许可证
+</span></span><span class="line"><span class="cl">└── scripts/
+</span></span><span class="line"><span class="cl">    ├── check_fillable_fields.py       # 探测PDF 是否包含表单字段？
+</span></span><span class="line"><span class="cl">    ├── extract_form_field_info.py     # 提取原生可填写字段元数据
+</span></span><span class="line"><span class="cl">    ├── fill_fillable_fields.py        # 填写原生字段并验证
+</span></span><span class="line"><span class="cl">    ├── extract_form_structure.py      # 从不可填写 PDF 中提取文本/线条/复选框
+</span></span><span class="line"><span class="cl">    ├── check_bounding_boxes.py        # 填写前验证字段坐标
+</span></span><span class="line"><span class="cl">    ├── fill_pdf_form_with_annotations.py  # 为不可填写 PDF 添加 FreeText 注释
+</span></span><span class="line"><span class="cl">    ├── convert_pdf_to_images.py       # PDF → PNG，用于视觉分析
+</span></span><span class="line"><span class="cl">    └── create_validation_image.py     # 在图像上叠加边界框以进行视觉验证
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>职责分析：</strong></p>
+<ul>
+<li><strong>SKILL.md</strong>：处理常见任务（合并、拆分、提取、创建、OCR、水印），并将表单填写委托给 <code>forms.md</code>。</li>
+<li><strong>reference.md</strong>：补充 SKILL.md 未覆盖的高级特性、JS 生态、性能与故障排查。</li>
+<li><strong>forms.md</strong>：定义表单填写的多路径决策流程，强制规定步骤顺序。</li>
+<li><strong>scripts/</strong> ：是确定性的、单用途工具，将复杂工作流固化为可复用的 CLI 脚本。</li>
+</ul>
+<p><strong>设计模式：</strong> 渐进式披露，元数据（frontmatter）→ 核心指令（SKILL.md）→ 专业工作流（forms.md）→ 参考百科全书（reference.md）→ 可执行自动化（scripts/）。</p>
+<h4 id="三核心决策树">三、核心决策树
+</h4><p>PDF Skill 的执行逻辑基于输入参数触发决策分支，核心决策树如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">用户请求涉及 PDF
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├─▶ 读取/提取
+</span></span><span class="line"><span class="cl">│   ├─ 纯文本 → pdftotext (poppler) / pdfplumber / pypdf
+</span></span><span class="line"><span class="cl">│   ├─ 表格 → pdfplumber (page.extract_tables)
+</span></span><span class="line"><span class="cl">│   ├─ 图片 → pdfimages (poppler) / pypdfium2 渲染
+</span></span><span class="line"><span class="cl">│   └─ 扫描件 → pdf2image → pytesseract OCR
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├─▶ 文档操作（合并/拆分/旋转/加密）
+</span></span><span class="line"><span class="cl">│   ├─ Python 环境 → pypdf (PdfReader / PdfWriter)
+</span></span><span class="line"><span class="cl">│   └─ 命令行环境 → qpdf / pdftk
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├─▶ 创建新 PDF
+</span></span><span class="line"><span class="cl">│   ├─ 简单绘图 → reportlab Canvas
+</span></span><span class="line"><span class="cl">│   └─ 复杂排版 → reportlab Platypus (SimpleDocTemplate)
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├─▶ 表单填写（forms.md 强制流程）
+</span></span><span class="line"><span class="cl">│   ├─ Step 0: 检测是否有 fillable fields
+</span></span><span class="line"><span class="cl">│   │   └─ check_fillable_fields.py → get_fields() 判空
+</span></span><span class="line"><span class="cl">│   │
+</span></span><span class="line"><span class="cl">│   ├─▶ 有 fillable fields
+</span></span><span class="line"><span class="cl">│   │   ├─ extract_form_field_info.py → field_info.json
+</span></span><span class="line"><span class="cl">│   │   ├─ convert_pdf_to_images.py → 可视化分析
+</span></span><span class="line"><span class="cl">│   │   ├─ 人工构建 field_values.json
+</span></span><span class="line"><span class="cl">│   │   └─ fill_fillable_fields.py → 输出填充 PDF
+</span></span><span class="line"><span class="cl">│   │
+</span></span><span class="line"><span class="cl">│   └─▶ 无 fillable fields
+</span></span><span class="line"><span class="cl">│       ├─ Step 1: extract_form_structure.py → form_structure.json
+</span></span><span class="line"><span class="cl">│       ├─ 判断结构是否可用
+</span></span><span class="line"><span class="cl">│       │   ├─▶ 可用 → Approach A: 结构基坐标（pdf_width/pdf_height）
+</span></span><span class="line"><span class="cl">│       │   └─▶ 不可用 → Approach B: 视觉估算（image_width/image_height）
+</span></span><span class="line"><span class="cl">│       ├─ 可选: Hybrid（结构+视觉混合，需坐标转换）
+</span></span><span class="line"><span class="cl">│       ├─ Step 2: check_bounding_boxes.py 验证
+</span></span><span class="line"><span class="cl">│       ├─ Step 3: fill_pdf_form_with_annotations.py 填充
+</span></span><span class="line"><span class="cl">│       └─ Step 4: convert_pdf_to_images.py 验证输出
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">└─▶ 高级需求（渲染/JS 环境/优化）
+</span></span><span class="line"><span class="cl">    └─ reference.md → pypdfium2 / pdf-lib / pdfjs-dist / qpdf 高级特性
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="四主要工作流">四、主要工作流
+</h4><h5 id="1标准文本提取工作流">1、标准文本提取工作流
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">pdfplumber</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">with</span> <span class="n">pdfplumber</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&#34;document.pdf&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdf</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pdf</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">text</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">extract_text</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tables</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">extract_tables</span><span class="p">()</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>底层原理</strong>: pdfplumber 基于 pdfminer.six 解析 PDF 内容流。<code>extract_tables()</code> 默认采用 <code>&quot;lines&quot;</code> 策略，即通过显式线条划分单元格。</p>
+<h5 id="2可填写表单工作流">2、可填写表单工作流
+</h5><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Step 1: 探测</span>
+</span></span><span class="line"><span class="cl">python scripts/check_fillable_fields.py form.pdf
+</span></span><span class="line"><span class="cl"><span class="c1"># → &#34;This PDF has fillable form fields&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 2: 提取字段元数据</span>
+</span></span><span class="line"><span class="cl">python scripts/extract_form_field_info.py form.pdf field_info.json
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 3: 视觉确认（可选但推荐）</span>
+</span></span><span class="line"><span class="cl">python scripts/convert_pdf_to_images.py form.pdf images/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 4: 构造 field_values.json</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># [{&#34;field_id&#34;: &#34;name&#34;, &#34;page&#34;: 1, &#34;value&#34;: &#34;Smith&#34;}, ...]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 5: 填充并校验</span>
+</span></span><span class="line"><span class="cl">python scripts/fill_fillable_fields.py form.pdf field_values.json filled.pdf
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="3非可填写表单">3、非可填写表单
+</h5><p>两种方案选择：</p>
+<p><strong>Approach A：结构优先</strong></p>
+<p>当<code>extract_form_structure.py</code>在 PDF 文件中检测到文本标签时，请使用此方法。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Step 1: 结构提取</span>
+</span></span><span class="line"><span class="cl">python scripts/extract_form_structure.py form.pdf form_structure.json
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 2: 分析结构，计算字段坐标，构造 fields.json</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 使用 pdf_width / pdf_height 信号</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 3: 校验</span>
+</span></span><span class="line"><span class="cl">python scripts/check_bounding_boxes.py fields.json
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 4: 填充</span>
+</span></span><span class="line"><span class="cl">python scripts/fill_pdf_form_with_annotations.py form.pdf fields.json filled.pdf
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 5: 验证输出</span>
+</span></span><span class="line"><span class="cl">python scripts/convert_pdf_to_images.py filled.pdf verify/
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>Approach B：视觉回退</strong></p>
+<p>当 PDF 为<strong>扫描件 / 图片格式</strong>，且结构提取未识别到可用文本标签时（例如所有文字均显示为「(cid:X)」类乱码），请使用此方式。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Step 1: 转图像</span>
+</span></span><span class="line"><span class="cl">python scripts/convert_pdf_to_images.py form.pdf images/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 2: 粗略估算字段位置 → 裁剪局部区域（Zoom Refinement）</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># magick page_1.png -crop 300x80+50+120 +repage crop.png</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 3: 精确标定像素坐标，构造 fields.json</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 使用 image_width / image_height 信号</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Step 4-6: 同 Approach A（校验 → 填充 → 验证）</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h5 id="4性能优化工作流">4、性能优化工作流
+</h5><div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>场景</th>
+          <th>策略</th>
+          <th>工具</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>大文件拆分</td>
+          <td>流式处理，分 chunk（如每 10 页一组）</td>
+          <td><code>PdfReader</code> + 循环切片</td>
+      </tr>
+      <tr>
+          <td>大文件文本提取</td>
+          <td>避免全量加载，使用 <code>pdftotext</code></td>
+          <td>poppler-utils</td>
+      </tr>
+      <tr>
+          <td>图像提取</td>
+          <td>直接提取内嵌对象，避免渲染</td>
+          <td><code>pdfimages -all</code></td>
+      </tr>
+      <tr>
+          <td>Web 优化</td>
+          <td>线性化（流式下载）</td>
+          <td><code>qpdf --linearize</code></td>
+      </tr>
+      <tr>
+          <td>损坏修复</td>
+          <td>结构检查 + 对象重建</td>
+          <td><code>qpdf --check</code> / <code>--fix-qdf</code></td>
+      </tr>
+  </tbody>
+</table></div>
+<h4 id="五设计通用启示">五、设计通用启示
+</h4><h5 id="1渐进式披露">1、渐进式披露
+</h5><p>PDF Skill 不是单一大文档，而是 <strong>分层加载的知识图谱</strong>：</p>
+<ul>
+<li><strong>元数据层</strong>（YAML）→ 供 Agent 路由决策</li>
+<li><strong>核心层</strong>（SKILL.md Body）→ 覆盖 80% 场景的快速解决路径</li>
+<li><strong>专项层</strong>（forms.md / reference.md）→ 按需加载的深度知识</li>
+<li><strong>工具层</strong>（scripts）→ 预置可执行代码，Agent 无需自行编写</li>
+</ul>
+<p><strong>启示</strong>:  在处理简单 PDF 任务时仅加载 SKILL.md，仅在触及表单填充或高级渲染时才拉取 forms.md / reference.md，实现上下文效率与能力深度的平衡。</p>
+<h5 id="2防御性工程">2、防御性工程
+</h5><p>源码中多处体现防御性设计：</p>
+<ul>
+<li><strong>Monkey Patch</strong>: 对上游库已知 bug 做运行时修复，而非等待版本更新</li>
+<li><strong>校验脚本</strong>: <code>check_bounding_boxes.py</code> 在写入前拦截几何错误</li>
+<li><strong>异常隔离</strong>: 批量处理中逐文件捕获异常，防止级联失败</li>
+<li><strong>坐标双轨</strong>: 同时支持 PDF 坐标与图像坐标，并自动检测/转换</li>
+</ul>
+<h5 id="3工程脚本化固化">3、工程脚本化固化
+</h5><p><code>forms.md</code> 的核心设计是将<strong>认知工作流转化为可执行脚本</strong>：</p>
+<ul>
+<li>人工判断（&ldquo;是否有 fillable fields?&quot;）→ <code>check_fillable_fields.py</code></li>
+<li>人工观察（&ldquo;字段在什么位置?&quot;）→ <code>extract_form_structure.py</code> + <code>convert_pdf_to_images.py</code></li>
+<li>人工计算（&ldquo;坐标是否正确?&quot;）→ <code>check_bounding_boxes.py</code></li>
+<li>人工验证（&ldquo;填充后是否正确?&quot;）→ <code>create_validation_image.py</code></li>
+</ul>
+<p>这种设计将 LLM 的推理过程与工程执行解耦：LLM 处理模糊任务（从图像中识别字段用途、在方案 A/B 之间选择、解释验证错误）。边界清晰：</p>
+<ul>
+<li><strong>自动化：</strong> JSON 提取、坐标转换、验证、PDF 写入</li>
+<li><strong>人/LLM：</strong> 视觉分析、坐标细化、错误修正</li>
+</ul>
+<h5 id="4文档即提示词">4、文档即提示词
+</h5><p>SKILL.md 和 forms.md 的结构是可执行的操作手册，而非被动文档。约束条件被强力标记：</p>
+<ul>
+<li>&ldquo;<strong>关键：</strong> 你必须按顺序完成这些步骤&rdquo;</li>
+<li>&ldquo;<strong>重要：</strong> 切勿使用 Unicode 下标/上标字符&rdquo;</li>
+<li>&ldquo;<strong>始终在填写前验证边界框</strong>&rdquo;</li>
+</ul>
+<p>这充当了约束 LLM 在该 Skill 内行为的系统提示词。</p>
+<h5 id="5显式状态优于隐式状态">5、显式状态优于隐式状态
+</h5><p>该 Skill 始终将中间状态写入磁盘（<code>field_info.json</code>、<code>form_structure.json</code>、<code>fields.json</code>）。这带来了：</p>
+<ul>
+<li>可检查性和可调试性</li>
+<li>错误后的可恢复性</li>
+<li>无需重新生成一切即可进行人工覆盖</li>
+</ul>
+<h4 id="六设计要点">六、设计要点
+</h4><ul>
+<li>
+<p><strong>表单填写工作流是架构的核心：</strong> 它展示了如何通过组合确定性提取、LLM 视觉分析、显式 JSON 中间体和分层验证来处理高风险、多模态任务。</p>
+</li>
+<li>
+<p><strong>显式中间状态（<code>fields.json</code>、<code>form_structure.json</code>）：</strong> 它将不透明的二进制格式转变为可检查、可修复的流水线。</p>
+</li>
+<li>
+<p><strong>修改前快速失败验证：</strong> 三层填写前验证（结构性、模式性、语义性）确保坐标错误在产生损坏的 PDF 之前就被捕获。</p>
+</li>
+<li>
+<p><strong>跨工具链的优雅降级</strong>：大多数操作都有 Python 和 CLI 替代方案，减少了环境脆弱性。</p>
+</li>
+<li>
+<p><strong>文档即控制平面：</strong> Skill 文件中的强约束标记（&ldquo;关键&rdquo;、&ldquo;重要&rdquo;、&ldquo;始终&rdquo;）将文件转变为 LLM 的可靠系统提示词。</p>
+</li>
+<li>
+<p><strong>运行时补丁修复库 bug</strong> 展示了务实的防御性编码——当依赖项存在影响真实世界 PDF 的已知 bug 时，Skill 会修补它而不是等待上游修复。</p>
+</li>
+</ul>
+<h4 id="七使用示例">七、使用示例
+</h4><h5 id="示例1解析pdf提取信息并创建新pdf">示例1：解析pdf提取信息并创建新PDF
+</h5><p>在<code>claude code</code>中输入指令：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-plain" data-lang="plain"><span class="line"><span class="cl">解析 ibm-1q-26-earnings-press-release.pdf  提取核心总结，并保存为新的pdf文件
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>生成结果如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225733421.png"
+	width="1441"
+	height="712"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225733421_hu_3c9d0f54bff6a7c9.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225733421_hu_1d0031a8bb0b044f.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260424225733421"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="202"
+		data-flex-basis="485px"
+	
+></p>
+<p>生成PDF文件<code>ibm-1q-26-earnings-summary.pdf </code>如下：</p>
+<p><img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552.png"
+	width="1114"
+	height="809"
+	srcset="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552_hu_a5e28368065c6ad8.png 480w, ../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pdf-skill-%E8%A7%A3%E6%9E%90/images/image-20260424225621552_hu_245527213fc929ab.png 1024w"
+	loading="lazy"
+	
+		alt="image-20260424225621552"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="137"
+		data-flex-basis="330px"
+	
+></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="../../tags/skill/">Skill</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90skill-creator-skill-%E8%A7%A3%E6%9E%90/images/image-20260527083109462.png" width="1383" height="819" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #3f474f80 0%, #f3fafeC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—skill-creator Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90doc-coauthoring-skill-%E8%A7%A3%E6%9E%90/images/image-20260506224447339.png" width="1678" height="849" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #bbd4db80 0%, #022556C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—doc-coauthoring Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E5%9B%9B%E7%AB%A0-anthropic-%E5%AE%98%E6%96%B9skill%E8%A7%A3%E6%9E%90pptx-skill-%E8%A7%A3%E6%9E%90/images/image-20260425153556852.png" width="1315" height="763" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #23449880 0%, #fafbfdC0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第四章 Anthropic 官方Skill解析—pptx Skill 解析</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%B8%89%E7%AB%A0-skills-%E4%BD%BF%E7%94%A8%E5%8F%8A%E7%AE%A1%E7%90%86/">
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Skill 从入门到精通——第三章 Skills 使用及管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/">
+        
+        <div class="article-image">
+            <img src="../../p/skill-%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A%E7%AC%AC%E4%BA%8C%E7%AB%A0-skills-%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3/images/image-20260414065402554.png" width="1170" height="687" loading="lazy"
+                alt="Featured image of post Skill 从入门到精通——第二章 Skills 规范详解">
+        </div>
+        
+
+        <div class="article-details"style="background: linear-gradient(0deg, #e4eef480 0%, #e4eef4C0 100%);">
+            <h2 class="article-title">Skill 从入门到精通——第二章 Skills 规范详解</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 Tiny 的技术博客
+    </section>
+    
+</footer>
+
+
+    
+
+
+
+<script type="module">
+    import gallery from '\/ts\/gallery.js';
+
+    const articleContent = document.querySelector('.article-content');
+    const shouldLoad = articleContent && (articleContent.querySelectorAll('figure').length > 0 || articleContent.querySelectorAll('img.gallery-image').length > 0);
+    
+    if (shouldLoad) {
+        gallery(articleContent);
+
+        const PhotoSwipeLightbox = (await import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe-lightbox.esm.min.js")).default;
+        const styleHref = "https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.css";
+
+        const styleTag = document.createElement('link');
+        styleTag.rel = 'stylesheet';
+        styleTag.href = styleHref;
+        document.head.appendChild(styleTag);
+
+        const lightbox = new PhotoSwipeLightbox({
+            gallerySelector: '.article-content',
+            childSelector: 'figure a.image-link',
+            pswpModule: () => import("https:\/\/cdn.jsdelivr.net\/npm\/photoswipe@5.4.4\/dist\/photoswipe.esm.min.js")
+        });
+        lightbox.init();
+    }
+</script>
+    
+
+            </main>
+        </div>
+        <script type="text/javascript" src="../../ts/main.acaf849f2b273f6a8368a58b001f336738d0c948d92e79b116467d0c7515f932.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
